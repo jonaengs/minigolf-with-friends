@@ -1,10 +1,12 @@
 package com.mygdx.minigolf;
 
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Files;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.mygdx.minigolf.model.levels.Course;
 
 public class Game extends ApplicationAdapter {
 	SpriteBatch batch;
@@ -14,6 +16,11 @@ public class Game extends ApplicationAdapter {
 	public void create () {
 		batch = new SpriteBatch();
 		img = new Texture("badlogic.jpg");
+		try {
+			System.out.println(new Course("drawio.xml"));
+		} catch (Exception e) {
+			System.out.println(e);
+		}
 	}
 
 	@Override
