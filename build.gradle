@@ -16,6 +16,12 @@ buildscript {
     }
 }
 
+wrapper {
+    // Download sources and documentation in addition to binaries
+    // https://stackoverflow.com/questions/25451308/android-studio-gradle-bin-zip-vs-gradle-all-zip
+    distributionType = Wrapper.DistributionType.ALL
+}
+
 allprojects {
     apply plugin: "eclipse"
 
