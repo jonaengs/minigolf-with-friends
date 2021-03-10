@@ -1,6 +1,18 @@
 sourceCompatibility = 1.8
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
-sourceSets.main.java.srcDirs = [ "src/" ]
+sourceSets.main.java.srcDirs = ["src/"]
 
 eclipse.project.name = appName + "-core"
+
+// LibGdx cannot list directory contents on desktop.
+// Solution: store all level file names to single file with a known name
+tasks.named("compileJava") {
+    doLast {
+        def assetsDir = new File("../android/assets")
+        def levelsDir = "$assetsDir/levels"
+        def levelsListPath = "$levelsDir/levels_list.txt"
+        def fileNames = fileTree(levelsDir).filter { file -> file.name.endsWith("xml") }
+        file(levelsListPath).write(fileNames.collect { file -> file.name }.join("\n"))
+    }
+}

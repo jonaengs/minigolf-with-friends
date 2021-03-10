@@ -8,15 +8,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class CourseLoader {
-    public final static String LEVELS_DIR = "levels";
+    public final static String LEVELS_DIR = "levels/";
+    public final static String LEVELS_FILE = "levels_list.txt";
+
 
     public static List<Course> getCourses() {
-        System.out.println(Gdx.files.internal("levels").read().toString());
-        FileHandle dirHandle = Gdx.files.internal(LEVELS_DIR);
-        System.out.println(Arrays.toString(dirHandle.list()));
-        System.out.println(dirHandle);
-        return Arrays.stream(dirHandle.list())
-                .map(fh -> new Course(fh.path()))
+        FileHandle dirHandle = Gdx.files.internal(LEVELS_DIR).child(LEVELS_FILE);
+        return Arrays.stream(dirHandle.readString().split("\n"))
+                .peek(System.out::println)
+                .map(Course::new)
+                .peek(Course::validate)
+                //@TODO: .map(Level::new)
                 .collect(Collectors.toList());
     }
 }

@@ -1,8 +1,8 @@
 package com.mygdx.minigolf.model.levels;
 
 public class CourseElement {
-    private final int x, y, width, height, rotation;
-    private final String shape, function;
+    public final int x, y, width, height, rotation;
+    public final String shape, function;
 
     public CourseElement(int x, int y, int width, int height, int rotation, String shape, String function) {
         this.x = x;
