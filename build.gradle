@@ -92,6 +92,13 @@ project(":core") {
         api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
         api "com.badlogicgames.ashley:ashley:$ashleyVersion"
         api "org.junit.jupiter:junit-jupiter:$junitVersion"
+
+        testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
+        testRuntime "org.junit.jupiter:junit-jupiter:$junitVersion"
+    }
+
+    test {
+        useJUnitPlatform()
     }
 }
 
