@@ -1,5 +1,8 @@
 package com.mygdx.minigolf.model.levels;
 
+import java.util.Arrays;
+import java.util.stream.Stream;
+
 public class CourseElement {
     public final int x, y, width, height, rotation;
     public final String shape, function;
@@ -12,6 +15,13 @@ public class CourseElement {
         this.rotation = rotation;
         this.shape = shape;
         this.function = function;
+    }
+
+    public void validate() {
+        if (Stream.of(x, y, width, height).anyMatch(i -> i < 0))
+            throw new IllegalArgumentException("Negative size or position");
+        if (!Course.validShapes.contains(shape))
+            throw new IllegalArgumentException("Invalid shape");
     }
 
     public String toString() {

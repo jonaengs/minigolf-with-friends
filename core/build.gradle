@@ -9,10 +9,17 @@ eclipse.project.name = appName + "-core"
 // Solution: store all level file names to single file with a known name
 tasks.named("compileJava") {
     doLast {
-        def assetsDir = new File("../android/assets")
-        def levelsDir = "$assetsDir/levels"
+        def levelsDir = "../android/assets/levels"
         def levelsListPath = "$levelsDir/levels_list.txt"
-        def fileNames = fileTree(levelsDir).filter { file -> file.name.endsWith("xml") }
-        file(levelsListPath).write(fileNames.collect { file -> file.name }.join("\n"))
+        def levelFiles = fileTree(levelsDir).filter { file -> file.name.endsWith("xml") }
+        file(levelsListPath).write(levelFiles.collect { file -> file.name }.join("\n"))
     }
 }
+
+task copyLevels(type: Copy) {
+    def levelsDir = "../android/assets/levels"
+    from levelsDir
+    into "$projectDir/src/test/resources/levels/copies/"
+}
+
+test.dependsOn copyLevels

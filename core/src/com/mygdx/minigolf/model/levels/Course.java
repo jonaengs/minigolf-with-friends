@@ -5,6 +5,8 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.XmlReader;
 import com.badlogic.gdx.utils.XmlReader.Element;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,22 +37,29 @@ public class Course {
 
     public final String name;
     public final int width, height;
-    private final ArrayList<CourseElement> elements = new ArrayList<>();
+    public final ArrayList<CourseElement> elements = new ArrayList<>();
 
     public void validate() throws IllegalArgumentException {
-        if (elements.stream().noneMatch(e -> requiredFunctions.contains(e.function)))
+        List<String> elementFunctions = elements.stream().map(e -> e.function).collect(Collectors.toList());
+        if (!elementFunctions.containsAll(requiredFunctions))
             throw new IllegalArgumentException("Course required functions not satisfied");
         if (width <= 0 || height <= 0)
             throw new IllegalArgumentException("Illegal course dimensions");
+        if (elements.stream().anyMatch(ce -> ce.x + ce.width > width || ce.y + ce.height > height))
+            throw new IllegalArgumentException("Course element outside course bounds");
+        elements.forEach(CourseElement::validate);
     }
 
     public Course(String filename) {
+        this(Gdx.files.internal(CourseLoader.LEVELS_DIR + filename).read(), filename);
+    }
+
+    public Course(InputStream data, String filename) {
         // tmps for name, width and height as they are final and cannot be assigned in the loop.
         String[] split = null;
         int t_width = 0, t_height = 0;
 
-        FileHandle fh = Gdx.files.internal(CourseLoader.LEVELS_DIR + filename);
-        Element root = new XmlReader().parse(fh).getChildByNameRecursive("root");
+        Element root = new XmlReader().parse(data).getChildByNameRecursive("root");  // closes stream
         for (int i = 0; i < root.getChildCount(); i++) {
             Element cell = (Element) root.getChild(i);
             if (cell.getChildCount() > 0) {
@@ -93,7 +102,7 @@ public class Course {
                 ", height=" + height +
                 // String.join requires API level 26...
                 ", elements=" + elements.stream()
-                .map(e -> "\n\t" + e.toString())
+                .map(e -> "\n\t" + e)
                 .collect(Collectors.joining()) + "\n" +
                 '}';
     }

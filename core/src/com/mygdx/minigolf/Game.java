@@ -1,12 +1,10 @@
 package com.mygdx.minigolf;
 
 import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Files;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.mygdx.minigolf.model.levels.Course;
 import com.mygdx.minigolf.model.levels.CourseLoader;
 
 public class Game extends ApplicationAdapter {

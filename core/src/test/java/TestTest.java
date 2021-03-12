@@ -1,3 +1,5 @@
+package test.java;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.XmlReader;
 
