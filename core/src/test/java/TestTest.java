@@ -1,16 +1,15 @@
-
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.XmlReader;
 
-import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestTest {
 
