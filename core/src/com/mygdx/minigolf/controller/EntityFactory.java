@@ -25,30 +25,30 @@ public class EntityFactory {
     public Entity createEntity(EntityType entityType){
         Entity e = new Entity();
         switch(entityType){
-            case golfball:
+            case GOLFBALL:
                 e.add(new Player());
                 e.add(new Physical());
                 e.add(new Graphical());
                 e.add(new PowerUpAffectable());
                 break;
-            case hole:
+            case HOLE:
                 e.add(new Physical());
                 e.add(new Objective());
                 e.add(new Graphical());
                 break;
-            case obstacle:
+            case SPAWN:
                 e.add(new Physical());
-                e.add(new Graphical());
                 break;
-            case spawn:
-                e.add(new Physical());
-            case powerup:
+            case POWERUP:
                 e.add(new PowerUpGiver());
                 e.add(new Physical());
                 e.add(new Graphical());
-            case surface:
+                break;
+            // Default for OBSTACLE and SURFACE entities
+            default:
                 e.add(new Physical());
                 e.add(new Graphical());
+                break;
         }
         engine.addEntity(e);
         return e;
