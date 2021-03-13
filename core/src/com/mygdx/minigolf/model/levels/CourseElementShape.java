@@ -22,13 +22,9 @@ public enum CourseElementShape {
     }
 
     static CourseElementShape strValueOf(String s) throws IllegalArgumentException {
-        Optional<CourseElementShape> opt = Arrays.stream(CourseElementShape.values())
-                .filter(cse -> cse.str.contentEquals(s))
-                .findFirst();
-        if (opt.isPresent()) {
-            return opt.get();
-        } else {
-            throw new IllegalArgumentException("invalid string shape string value: " + s);
-        }
+        return Arrays.stream(CourseElementShape.values())
+            .filter(cse -> cse.str.contentEquals(s))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("invalid string shape string value: " + s));
     }
 }
