@@ -38,9 +38,10 @@ public class ObjectiveSystem extends EntitySystem{
             for(int j = 0; j < players.size(); j++){
                 Entity player = players.get(j);
                 Physical position = physicalMapper.get(player);
-                // if player position is inside objective area
+                // if player position is inside objective area set player completion to true
                 if(area.getArea().contains(position.getPosition())){
-                    // do something (check stroke count etc.)
+                    Player completed = playerMapper.get(player);
+                    completed.setCompleted(true);
                 }
             }
 
