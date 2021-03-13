@@ -13,9 +13,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestTest {
 
+    private String getPath(String filename) {
+        String fp = this.getClass().getClassLoader().getResource("test.txt").getPath();
+        if (System.getProperty("os.name").startsWith("Windows")) {
+            fp = fp.substring(1);
+        }
+        return fp;
+    }
+
     @Test
     public void ReadResourceTest() throws IOException {
-        String fp = this.getClass().getClassLoader().getResource("test.txt").getPath().substring(1);
+        String fp = getPath("test.txt");
         // https://stackoverflow.com/questions/27886918/running-tests-in-libgdx-using-intellij
         byte[] content = Gdx.files == null ?
                 Files.readAllBytes(Paths.get(fp))
@@ -25,7 +33,7 @@ public class TestTest {
 
     @Test
     public void ReadXMLTest() throws IOException {
-        String fp = this.getClass().getClassLoader().getResource("test.xml").getPath().substring(1);
+        String fp = getPath("test.xml");
         String content = new String(Files.readAllBytes(Paths.get(fp)), StandardCharsets.UTF_8);
         XmlReader.Element element = new XmlReader().parse(content);
         assertTrue(element.getText().contentEquals("test"));
