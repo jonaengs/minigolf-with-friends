@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class TestTest {
 
     private String getPath(String filename) {
-        String fp = this.getClass().getClassLoader().getResource("test.txt").getPath();
+        String fp = this.getClass().getClassLoader().getResource(filename).getPath();
         if (System.getProperty("os.name").startsWith("Windows")) {
             fp = fp.substring(1);
         }
@@ -36,10 +36,7 @@ public class TestTest {
     public void ReadXMLTest() throws IOException {
         String fp = getPath("test.xml");
         String content = new String(Files.readAllBytes(Paths.get(fp)), StandardCharsets.UTF_8);
-        assertEquals(("<test>\n" + "   test\n" + "</test>").length(), content.length());
-        XmlReader.Element element;
-        XmlReader reader = new XmlReader();
-        element = reader.parse(content);
+        XmlReader.Element element = new XmlReader().parse(content);
         assertTrue(element.getText().contentEquals("test"));
     }
 }
