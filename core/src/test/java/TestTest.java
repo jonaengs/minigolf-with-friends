@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestTest {
@@ -35,7 +36,10 @@ public class TestTest {
     public void ReadXMLTest() throws IOException {
         String fp = getPath("test.xml");
         String content = new String(Files.readAllBytes(Paths.get(fp)), StandardCharsets.UTF_8);
-        XmlReader.Element element = new XmlReader().parse(content);
+        assertEquals(("<test>\n" + "   test\n" + "</test>").length(), content.length());
+        XmlReader.Element element;
+        XmlReader reader = new XmlReader();
+        element = reader.parse(content);
         assertTrue(element.getText().contentEquals("test"));
     }
 }
