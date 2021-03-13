@@ -10,20 +10,14 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public class CourseLoaderTest {
-
-    String getPath(String filename) throws IOException {
-        return this.getClass().getClassLoader().getResource("levels/copies/" + filename).getPath().substring(1);
-    }
-
-    String readFile(String filename) throws IOException {
-        String path = getPath(filename);
-        return new String(Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8);
+public class CourseLoaderTest extends TestFileLoader {
+    CourseLoaderTest() {
+        this.dir = "levels/copies/";
     }
 
     @Test
     public void allCoursesLoad() throws IOException {
-        String content = readFile(CourseLoader.LEVELS_FILE);
+        String content = getFileContents(CourseLoader.LEVELS_FILE);
         CourseLoader.getCourses(
                 Arrays.stream(content.split("\n"))
                 .collect(Collectors.toMap(

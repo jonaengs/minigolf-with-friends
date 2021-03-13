@@ -10,12 +10,10 @@ import java.io.InputStream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class CourseTest {
-
-    InputStream getFileStream(String filename) throws IOException {
-        String fp = this.getClass().getClassLoader().getResource("levels/" + filename).getPath().substring(1);
-        return new FileInputStream(fp);
-    }
+public class CourseTest extends TestFileLoader {
+   CourseTest() {
+       this.dir = "levels/";
+   }
 
     @Test
     void bareMinimumCourseIsValid() throws IOException {
