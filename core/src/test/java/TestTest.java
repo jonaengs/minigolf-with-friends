@@ -34,6 +34,7 @@ public class TestTest {
 
     @Test
     public void ReadXMLTest() throws IOException {
+        assertTrue(false);
         String fp = getPath("test.xml");
         String content = new String(Files.readAllBytes(Paths.get(fp)), StandardCharsets.UTF_8);
         XmlReader.Element element = new XmlReader().parse(content);
