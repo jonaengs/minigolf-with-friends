@@ -79,8 +79,8 @@ public class Course {
                                             .orElse("0")
                             ),
                             // Assumes that shape type is always the first element of the style attribute.
-                            CourseElementShape.validStrings.contains(styles.get(0).toUpperCase()) ?
-                                    CourseElementShape.valueOf(styles.get(0))
+                            CourseElementShape.validStrings.contains(styles.get(0)) ?
+                                    CourseElementShape.strValueOf(styles.get(0))
                                     : CourseElementShape.RECTANGLE,
                             cell.getAttribute("value")
                     );

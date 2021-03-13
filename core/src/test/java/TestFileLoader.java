@@ -1,3 +1,5 @@
+import com.mygdx.minigolf.model.levels.Course;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -24,5 +26,9 @@ abstract class TestFileLoader {
     String getFileContents(String filename) throws IOException {
         String path = getPath(filename);
         return new String(Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8);
+    }
+
+    Course getCourse(String filename) throws IOException {
+        return new Course(getFileStream(filename), filename);
     }
 }
