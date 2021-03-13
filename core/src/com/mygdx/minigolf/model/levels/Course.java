@@ -18,11 +18,11 @@ import java.util.stream.Collectors;
  * <mxGeometry [x="...",] [y="...",] width="...", height="..." ... />
  * </mxCell>
  * - value: Defines the function of the shape (if any). Ex: SPAWN, HOLE, COURSE
- * - The cell with value="COURSE..." defines the course shape [and name]
- * - Defining a course's name: value="COURSE Level-name"
+ * - - The cell with value="COURSE..." defines the course shape [and name]
+ * - - Defining a course's name: value="COURSE Level-name"
  * - style: Defines the look of the shape. Attributes are separated by semicolons
- * - style[0] defines the shape type if the shape is not a rectangle
- * - If the shape has been rotated, this is noted in the "rotation=..." attribute
+ * - - style[0] defines the shape type if the shape is not a rectangle
+ * - - If the shape has been rotated, this is noted in the "rotation=..." attribute
  */
 public class Course {
     public final static List<String> requiredFunctions = Arrays.asList(
