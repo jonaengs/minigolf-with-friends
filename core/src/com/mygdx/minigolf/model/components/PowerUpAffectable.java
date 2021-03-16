@@ -1,20 +1,14 @@
 package com.mygdx.minigolf.model.components;
 
 import com.badlogic.ashley.core.Component;
-import com.mygdx.minigolf.model.Effect;
 
-import java.time.Duration;
+import java.util.HashMap;
 import java.util.Map;
 
 public class PowerUpAffectable implements Component {
 
-    Map<Effect, Duration> effect;
+    //liste med effects spilleren har og constraints på hver av dem
 
-    public Map<Effect, Duration> getEffect() {
-        return effect;
-    }
+    //metoder for å fjerne/adde effects og endre constraints
 
-    public void setEffect(Map<Effect, Duration> effect) {
-        this.effect = effect;
-    }
 }

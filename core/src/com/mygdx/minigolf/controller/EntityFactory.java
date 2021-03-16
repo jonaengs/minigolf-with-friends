@@ -38,8 +38,8 @@ public class EntityFactory {
         componentMap.get(entityType).forEach(c -> {
             try {
                 e.add(c.newInstance());
-            } catch (InstantiationException | IllegalAccessException instantiationException) {
-                instantiationException.printStackTrace();
+            } catch (InstantiationException | IllegalAccessException ex) {
+                ex.printStackTrace();
             }
         });
         engine.addEntity(e);
