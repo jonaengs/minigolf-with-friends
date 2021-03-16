@@ -15,6 +15,13 @@ android {
     }
     packagingOptions {
         exclude 'META-INF/robovm/ios/robovm.xml'
+        // fixes https://stackoverflow.com/questions/44342455/more-than-one-file-was-found-with-os-independent-path-meta-inf-license
+        exclude 'META-INF/LICENSE.md'
+        exclude 'META-INF/LICENSE-notice.md'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
     defaultConfig {
         applicationId "com.mygdx.minigolf"
@@ -22,6 +29,9 @@ android {
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
+
+        // fixes https://github.com/mikepenz/Android-Iconics/issues/452
+        multiDexEnabled true
     }
     buildTypes {
         release {
