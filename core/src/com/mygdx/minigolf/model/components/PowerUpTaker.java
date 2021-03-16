@@ -10,8 +10,7 @@ import java.util.Map;
 
 public class PowerUpTaker implements Component {
 
-    //liste med effects spilleren har og constraints på hver av dem
-    private List<Effect> effects = new ArrayList<>();
+    private final List<Effect> effects = new ArrayList<>();
 
     public void addEffect(Effect effect){
         effects.add(effect);
@@ -21,7 +20,16 @@ public class PowerUpTaker implements Component {
         effects.remove(effect);
     }
 
+    public void setEffectConstraintAmount(Effect effect, int amount){
+        effects.get(effects.indexOf(effect)).setConstraintAmount(amount);
+    }
 
-    //metoder for å fjerne/adde effects og endre constraints
+    public void decrementConstraint(Effect effect){
+        effects.get(effects.indexOf(effect)).decrementConstraintAmount();
+    }
+
+    public int getEffectConstraintAmount(Effect effect){
+        return effects.get(effects.indexOf(effect)).getConstraintAmount();
+    }
 
 }

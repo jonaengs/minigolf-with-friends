@@ -11,9 +11,10 @@ public class PowerUpGiver implements Component {
         return effect;
     }
 
-    public void setPowerup(Effect effect) {
+    public void setPowerup(Effect effect, int constraintAmount) {
         if(this.effect == null) {
             this.effect = effect;
+            this.effect.setConstraintAmount(constraintAmount);
         }
         else throw new IllegalArgumentException();
     }
