@@ -1,6 +1,5 @@
 package com.mygdx.minigolf;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -11,7 +10,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.minigolf.controller.EntityFactory;
 import com.mygdx.minigolf.model.levels.LevelLoader;
 
-public class Game extends ApplicationAdapter {
+public class Game extends HeadlessGame {
     SpriteBatch batch;
     Engine engine;
     Texture img;
