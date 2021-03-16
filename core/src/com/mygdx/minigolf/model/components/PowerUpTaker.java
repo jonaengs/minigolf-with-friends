@@ -5,7 +5,7 @@ import com.badlogic.ashley.core.Component;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PowerUpAffectable implements Component {
+public class PowerUpTaker implements Component {
 
     //liste med effects spilleren har og constraints på hver av dem
 

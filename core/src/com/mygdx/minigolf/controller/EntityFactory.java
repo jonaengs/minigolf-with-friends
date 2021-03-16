@@ -7,7 +7,7 @@ import com.mygdx.minigolf.model.components.Graphical;
 import com.mygdx.minigolf.model.components.Objective;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.components.Player;
-import com.mygdx.minigolf.model.components.PowerUpAffectable;
+import com.mygdx.minigolf.model.components.PowerUpTaker;
 import com.mygdx.minigolf.model.components.PowerUpGiver;
 
 import java.util.Arrays;
@@ -16,7 +16,7 @@ import java.util.List;
 
 public class EntityFactory {
     public enum EntityType {
-        GOLFBALL(Player.class, Physical.class, Graphical.class, PowerUpAffectable.class),
+        GOLFBALL(Player.class, Physical.class, Graphical.class, PowerUpTaker.class),
         HOLE(Physical.class, Graphical.class, Objective.class),
         OBSTACLE(Physical.class, Graphical.class),
         POWERUP(Physical.class, Graphical.class, PowerUpGiver.class),
