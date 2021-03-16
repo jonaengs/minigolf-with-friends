@@ -55,7 +55,9 @@ project(":desktop") {
         api "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
         api "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
-        
+
+        compile "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
+        compile "org.mockito:mockito-all:1.9.+"
     }
 }
 
@@ -95,6 +97,7 @@ project(":core") {
 
         testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
         testRuntime "org.junit.jupiter:junit-jupiter:$junitVersion"
+
     }
 
     test {
