@@ -4,10 +4,10 @@ import java.util.stream.Stream;
 
 public class CourseElement {
     public final int x, y, width, height, rotation;
-    public final String function;
+    public final Course.CourseElementFunction function;
     public final CourseElementShape shape;
 
-    public CourseElement(int x, int y, int width, int height, int rotation, CourseElementShape shape, String function) {
+    public CourseElement(int x, int y, int width, int height, int rotation, CourseElementShape shape, Course.CourseElementFunction function) {
         this.x = x;
         this.y = y;
         this.width = width;

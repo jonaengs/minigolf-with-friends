@@ -14,8 +14,7 @@ public class CourseLoader {
     public final static String LEVELS_FILE = "levels_list.txt";
 
     public static List<Course> getCourses() {
-        FileHandle dirHandle = Gdx.files.internal(LEVELS_DIR).child(LEVELS_FILE);
-        String[] filenames = dirHandle.readString().split("\n");
+        String[] filenames = getFileNames();
         return getCourses(Arrays.stream(filenames).collect(
                 Collectors.toMap(
                         fn -> fn, fn -> Gdx.files.internal(LEVELS_DIR + fn).read()
@@ -25,7 +24,15 @@ public class CourseLoader {
     public static List<Course> getCourses(Map<String, InputStream> inputs) {
         return inputs.entrySet().stream()
                 .map(e -> new Course(e.getValue(), e.getKey()))
-                // TODO: .map(Level::new)
                 .collect(Collectors.toList());
+    }
+
+    public static Course getCourse(String filename) {
+        return new Course(filename);
+    }
+
+    public static String[] getFileNames() {
+        FileHandle dirHandle = Gdx.files.internal(LEVELS_DIR).child(LEVELS_FILE);
+        return dirHandle.readString().split("\n");
     }
 }

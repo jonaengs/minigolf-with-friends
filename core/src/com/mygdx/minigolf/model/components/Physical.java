@@ -11,7 +11,7 @@ public class Physical implements Component {
     private Vector2 velocity;
     private Shape shape;
     private BodyType bodyType;
-    private boolean collidable;
+    private boolean collidable = true;
 
     public boolean isCollidable() {
         return collidable;

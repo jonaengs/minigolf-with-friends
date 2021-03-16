@@ -7,16 +7,20 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 abstract class TestFileLoader {
     String dir = "";
 
     String getPath(String filename) {
-        String fp = this.getClass().getClassLoader().getResource(dir + filename).getPath();
+        String filePath = dir + filename;
+        String absPath = Objects.requireNonNull(
+                this.getClass().getClassLoader().getResource(filePath)
+        ).getPath();
         if (System.getProperty("os.name").startsWith("Windows")) {
-            fp = fp.substring(1);
+            absPath = absPath.substring(1);
         }
-        return fp;
+        return absPath;
     }
 
     InputStream getFileStream(String filename) throws FileNotFoundException {

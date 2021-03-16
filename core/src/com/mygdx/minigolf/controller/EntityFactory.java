@@ -32,9 +32,21 @@ public class EntityFactory {
     }
 
     private final Engine engine;
-
-    public EntityFactory(Engine engine) {
+    private static EntityFactory instance = null;
+    private EntityFactory(Engine engine) {
         this.engine = engine;
+    }
+
+    public static EntityFactory get() {
+        if (instance == null)
+            throw new IllegalArgumentException("Factory has not been set up yet");
+        return instance;
+    }
+
+    public static void setEngine(Engine engine) {
+        if (instance != null)
+            throw new IllegalArgumentException("Factory has already been set up");
+        EntityFactory.instance = new EntityFactory(engine);
     }
 
     public Entity createEntity(EntityType entityType) {

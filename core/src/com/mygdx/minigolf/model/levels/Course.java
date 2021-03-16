@@ -25,8 +25,11 @@ import java.util.stream.Collectors;
  * - - If the shape has been rotated, this is noted in the "rotation=..." attribute
  */
 public class Course {
-    public final static List<String> requiredFunctions = Arrays.asList(
-            "SPAWN", "HOLE"
+    public enum CourseElementFunction {
+        SPAWN, HOLE, COURSE, POWERUP, OBSTACLE
+    }
+    private static final List<CourseElementFunction> requiredFunctions = Arrays.asList(
+        CourseElementFunction.SPAWN, CourseElementFunction.HOLE
     );
 
     public final String name;
@@ -34,7 +37,7 @@ public class Course {
     private final ArrayList<CourseElement> elements = new ArrayList<>();
 
     public void validate() throws IllegalArgumentException {
-        List<String> elementFunctions = elements.stream().map(e -> e.function).collect(Collectors.toList());
+        List<CourseElementFunction> elementFunctions = elements.stream().map(e -> e.function).collect(Collectors.toList());
         if (!elementFunctions.containsAll(requiredFunctions))
             throw new IllegalArgumentException("Course required functions not satisfied");
         if (width <= 0 || height <= 0)
@@ -82,7 +85,11 @@ public class Course {
                             CourseElementShape.validStrings.contains(styles.get(0)) ?
                                     CourseElementShape.strValueOf(styles.get(0))
                                     : CourseElementShape.RECTANGLE,
-                            cell.getAttribute("value")
+                            CourseElementFunction.valueOf(Arrays.stream(CourseElementFunction.values())
+                                    .map(Enum::name)
+                                    .filter(name -> name.contentEquals(cell.getAttribute("value")))
+                                    .findAny()
+                                    .orElse("OBSTACLE"))
                     );
                     elements.add(elem);
                 }
