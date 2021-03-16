@@ -1,13 +1,20 @@
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.backends.headless.HeadlessApplication;
+import com.badlogic.gdx.backends.headless.HeadlessApplicationConfiguration;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
+import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.controller.EntityFactory;
 import com.mygdx.minigolf.model.levels.Course;
 import com.mygdx.minigolf.model.levels.CourseLoader;
 import com.mygdx.minigolf.model.levels.LevelLoader;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -15,9 +22,21 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.mockito.Mockito.mock;
+
 public class LevelLoaderTest extends TestFileLoader {
     LevelLoaderTest() {
         this.dir = "levels/copies/";
+    }
+
+
+    @BeforeAll
+    public static void setup() {
+        HeadlessApplicationConfiguration config = new HeadlessApplicationConfiguration();
+        Gdx.gl = mock(GL20.class);
+        HeadlessGame game = new HeadlessGame();
+        game.create();
+        new HeadlessApplication(game, config);
     }
 
     @Test
@@ -31,16 +50,10 @@ public class LevelLoaderTest extends TestFileLoader {
                                 return new FileInputStream(getPath(file));
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
-                            }
-                        }
-                ))
-        );
-        /*
-        Below code crashes due tp Gdx not being initialized. Need headless application to run.
-
-        EntityFactory.setEngine(new Engine());
-        new World(new Vector2(0, 0), true);
-        List<List<Entity>> levelsContents = courses.stream().map(LevelLoader::loadLevel).collect(Collectors.toList());
-         */
+                            }}
+                )));
+        List<List<Entity>> levelsContents = courses.stream()
+                .map(LevelLoader::loadLevel)
+                .collect(Collectors.toList());
     }
 }

@@ -1,17 +1,27 @@
 package com.mygdx.minigolf;
 
+import com.badlogic.ashley.core.Engine;
 import com.badlogic.gdx.ApplicationListener;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.World;
+import com.mygdx.minigolf.controller.EntityFactory;
+
+import static org.mockito.Mockito.mock;
 
 // See link below for example of use
 // https://github.com/TomGrill/gdx-testing/blob/master/tests/src/de/tomgrill/gdxtesting/GdxTestRunner.java
 public class HeadlessGame implements ApplicationListener {
-    // Possible plan:
-        // implement game logic here
-        // extend with Game class. Implement Headless-less things there.
+    // Implement game logic here. Extend with Game. Implement Headless-less things there.
+    Engine engine;
+    World world;
 
     @Override
     public void create() {
-
+        engine = new Engine();
+        world = new World(new Vector2(0, 0), true);
+        EntityFactory.setEngine(engine);
     }
 
     @Override

@@ -12,17 +12,13 @@ import com.mygdx.minigolf.model.levels.LevelLoader;
 
 public class Game extends HeadlessGame {
     SpriteBatch batch;
-    Engine engine;
     Texture img;
-    World world;
 
     @Override
     public void create() {
+        super.create();
         batch = new SpriteBatch();
         img = new Texture("badlogic.jpg");
-        engine = new Engine();
-        world = new World(new Vector2(0, 0), true);
-        EntityFactory.setEngine(engine);
         LevelLoader.loadLevel("drawio.xml");
     }
 
