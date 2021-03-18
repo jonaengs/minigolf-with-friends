@@ -13,8 +13,6 @@ public class InputHandler extends InputAdapter {
     private final OrthographicCamera cam;
     private final Body ballBody;
 
-    private boolean ballMoveOnTouchDown = false;
-
     private final Vector3 dragStartPos = new Vector3();
     private final Vector3 draggingPos = new Vector3(); // Use this to draw the crosshair (when ball is not moving)
 
@@ -25,31 +23,24 @@ public class InputHandler extends InputAdapter {
 
     @Override
     public boolean touchDown(int x, int y, int pointer, int button) {
-        // Check if ball is moving
-        if (ballBody.getLinearVelocity().x == 0 && ballBody.getLinearVelocity().y == 0) {
-            ballMoveOnTouchDown = false;
-            dragStartPos.set(x, y, 0);
-            cam.unproject(dragStartPos);
-        } else {
-            ballMoveOnTouchDown = true;
-        }
+        dragStartPos.set(x, y, 0);
+        cam.unproject(dragStartPos);
 
         return true;
     }
 
     @Override
     public boolean touchDragged(int x, int y, int pointer) {
-        if (!ballMoveOnTouchDown) {
-            draggingPos.set(x, y, 0);
-            cam.unproject(draggingPos);
-        }
+        draggingPos.set(x, y, 0);
+        cam.unproject(draggingPos);
 
         return true;
     }
 
     @Override
     public boolean touchUp(int x, int y, int pointer, int button) {
-        if (!ballMoveOnTouchDown) {
+        // Check if ball is moving
+        if (ballBody.getLinearVelocity().x == 0 && ballBody.getLinearVelocity().y == 0) {
             Vector3 dragEndPos = new Vector3(x, y, 0);
             cam.unproject(dragEndPos);
 
