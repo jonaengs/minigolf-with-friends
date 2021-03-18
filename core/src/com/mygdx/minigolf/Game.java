@@ -46,8 +46,6 @@ public class Game extends ApplicationAdapter {
         viewport = new FitViewport(cam.viewportWidth, cam.viewportHeight, cam);
         cam.update();
 
-        Gdx.input.setInputProcessor(new InputHandler(this));
-
         world = new World(new Vector2(0, 0), true);
 
         // Create a ground and a ball and add it to the world
@@ -59,6 +57,8 @@ public class Game extends ApplicationAdapter {
         frictionJointDef.initialize(groundBody, ballBody, new Vector2(0, 0));
         frictionJointDef.maxForce = 50.0f;
         world.createJoint(frictionJointDef);
+
+        Gdx.input.setInputProcessor(new InputHandler(cam, ballBody));
     }
 
     @Override
@@ -89,14 +89,6 @@ public class Game extends ApplicationAdapter {
 	@Override
 	public void resize(int width, int height) {
 		viewport.update(width, height);
-	}
-
-    public Body getBallBody() {
-        return ballBody;
-    }
-
-	public OrthographicCamera getCam() {
-		return cam;
 	}
 
     private void createBall() {
