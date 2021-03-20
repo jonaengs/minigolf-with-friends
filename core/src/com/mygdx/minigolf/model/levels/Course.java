@@ -3,6 +3,7 @@ package com.mygdx.minigolf.model.levels;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.XmlReader;
 import com.badlogic.gdx.utils.XmlReader.Element;
+import com.mygdx.minigolf.model.levels.CourseElement.Function;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -10,6 +11,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.mygdx.minigolf.model.levels.CourseElement.Function.HOLE;
+import static com.mygdx.minigolf.model.levels.CourseElement.Function.SPAWN;
 
 /**
  * A Course element is what draw.io calls a "shape".
@@ -20,24 +24,22 @@ import java.util.stream.Collectors;
  * - value: Defines the function of the shape (if any). Ex: SPAWN, HOLE, COURSE
  * - - The cell with value="COURSE..." defines the course shape [and name]
  * - - Defining a course's name: value="COURSE Level-name"
+ * - - If no course name is defined, the filename (excluding ".xml") will be the course name
  * - style: Defines the look of the shape. Attributes are separated by semicolons
  * - - style[0] defines the shape type if the shape is not a rectangle
  * - - If the shape has been rotated, this is noted in the "rotation=..." attribute
  */
 public class Course {
-    public enum CourseElementFunction {
-        SPAWN, HOLE, COURSE, POWERUP, OBSTACLE
-    }
-    private static final List<CourseElementFunction> requiredFunctions = Arrays.asList(
-        CourseElementFunction.SPAWN, CourseElementFunction.HOLE
-    );
-
     public final String name;
     public final int width, height;
     private final ArrayList<CourseElement> elements = new ArrayList<>();
 
+    private static final List<Function> requiredFunctions = Arrays.asList(
+            SPAWN, HOLE
+    );
+
     public void validate() throws IllegalArgumentException {
-        List<CourseElementFunction> elementFunctions = elements.stream().map(e -> e.function).collect(Collectors.toList());
+        List<CourseElement.Function> elementFunctions = elements.stream().map(e -> e.function).collect(Collectors.toList());
         if (!elementFunctions.containsAll(requiredFunctions))
             throw new IllegalArgumentException("Course required functions not satisfied");
         if (width <= 0 || height <= 0)
@@ -47,57 +49,58 @@ public class Course {
         elements.forEach(CourseElement::validate);
     }
 
-    public Course(String filename) {
+    protected Course(String filename) {
         this(Gdx.files.internal(CourseLoader.LEVELS_DIR + filename).read(), filename);
     }
 
-    public Course(InputStream data, String filename) {
-        // tmps for name, width and height as they are final and cannot be assigned in the loop.
-        String[] split = null;
-        int t_width = 0, t_height = 0;
+    private static String getRotation(List<String> styles) {
+        return styles.stream()
+                .filter(s -> s.contains("rotation"))
+                .findFirst()
+                .map(s -> s.split("=")[1])
+                .orElse("0");
+    }
 
-        Element root = new XmlReader().parse(data).getChildByNameRecursive("root");  // closes stream
+    private static Element getCourseNode(Element root) {
+        for (int i = 0; i < root.getChildCount(); i++) {
+            Element node = root.getChild(i);
+            if (node.get("value").startsWith("COURSE")) {
+                root.removeChild(i);
+                return node;
+            }
+        }
+        throw new IllegalArgumentException("No COURSE node found");
+    }
+
+    protected Course(InputStream data, String filename) {
+        Element root = new XmlReader().parse(data).getChildByNameRecursive("root");  // closes InputStream
+
+        // Setup the course itself
+        Element courseNode = getCourseNode(root);
+        Element courseGeometry = courseNode.getChild(0);
+        String[] split = courseNode.get("value").split(" ", 2);
+        name = split.length == 2 ? split[1] : filename.split("\\.")[0];
+        width = Integer.parseInt(courseGeometry.getAttribute("width"));
+        height = Integer.parseInt(courseGeometry.getAttribute("height"));
+
+        // Find and add all course elements
         for (int i = 0; i < root.getChildCount(); i++) {
             Element cell = (Element) root.getChild(i);
             if (cell.getChildCount() > 0) {
                 Element geometry = (Element) cell.getChild(0);
-                if (cell.get("value").startsWith("COURSE")) {
-                    if (split != null)
-                        throw new IllegalArgumentException("Found multiple COURSE shapes");
-                    t_width = Integer.parseInt(geometry.getAttribute("width"));
-                    t_height = Integer.parseInt(geometry.getAttribute("height"));
-                    split = cell.get("value").split(" ", 2);
-                } else {
-                    List<String> styles = Arrays.asList(cell.getAttribute("style").split(";"));
-                    CourseElement elem = new CourseElement(
-                            Integer.parseInt(geometry.get("x", "0")),
-                            Integer.parseInt(geometry.get("y", "0")),
-                            Integer.parseInt(geometry.get("width")),
-                            Integer.parseInt(geometry.get("height")),
-                            Integer.parseInt(
-                                    styles.stream()
-                                            .filter(s -> s.contains("rotation"))
-                                            .findFirst()
-                                            .map(s -> s.split("=")[1])
-                                            .orElse("0")
-                            ),
-                            // Assumes that shape type is always the first element of the style attribute.
-                            CourseElementShape.validStrings.contains(styles.get(0)) ?
-                                    CourseElementShape.strValueOf(styles.get(0))
-                                    : CourseElementShape.RECTANGLE,
-                            CourseElementFunction.valueOf(Arrays.stream(CourseElementFunction.values())
-                                    .map(Enum::name)
-                                    .filter(name -> name.contentEquals(cell.getAttribute("value")))
-                                    .findAny()
-                                    .orElse("OBSTACLE"))
-                    );
-                    elements.add(elem);
-                }
+                List<String> styles = Arrays.asList(cell.getAttribute("style").split(";"));
+                elements.add(new CourseElement(
+                        Integer.parseInt(geometry.get("x", "0")),
+                        Integer.parseInt(geometry.get("y", "0")),
+                        Integer.parseInt(geometry.get("width")),
+                        Integer.parseInt(geometry.get("height")),
+                        Integer.parseInt(getRotation(styles)),
+                        // Assumes that shape type is always the first element of the style attribute.
+                        CourseElement.Shape.strValueOf(styles.get(0)),
+                        CourseElement.Function.strValueOf(cell.getAttribute("value"))
+                ));
             }
         }
-        name = split != null && split.length == 2 ? split[1] : filename.split("\\.")[0];
-        width = t_width;
-        height = t_height;
     }
 
     public List<CourseElement> getElements() {

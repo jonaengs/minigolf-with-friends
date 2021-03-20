@@ -1,4 +1,5 @@
 import com.mygdx.minigolf.model.levels.Course;
+import com.mygdx.minigolf.model.levels.CourseLoader;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -33,6 +34,6 @@ abstract class TestFileLoader {
     }
 
     Course getCourse(String filename) throws IOException {
-        return new Course(getFileStream(filename), filename);
+        return CourseLoader.getCourse(getFileStream(filename), filename);
     }
 }

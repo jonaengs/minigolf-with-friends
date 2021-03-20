@@ -31,8 +31,12 @@ public class CourseLoader {
         return new Course(filename);
     }
 
+    public static Course getCourse(InputStream stream, String filename) {
+        return new Course(stream, filename);
+    }
+
     public static String[] getFileNames() {
         FileHandle dirHandle = Gdx.files.internal(LEVELS_DIR).child(LEVELS_FILE);
-        return dirHandle.readString().split("\n");
+        return dirHandle.readString().split("\n");  // readString closes file
     }
 }

@@ -12,6 +12,8 @@ import com.mygdx.minigolf.model.components.Physical;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.mygdx.minigolf.controller.EntityFactory.EntityType.SURFACE;
+
 
 public class LevelLoader {
 
@@ -21,10 +23,21 @@ public class LevelLoader {
 
     static public List<Entity> loadLevel(Course course) {
         List<Entity> entities = new ArrayList<>();
-        for (CourseElement elem : course.getElements()) {
-            Entity e = EntityFactory.get().createEntity(getEntityType(elem));
 
-            Physical phys = e.getComponent(Physical.class);
+        // Add course itself as entity
+        Entity e = EntityFactory.get().createEntity(SURFACE);
+        Physical phys = e.getComponent(Physical.class);
+        phys.setPosition(new Vector2(0, 0));
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(course.width, course.height);
+        phys.setShape(shape);
+        entities.add(e);
+
+        // Add all course elements as entities
+        for (CourseElement elem : course.getElements()) {
+            e = EntityFactory.get().createEntity(getEntityType(elem));
+
+            phys = e.getComponent(Physical.class);
             phys.setPosition(new Vector2(elem.x, elem.y));
             phys.setShape(getShape(elem));
 
@@ -47,12 +60,7 @@ public class LevelLoader {
                 return shape;
             case RECTANGLE:
                 shape = new PolygonShape();
-                shape.set(new float[]{
-                        0, 0,
-                        elem.width, 0,
-                        elem.width, elem.height,
-                        0, elem.height
-                });
+                shape.setAsBox(elem.width, elem.height);
                 return shape;
             default:
                 throw new IllegalArgumentException("Illegal course element shape");

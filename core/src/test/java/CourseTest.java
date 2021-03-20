@@ -1,6 +1,5 @@
 import com.mygdx.minigolf.model.levels.Course;
 import com.mygdx.minigolf.model.levels.CourseElement;
-import com.mygdx.minigolf.model.levels.CourseElementShape;
 
 import org.junit.jupiter.api.Test;
 
@@ -65,7 +64,7 @@ public class CourseTest extends TestFileLoader {
                .map(ce -> ce.shape)
                .collect(Collectors.toList())
                .containsAll(
-                       Arrays.asList(CourseElementShape.values())
+                       Arrays.asList(CourseElement.Shape.values())
                );
     }
 
@@ -73,12 +72,12 @@ public class CourseTest extends TestFileLoader {
     void rotationIsParsedCorrectly() throws IOException {
         Course course = getCourse("all_shapes.xml");
         CourseElement triangle = course.getElements().stream()
-                .filter(ce -> ce.shape == CourseElementShape.TRIANGLE)
+                .filter(ce -> ce.shape == CourseElement.Shape.TRIANGLE)
                 .findFirst().get();
         assertEquals(-219, triangle.rotation);
 
         CourseElement notTriangle = course.getElements().stream()
-                .filter(ce -> ce.shape != CourseElementShape.TRIANGLE)
+                .filter(ce -> ce.shape != CourseElement.Shape.TRIANGLE)
                 .findFirst().get();
         assertEquals(0, notTriangle.rotation);
     }
