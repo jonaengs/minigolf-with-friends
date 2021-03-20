@@ -1,8 +1,13 @@
 package com.server;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
@@ -11,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 
@@ -20,10 +26,11 @@ public class NetworkController {
     final static int MIN_ID = 100_000;
     final static int MAX_ID = 1_000_000 - MIN_ID;
     static Random random = new Random();
-    static IntStream intStream = random.ints(Integer.MAX_VALUE, MAX_ID);
-    private static final HashMap<Integer, LobbyLeader> lobbies = new HashMap<>();
+
+    private static final HashMap<Integer, LobbyController> lobbies = new HashMap<>();
 
     private static int getId() {
+        IntStream intStream = random.ints(Integer.MAX_VALUE, 32, MAX_ID); // middle number is seed?
         return intStream
                 .map(i -> i + MIN_ID)
                 .filter(id -> !lobbies.containsKey(id))
@@ -31,47 +38,82 @@ public class NetworkController {
     }
 
     public NetworkController() throws IOException {
-        new NetworkController(8888);
+        this(8888);
     }
 
     public NetworkController(int port) throws IOException {
         ss = new ServerSocket(port);
     }
 
-    private void accept() throws IOException {
+    public void accept() throws IOException {
+        System.out.println("Accepting connections...");
         while (true) {
             Socket s = ss.accept();
-            new Thread(new ConnectionHandler(s));
+            System.out.println("Accepted socket:" + s.toString());
+            new Thread(new ConnectionHandler(s)).start();
+        }
+    }
+
+    private static class ConnectionHandler implements Runnable {
+        Socket socket;
+        public ConnectionHandler(Socket s) {
+            this.socket = s;
+        }
+
+        @Override
+        public void run() {
+            System.out.println("Starting connection handler");
+            try {
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader((socket.getInputStream()))
+                );
+                String data = reader.readLine();
+                System.out.println("Received data: " + data);
+                CommunicationHandler comm = new CommunicationHandler(socket);
+                if (data.startsWith("CREATE")) {
+                    int lobbyID = getId();
+                    LobbyController lobby = new LobbyController(socket, comm, lobbyID);
+                    lobbies.put(lobbyID, lobby);
+                    new Thread(lobby).start();
+                    System.out.println("Created lobby " + lobbyID);
+                } else if (data.startsWith("JOIN")) { // FORMAT: "JOIN XXXXXX"
+                    int lobbyID = Integer.parseInt(data.split(" ")[1]);
+                    lobbies.get(lobbyID).addPlayer(socket, comm);
+                    System.out.println("Joined lobby " + lobbyID);
+                }
+                new Thread(comm).start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     private static class CommunicationHandler implements Runnable {
         public final PriorityQueue<String> sendBuffer = new PriorityQueue<>();
-        public final PriorityQueue<String> recvBuffer;
+        public final PriorityQueue<String> recvBuffer = new PriorityQueue<>();
         private final Socket socket;
 
-        public CommunicationHandler(Socket s, PriorityQueue<String> writeBuffer) {
+        public CommunicationHandler(Socket s) {
             socket = s;
-            recvBuffer = writeBuffer;
         }
 
         @Override
         public void run() {
             String send, recv;
             try {
-                DataOutputStream dout = new DataOutputStream(socket.getOutputStream());
-                DataInputStream din = new DataInputStream(socket.getInputStream());
-                while (true) {
+                BufferedWriter sendBuf = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+                BufferedReader recvBuf;
+                while (socket.isConnected()) {
                     synchronized (sendBuffer) {
                         send = sendBuffer.poll();
                     }
                     if (send != null) {
-                        dout.writeUTF(send);
-                        dout.flush();
-                        dout.close();
+                        sendBuf.write(send + "\n");
+                        sendBuf.flush();
                     }
-                    if (din.available() > 0) {
-                        recv = din.readUTF();
+                    recvBuf = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    if (recvBuf.ready()) {
+                        recv = recvBuf.readLine();
                         synchronized (recvBuffer) {
                             recvBuffer.add(recv);
                         }
@@ -90,24 +132,33 @@ public class NetworkController {
         final private Map<Socket, CommunicationHandler> comms;
         private final Socket leader;
         final int lobbyID;
-        boolean update = false;
+        boolean update = true;
 
-        public LobbyController(Socket leader, CommunicationHandler leaderComm, int id) {
+        public LobbyController(Socket leader, CommunicationHandler comm, Integer id) {
             this.leader = leader;
             lobbyID = id;
             comms = new HashMap<>();
-            comms.put(leader, leaderComm);
+            comms.put(leader, comm);
+            synchronized (comm.sendBuffer) {
+                comm.sendBuffer.add(id.toString());
+            }
         }
 
         public void addPlayer(Socket player, CommunicationHandler comm) {
-            comms.put(player, comm);
-            update = true;
+            synchronized (comms) {
+                comms.put(player, comm);
+                update = true;
+            }
         }
 
         private void broadCastState() {
+            String players;
+            synchronized (comms) {
+                players = comms.keySet().toString();
+            }
             for (CommunicationHandler ch: comms.values()) {
                 synchronized (ch.sendBuffer) {
-                    ch.sendBuffer.add(comms.keySet().toString());
+                    ch.sendBuffer.add(players);
                 }
             }
         }
@@ -123,7 +174,12 @@ public class NetworkController {
                     broadCastState();
                     update = false;
                 }
-                for (Map.Entry<Socket, CommunicationHandler> entry : comms.entrySet()) {
+                Set<Map.Entry<Socket, CommunicationHandler>> entries;
+                synchronized (comms) {
+                    // entrySet reflects map, so shallow-copy to prevent ConcurrentModificationError
+                    entries = new HashMap<Socket, CommunicationHandler>(comms).entrySet();
+                }
+                for (Map.Entry<Socket, CommunicationHandler> entry : entries) {
                     Socket player = entry.getKey();
                     CommunicationHandler comm = entry.getValue();
                     String msg;
@@ -131,83 +187,20 @@ public class NetworkController {
                         synchronized (comm.recvBuffer) {
                             msg = comm.recvBuffer.poll();
                         }
-                        if (msg.contentEquals("START GAME") && player == leader) {
-                            startGame();
-                            return;
+                        if (msg != null) {
+                            System.out.println("msg: " + msg);
+                            if (msg.contentEquals("EXIT")) {
+                                comms.remove(player);
+                                update = true;
+                            }
+                            else if (msg.contentEquals("START GAME") && player == leader) {
+                                startGame();
+                                return;
+                            }
                         }
                     } while (msg != null);
                 }
             }
         }
     }
-
-    private static class ConnectionHandler implements Runnable {
-        Socket socket;
-        public ConnectionHandler(Socket s) {
-            this.socket = s;
-        }
-
-        @Override
-        public void run() {
-            try {
-                DataInputStream dis = new DataInputStream(socket.getInputStream());
-                String data = dis.readUTF();
-                System.out.println(data);
-                if (data.startsWith("CREATE")) {
-                    int lobbyID = getId();
-                    LobbyLeader leader = new LobbyLeader(socket, lobbyID);
-                    new Thread(leader);
-                    lobbies.put(lobbyID, leader);
-                } else if (data.startsWith("JOIN")) { // FORMAT: "JOIN XXXXXX"
-                    LobbyLeader leader = lobbies.get(Integer.parseInt(data.split(" ")[1]));
-                    new Thread(new LobbyFollower(socket, leader));
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private static class LobbyLeader implements Runnable {
-        public List<Socket> players;
-        boolean playerAdded;
-        Socket player;
-        Integer id;
-        public LobbyLeader(Socket s, int ID) throws IOException {
-            player = s;
-            players = Arrays.asList(s);
-        }
-
-        synchronized public void addPlayer(Socket s) {
-            players.add(s);
-            playerAdded = true;
-        }
-
-        @Override
-        public void run() {
-            DataOutputStream dout = null;
-            try {
-                dout = new DataOutputStream(player.getOutputStream());
-                dout.writeUTF("CREATED LOBBY: " + id);
-                dout.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private static class LobbyFollower implements Runnable {
-        private LobbyLeader leader;
-        private Socket player;
-        public LobbyFollower(Socket s, LobbyLeader l) {
-            leader = l;
-            player = s;
-        }
-
-        @Override
-        public void run() {
-
-        }
-    }
-
 }
