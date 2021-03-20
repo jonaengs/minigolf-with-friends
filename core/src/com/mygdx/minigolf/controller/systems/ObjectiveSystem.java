@@ -12,12 +12,11 @@ import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.components.Player;
 
 public class ObjectiveSystem extends EntitySystem {
-    private ImmutableArray<Entity> objectives;
-    private ImmutableArray<Entity> players;
-
     private final ComponentMapper<Physical> physicalMapper = ComponentMapper.getFor(Physical.class);
     private final ComponentMapper<Objective> objectiveMapper = ComponentMapper.getFor(Objective.class);
     private final ComponentMapper<Player> playerMapper = ComponentMapper.getFor(Player.class);
+    private ImmutableArray<Entity> objectives;
+    private ImmutableArray<Entity> players;
 
     public void addedToEngine(Engine engine) {
         objectives = engine.getEntitiesFor(Family.all(Objective.class).get());

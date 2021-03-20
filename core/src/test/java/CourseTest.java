@@ -11,9 +11,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CourseTest extends TestFileLoader {
-   CourseTest() {
-       this.dir = "levels/";
-   }
+    CourseTest() {
+        this.dir = "levels/";
+    }
 
     @Test
     void bareMinimumCourseIsValid() throws IOException {
@@ -32,8 +32,7 @@ public class CourseTest extends TestFileLoader {
 
     @Test
     void missingCourseElementFailsValidate() throws IOException {
-        Course course = getCourse("missing_course.xml");
-        assertThrows(IllegalArgumentException.class, course::validate);
+        assertThrows(IllegalArgumentException.class, () -> getCourse("missing_course.xml"));
     }
 
     @Test
@@ -59,13 +58,13 @@ public class CourseTest extends TestFileLoader {
 
     @Test
     void shapesAreParsedCorrectly() throws IOException {
-       Course course = getCourse("all_shapes.xml");
-       course.getElements().stream()
-               .map(ce -> ce.shape)
-               .collect(Collectors.toList())
-               .containsAll(
-                       Arrays.asList(CourseElement.Shape.values())
-               );
+        Course course = getCourse("all_shapes.xml");
+        course.getElements().stream()
+                .map(ce -> ce.shape)
+                .collect(Collectors.toList())
+                .containsAll(
+                        Arrays.asList(CourseElement.Shape.values())
+                );
     }
 
     @Test

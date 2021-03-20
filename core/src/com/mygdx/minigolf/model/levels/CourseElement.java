@@ -4,35 +4,6 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 
 public class CourseElement {
-    public enum Function {
-        SPAWN, HOLE, COURSE, POWERUP, OBSTACLE;
-
-        static Function strValueOf(String s) throws IllegalArgumentException {
-            return Arrays.stream(Function.values())
-                    .filter(func -> func.name().contentEquals(s.toUpperCase()))
-                    .findFirst()
-                    .orElse(OBSTACLE);
-        }
-    }
-
-    public enum Shape {
-        // Use str in case internal representation (enum) diverges from external representation (string in xml)
-        RECTANGLE("rectangle"), ELLIPSE("ellipse"), TRIANGLE("triangle");
-
-        private final String str;
-
-        Shape(String str) {
-            this.str = str;
-        }
-
-        static Shape strValueOf(String s) throws IllegalArgumentException {
-            return Arrays.stream(Shape.values())
-                    .filter(shape -> shape.str.contentEquals(s.toLowerCase()))
-                    .findFirst()
-                    .orElse(RECTANGLE);
-        }
-    }
-
     public final int x, y, width, height, rotation;
     public final Function function;
     public final Shape shape;
@@ -62,5 +33,34 @@ public class CourseElement {
                 ", shape='" + shape + '\'' +
                 ", function='" + function + '\'' +
                 '}';
+    }
+
+    public enum Function {
+        SPAWN, HOLE, COURSE, POWERUP, OBSTACLE;
+
+        static Function strValueOf(String s) throws IllegalArgumentException {
+            return Arrays.stream(Function.values())
+                    .filter(func -> func.name().contentEquals(s.toUpperCase()))
+                    .findFirst()
+                    .orElse(OBSTACLE);
+        }
+    }
+
+    public enum Shape {
+        // Use str in case internal representation (enum) diverges from external representation (string in xml)
+        RECTANGLE("rectangle"), ELLIPSE("ellipse"), TRIANGLE("triangle");
+
+        private final String str;
+
+        Shape(String str) {
+            this.str = str;
+        }
+
+        static Shape strValueOf(String s) throws IllegalArgumentException {
+            return Arrays.stream(Shape.values())
+                    .filter(shape -> shape.str.contentEquals(s.toLowerCase()))
+                    .findFirst()
+                    .orElse(RECTANGLE);
+        }
     }
 }

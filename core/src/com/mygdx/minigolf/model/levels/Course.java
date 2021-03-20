@@ -30,46 +30,15 @@ import static com.mygdx.minigolf.model.levels.CourseElement.Function.SPAWN;
  * - - If the shape has been rotated, this is noted in the "rotation=..." attribute
  */
 public class Course {
+    private static final List<Function> requiredFunctions = Arrays.asList(
+            SPAWN, HOLE
+    );
     public final String name;
     public final int width, height;
     private final ArrayList<CourseElement> elements = new ArrayList<>();
 
-    private static final List<Function> requiredFunctions = Arrays.asList(
-            SPAWN, HOLE
-    );
-
-    public void validate() throws IllegalArgumentException {
-        List<CourseElement.Function> elementFunctions = elements.stream().map(e -> e.function).collect(Collectors.toList());
-        if (!elementFunctions.containsAll(requiredFunctions))
-            throw new IllegalArgumentException("Course required functions not satisfied");
-        if (width <= 0 || height <= 0)
-            throw new IllegalArgumentException("Illegal course dimensions");
-        if (elements.stream().anyMatch(ce -> ce.x + ce.width > width || ce.y + ce.height > height))
-            throw new IllegalArgumentException("Course element outside course bounds");
-        elements.forEach(CourseElement::validate);
-    }
-
     protected Course(String filename) {
         this(Gdx.files.internal(CourseLoader.LEVELS_DIR + filename).read(), filename);
-    }
-
-    private static String getRotation(List<String> styles) {
-        return styles.stream()
-                .filter(s -> s.contains("rotation"))
-                .findFirst()
-                .map(s -> s.split("=")[1])
-                .orElse("0");
-    }
-
-    private static Element getCourseNode(Element root) {
-        for (int i = 0; i < root.getChildCount(); i++) {
-            Element node = root.getChild(i);
-            if (node.get("value").startsWith("COURSE")) {
-                root.removeChild(i);
-                return node;
-            }
-        }
-        throw new IllegalArgumentException("No COURSE node found");
     }
 
     protected Course(InputStream data, String filename) {
@@ -85,10 +54,10 @@ public class Course {
 
         // Find and add all course elements
         for (int i = 0; i < root.getChildCount(); i++) {
-            Element cell = (Element) root.getChild(i);
-            if (cell.getChildCount() > 0) {
-                Element geometry = (Element) cell.getChild(0);
-                List<String> styles = Arrays.asList(cell.getAttribute("style").split(";"));
+            Element node = (Element) root.getChild(i);
+            if (node.getChildCount() > 0) {
+                Element geometry = (Element) node.getChild(0);
+                List<String> styles = Arrays.asList(node.getAttribute("style").split(";"));
                 elements.add(new CourseElement(
                         Integer.parseInt(geometry.get("x", "0")),
                         Integer.parseInt(geometry.get("y", "0")),
@@ -97,10 +66,40 @@ public class Course {
                         Integer.parseInt(getRotation(styles)),
                         // Assumes that shape type is always the first element of the style attribute.
                         CourseElement.Shape.strValueOf(styles.get(0)),
-                        CourseElement.Function.strValueOf(cell.getAttribute("value"))
+                        CourseElement.Function.strValueOf(node.getAttribute("value"))
                 ));
             }
         }
+    }
+
+    private static String getRotation(List<String> styles) {
+        return styles.stream()
+                .filter(s -> s.contains("rotation"))
+                .findFirst()
+                .map(s -> s.split("=")[1])
+                .orElse("0");
+    }
+
+    private static Element getCourseNode(Element root) {
+        for (int i = 0; i < root.getChildCount(); i++) {
+            Element node = root.getChild(i);
+            if (node.hasAttribute("value") && node.getAttribute("value").startsWith("COURSE")) {
+                root.removeChild(i);
+                return node;
+            }
+        }
+        throw new IllegalArgumentException("No COURSE node found");
+    }
+
+    public void validate() throws IllegalArgumentException {
+        List<CourseElement.Function> elementFunctions = elements.stream().map(e -> e.function).collect(Collectors.toList());
+        if (!elementFunctions.containsAll(requiredFunctions))
+            throw new IllegalArgumentException("Course required functions not satisfied");
+        if (width <= 0 || height <= 0)
+            throw new IllegalArgumentException("Illegal course dimensions");
+        if (elements.stream().anyMatch(ce -> ce.x + ce.width > width || ce.y + ce.height > height))
+            throw new IllegalArgumentException("Course element outside course bounds");
+        elements.forEach(CourseElement::validate);
     }
 
     public List<CourseElement> getElements() {
