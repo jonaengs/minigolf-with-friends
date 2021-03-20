@@ -10,6 +10,7 @@ import com.mygdx.minigolf.model.levels.LevelLoader;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -19,18 +20,19 @@ import java.util.stream.Collectors;
 
 import static org.mockito.Mockito.mock;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class LevelLoaderTest extends TestFileLoader {
     LevelLoaderTest() {
         this.dir = "levels/copies/";
     }
 
     @BeforeAll
-    public static void setup() {
+    public void setup() throws InterruptedException {
         HeadlessApplicationConfiguration config = new HeadlessApplicationConfiguration();
-        Gdx.gl = mock(GL20.class);
-        HeadlessGame game = new HeadlessGame();
-        game.create();
-        new HeadlessApplication(game, config);
+        config.renderInterval = 1/30f;
+        new HeadlessApplication(new HeadlessGame(), config);
+        // Game runs in separate thread. Must wait for it to start. Better solution needed.
+        Thread.sleep(1000);
     }
 
     @Test
