@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -77,14 +78,14 @@ public class NetworkController {
                     lobbyID = getId();
                     LobbyController lobby = new LobbyController(socket, comm, lobbyID);
                     lobbies.put(lobbyID, lobby);
-                    new Thread(lobby, "LC" + lobbyID).start();
+                    new Thread(lobby, "Lobby-" + lobbyID).start();
                     System.out.println(tn + " Created lobby " + lobbyID);
                 } else if (data.startsWith("JOIN")) { // FORMAT: "JOIN XXXXXX"
                     lobbyID = Integer.parseInt(data.split(" ")[1]);
                     lobbies.get(lobbyID).addPlayer(socket, comm);
                     System.out.println(tn + " Joined lobby " + lobbyID);
                 }
-                new Thread(comm, "CH" + lobbyID).start();
+                new Thread(comm).start();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -130,7 +131,6 @@ public class NetworkController {
                     System.out.println(tn + " Exiting");
                     recvBuffer.add("EXIT");
                 }
-                e.printStackTrace();
             }
         }
     }
@@ -139,7 +139,7 @@ public class NetworkController {
         final private Map<Socket, CommunicationHandler> comms;
         private final Socket leader;
         final int lobbyID;
-        AtomicBoolean update;
+        AtomicBoolean update = new AtomicBoolean(true);
 
         public LobbyController(Socket leader, CommunicationHandler comm, Integer id) {
             this.leader = leader;
@@ -149,7 +149,6 @@ public class NetworkController {
             synchronized (comm.sendBuffer) {
                 comm.sendBuffer.add(id.toString());
             }
-            update.set(true);
         }
 
         public void addPlayer(Socket player, CommunicationHandler comm) {

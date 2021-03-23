@@ -4,9 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.mygdx.minigolf.server.NetworkController;
-
-import java.io.IOException;
 
 public class Game extends HeadlessGame {
 	SpriteBatch batch;
