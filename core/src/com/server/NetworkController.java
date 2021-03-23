@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
 
 
@@ -62,26 +63,28 @@ public class NetworkController {
 
         @Override
         public void run() {
-            System.out.println("Starting connection handler");
+            String tn = Thread.currentThread().getName();
+            System.out.println(tn + " Starting connection handler");
             try {
                 BufferedReader reader = new BufferedReader(
                         new InputStreamReader((socket.getInputStream()))
                 );
                 String data = reader.readLine();
-                System.out.println("Received data: " + data);
+                System.out.println(tn + " Received data: " + data);
                 CommunicationHandler comm = new CommunicationHandler(socket);
+                int lobbyID = 0;
                 if (data.startsWith("CREATE")) {
-                    int lobbyID = getId();
+                    lobbyID = getId();
                     LobbyController lobby = new LobbyController(socket, comm, lobbyID);
                     lobbies.put(lobbyID, lobby);
-                    new Thread(lobby).start();
-                    System.out.println("Created lobby " + lobbyID);
+                    new Thread(lobby, "LC" + lobbyID).start();
+                    System.out.println(tn + " Created lobby " + lobbyID);
                 } else if (data.startsWith("JOIN")) { // FORMAT: "JOIN XXXXXX"
-                    int lobbyID = Integer.parseInt(data.split(" ")[1]);
+                    lobbyID = Integer.parseInt(data.split(" ")[1]);
                     lobbies.get(lobbyID).addPlayer(socket, comm);
-                    System.out.println("Joined lobby " + lobbyID);
+                    System.out.println(tn + " Joined lobby " + lobbyID);
                 }
-                new Thread(comm).start();
+                new Thread(comm, "CH" + lobbyID).start();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -99,6 +102,7 @@ public class NetworkController {
 
         @Override
         public void run() {
+            String tn = Thread.currentThread().getName();
             String send, recv;
             try {
                 BufferedWriter sendBuf = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
@@ -108,12 +112,14 @@ public class NetworkController {
                         send = sendBuffer.poll();
                     }
                     if (send != null) {
+                        System.out.println(tn + " Sending msg: " + send);
                         sendBuf.write(send + "\n");
                         sendBuf.flush();
                     }
                     recvBuf = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     if (recvBuf.ready()) {
                         recv = recvBuf.readLine();
+                        System.out.println(tn + " Received msg: " + recv);
                         synchronized (recvBuffer) {
                             recvBuffer.add(recv);
                         }
@@ -121,6 +127,7 @@ public class NetworkController {
                 }
             } catch (IOException e) {
                 synchronized (recvBuffer) {
+                    System.out.println(tn + " Exiting");
                     recvBuffer.add("EXIT");
                 }
                 e.printStackTrace();
@@ -132,7 +139,7 @@ public class NetworkController {
         final private Map<Socket, CommunicationHandler> comms;
         private final Socket leader;
         final int lobbyID;
-        boolean update = true;
+        AtomicBoolean update;
 
         public LobbyController(Socket leader, CommunicationHandler comm, Integer id) {
             this.leader = leader;
@@ -142,12 +149,13 @@ public class NetworkController {
             synchronized (comm.sendBuffer) {
                 comm.sendBuffer.add(id.toString());
             }
+            update.set(true);
         }
 
         public void addPlayer(Socket player, CommunicationHandler comm) {
             synchronized (comms) {
                 comms.put(player, comm);
-                update = true;
+                update.set(true);
             }
         }
 
@@ -169,15 +177,16 @@ public class NetworkController {
 
         @Override
         public void run() {
+            String tn = Thread.currentThread().getName();
             while (true) {
-                if (update) {
+                if (update.get()) {
                     broadCastState();
-                    update = false;
+                    update.set(false);
                 }
                 Set<Map.Entry<Socket, CommunicationHandler>> entries;
                 synchronized (comms) {
                     // entrySet reflects map, so shallow-copy to prevent ConcurrentModificationError
-                    entries = new HashMap<Socket, CommunicationHandler>(comms).entrySet();
+                    entries = new HashMap<>(comms).entrySet();
                 }
                 for (Map.Entry<Socket, CommunicationHandler> entry : entries) {
                     Socket player = entry.getKey();
@@ -188,10 +197,10 @@ public class NetworkController {
                             msg = comm.recvBuffer.poll();
                         }
                         if (msg != null) {
-                            System.out.println("msg: " + msg);
+                            System.out.println(tn + " Read msg: " + msg);
                             if (msg.contentEquals("EXIT")) {
                                 comms.remove(player);
-                                update = true;
+                                update.set(true);
                             }
                             else if (msg.contentEquals("START GAME") && player == leader) {
                                 startGame();
