@@ -9,10 +9,6 @@ import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.CircleShape;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
-import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.controller.EntityFactory;
@@ -20,7 +16,6 @@ import com.mygdx.minigolf.model.Effect;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.components.Player;
 import com.mygdx.minigolf.model.components.PowerUpGiver;
-import com.mygdx.minigolf.model.components.PowerUpTaker;
 
 import java.util.List;
 
@@ -35,7 +30,6 @@ public class PowerUpSystem extends EntitySystem {
     private final ComponentMapper<Player> playerMapper = ComponentMapper.getFor(Player.class);
     private final ComponentMapper<Physical> physicalMapper = ComponentMapper.getFor(Physical.class);
     private final ComponentMapper<PowerUpGiver> powerUpGiverMapper = ComponentMapper.getFor(PowerUpGiver.class);
-    private final ComponentMapper<PowerUpTaker> powerUpTakerMapper = ComponentMapper.getFor(PowerUpTaker.class);
 
     PowerUpSystem(Engine engine, EntityFactory ef, World world){
         super();
@@ -52,11 +46,11 @@ public class PowerUpSystem extends EntitySystem {
     }
 
     private void givePowerUp(Entity player, Entity powerUp){
-        powerUpTakerMapper.get(player).addEffect(powerUpGiverMapper.get(powerUp).getPowerup());
+        playerMapper.get(player).addEffect(powerUpGiverMapper.get(powerUp).getPowerup());
     }
 
     private void applyEffectToPlayer(Entity effectApplier, Entity effectReciever){
-        List<Effect> effects = powerUpTakerMapper.get(effectApplier).getEffects();
+        List<Effect> effects = playerMapper.get(effectApplier).getEffects();
         for(Effect effect : effects){
             if (effect == Effect.EXPLODING) {
                 Vector2 collisionVector = physicalMapper.get(effectReciever).getPosition();

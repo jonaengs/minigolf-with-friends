@@ -9,7 +9,6 @@ import com.badlogic.gdx.physics.box2d.Shape;
 public class Physical implements Component {
 
     private Body body;
-    private boolean collidable;
 
     public void setBody(Body body) {
         this.body = body;
@@ -17,14 +16,6 @@ public class Physical implements Component {
 
     public Body getBody() {
         return this.body;
-    }
-
-    public boolean isCollidable() {
-        return collidable;
-    }
-
-    public void setCollidable(boolean collidable) {
-        this.collidable = collidable;
     }
 
     public Vector2 getPosition() {

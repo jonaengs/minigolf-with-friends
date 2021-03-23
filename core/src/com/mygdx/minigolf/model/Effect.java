@@ -24,14 +24,15 @@ enum Constraint {
 }
 
 public enum Effect {
+    // The exploding effect can be attained by a player and used to send another player back to spawn on collision
     EXPLODING(Constraint.USES),
+    // The no_collision effect makes the player unable to colloide with anything expect world bounderies
     NO_COLLISION(Constraint.STROKES);
 
     private final Constraint constraint;
 
     Effect(Constraint constraint){
         this.constraint = constraint;
-
     }
 
     public void setConstraintAmount(int i){
