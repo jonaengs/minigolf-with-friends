@@ -1,19 +1,12 @@
 package com.server;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
@@ -56,6 +49,18 @@ public class NetworkController {
         }
     }
 
+    // Attempt at creating non-blocking readLine.
+    // Possible that this will return incomplete data?
+    private static String readData(BufferedInputStream in) throws IOException {
+        StringBuilder data = new StringBuilder();
+        while (in.available() > 0) {
+            char c = (char) in.read();
+            if (c == '\n') break;
+            else data.append(c);
+        }
+        return data.toString();
+    }
+
     private static class ConnectionHandler implements Runnable {
         Socket socket;
         public ConnectionHandler(Socket s) {
@@ -67,21 +72,18 @@ public class NetworkController {
             String tn = Thread.currentThread().getName();
             System.out.println(tn + " Starting connection handler");
             try {
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader((socket.getInputStream()))
-                );
-                String data = reader.readLine();
+                BufferedInputStream in = new BufferedInputStream((socket.getInputStream()));
+                String data = readData(in);
                 System.out.println(tn + " Received data: " + data);
                 CommunicationHandler comm = new CommunicationHandler(socket);
-                int lobbyID = 0;
                 if (data.startsWith("CREATE")) {
-                    lobbyID = getId();
+                    int lobbyID = getId();
                     LobbyController lobby = new LobbyController(socket, comm, lobbyID);
                     lobbies.put(lobbyID, lobby);
                     new Thread(lobby, "Lobby-" + lobbyID).start();
                     System.out.println(tn + " Created lobby " + lobbyID);
                 } else if (data.startsWith("JOIN")) { // FORMAT: "JOIN XXXXXX"
-                    lobbyID = Integer.parseInt(data.split(" ")[1]);
+                    int lobbyID = Integer.parseInt(data.split(" ")[1]);
                     lobbies.get(lobbyID).addPlayer(socket, comm);
                     System.out.println(tn + " Joined lobby " + lobbyID);
                 }
@@ -106,20 +108,19 @@ public class NetworkController {
             String tn = Thread.currentThread().getName();
             String send, recv;
             try {
-                BufferedWriter sendBuf = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-                BufferedReader recvBuf;
+                BufferedWriter outData = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+                BufferedInputStream inData = new BufferedInputStream(socket.getInputStream());
                 while (socket.isConnected()) {
                     synchronized (sendBuffer) {
                         send = sendBuffer.poll();
                     }
                     if (send != null) {
                         System.out.println(tn + " Sending msg: " + send);
-                        sendBuf.write(send + "\n");
-                        sendBuf.flush();
+                        outData.write(send + "\n");
+                        outData.flush();
                     }
-                    recvBuf = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    if (recvBuf.ready()) {
-                        recv = recvBuf.readLine();
+                    if (inData.available() > 0) {
+                        recv = readData(inData);
                         System.out.println(tn + " Received msg: " + recv);
                         synchronized (recvBuffer) {
                             recvBuffer.add(recv);
@@ -127,8 +128,8 @@ public class NetworkController {
                     }
                 }
             } catch (IOException e) {
+                System.out.println(tn + " Exiting");
                 synchronized (recvBuffer) {
-                    System.out.println(tn + " Exiting");
                     recvBuffer.add("EXIT");
                 }
             }
@@ -198,6 +199,7 @@ public class NetworkController {
                         if (msg != null) {
                             System.out.println(tn + " Read msg: " + msg);
                             if (msg.contentEquals("EXIT")) {
+                                System.out.println(tn + " Removing player: " + player.toString());
                                 comms.remove(player);
                                 update.set(true);
                             }

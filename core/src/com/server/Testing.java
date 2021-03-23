@@ -3,13 +3,10 @@ package com.server;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.CharBuffer;
-import java.util.stream.Collectors;
+
 
 public class Testing {
 
@@ -24,50 +21,69 @@ public class Testing {
         netController.start();
         Thread.sleep(2000);
 
-        Socket leader = new Socket("localhost", 8888);
-        sendMsg("CREATE", leader);
-        String LobbyID = rcv(leader);
-        printRcv(leader);
+        Client leader = new Client();
+        leader.send("CREATE");
+        String lobbyID = leader.rcv();
+        leader.printRcv();
 
-        Socket follower1 = new Socket("localhost", 8888);
-        sendMsg("JOIN " + LobbyID, follower1);
+        Client follower1 = new Client();
+        follower1.send("JOIN " + lobbyID);
 
-        Socket follower2 = new Socket("localhost", 8888);
-        sendMsg("JOIN " + LobbyID, follower2);
+        Client follower2 = new Client();
+        follower2.send("JOIN " + lobbyID);
 
-        rcv(follower1);
+        Thread.sleep(3000);
         follower1.close();
-        sendMsg("START GAME", leader);
+        follower2.close();
 
+        Client follower3 = new Client();
+        follower3.send("JOIN " + lobbyID);
 
         netController.join();
     }
 
-    private static void sendMsg(String msg, Socket socket) throws IOException {
-        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        out.write(msg + "\n");
-        out.flush();
+    static class Client {
+        Socket socket;
+        BufferedWriter out;
+        BufferedReader in;
+
+        public Client() throws IOException {
+            this("localhost", 8888);
+        }
+
+        public Client(String url, int port) throws IOException {
+            socket = new Socket(url, port);
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+        }
+
+        public void send(String msg) throws IOException {
+            System.out.println("Client send: " + msg);
+            out.write(msg + "\n");
+            out.flush();
+        }
+
+        public String rcv() throws IOException {
+            return in.readLine();
+        }
+
+        public void close() throws IOException {
+            in.close();
+            out.close();
+            socket.close();
+        }
+
+        public void printRcv() {
+            new Thread(() -> {
+                while (true) {
+                    try {
+                        System.out.println("Client rcv: " + rcv());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+        }
     }
 
-    private static String rcv(Socket socket) throws IOException {
-        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        return in.readLine();
-    }
-
-    private static void printRcv(Socket socket) throws IOException {
-        new Thread(() -> {
-            try {
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                String line;
-                do {
-                    line = in.readLine();
-                    System.out.println("Client received: " + line);
-                } while (line != null && !line.isEmpty());
-                System.out.println("Client read finished");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }).start();
-
-    }
 }
