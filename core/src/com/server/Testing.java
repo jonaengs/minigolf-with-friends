@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 
 
+
 public class Testing {
 
     public static void main(String... args) throws IOException, InterruptedException {
@@ -19,6 +20,7 @@ public class Testing {
             }
         });
         netController.start();
+        System.out.println(Thread.activeCount());
         Thread.sleep(2000);
 
         Client leader = new Client();
@@ -32,12 +34,14 @@ public class Testing {
         Client follower2 = new Client();
         follower2.send("JOIN " + lobbyID);
 
-        Thread.sleep(3000);
-        follower1.close();
-        follower2.close();
-
         Client follower3 = new Client();
         follower3.send("JOIN " + lobbyID);
+
+        System.out.println(Thread.activeCount());
+        Thread.sleep(3000);
+        leader.close();
+        Thread.sleep(6000);
+        System.out.println(Thread.activeCount());
 
         netController.join();
     }
@@ -68,8 +72,6 @@ public class Testing {
         }
 
         public void close() throws IOException {
-            in.close();
-            out.close();
             socket.close();
         }
 
@@ -79,9 +81,10 @@ public class Testing {
                     try {
                         System.out.println("Client rcv: " + rcv());
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        break;
                     }
                 }
+                System.out.println("Printer exiting...");
             }).start();
         }
     }
