@@ -7,7 +7,6 @@ import com.badlogic.ashley.systems.SortedIteratingSystem;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
@@ -28,7 +27,6 @@ public class GraphicsSystem extends SortedIteratingSystem {
 
     private final OrthographicCamera cam = new OrthographicCamera(FRUSTUM_WIDTH, FRUSTUM_HEIGHT);
 
-    private final SpriteBatch batch;
     private final Array<Entity> renderQueue = new Array<>(); // A sorted array of entities based on level
     private final Comparator<Entity> comparator = new LayerComparator(); // A comparator to sort entities based on their level
 
@@ -38,10 +36,9 @@ public class GraphicsSystem extends SortedIteratingSystem {
     // A shape renderer used for testing purpose (not using textures)
     private final ShapeRenderer shapeRenderer = new ShapeRenderer();
 
-    public GraphicsSystem(SpriteBatch batch) {
+    public GraphicsSystem() {
         super(Family.all(Physical.class, Graphical.class).get(), new LayerComparator());
 
-        this.batch = batch;
         cam.position.set(FRUSTUM_WIDTH / 2f, FRUSTUM_HEIGHT / 2f, 0);
     }
 
@@ -90,38 +87,6 @@ public class GraphicsSystem extends SortedIteratingSystem {
         }
 
         shapeRenderer.end();
-
-        /*
-        // Render textures
-        batch.setProjectionMatrix(cam.combined);
-        batch.enableBlending();
-        batch.begin();
-
-        for (Entity entity : renderQueue) {
-            Physical physical = physicalMapper.get(entity);
-            Graphical graphical = graphicalMapper.get(entity);
-
-            if (graphical.getTexture() == null) {
-                continue;
-            }
-
-            float width = graphical.getTexture().getRegionWidth();
-            float height = graphical.getTexture().getRegionHeight();
-
-            float originX = width / 2f;
-            float originY = height / 2f;
-
-            batch.draw(
-                    graphical.getTexture(),
-                    physical.getPosition().x - originX,
-                    physical.getPosition().y - originY,
-                    width,
-                    height
-            );
-        }
-
-        batch.end();
-        */
 
         renderQueue.clear();
     }
