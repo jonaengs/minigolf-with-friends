@@ -1,21 +1,16 @@
 package com.mygdx.minigolf;
 
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.ashley.core.Engine;
-import com.mygdx.minigolf.view.screens.MainMenu;
+import com.mygdx.minigolf.view.screens.MainMenuScreen;
 
 public class Game extends com.badlogic.gdx.Game {
     SpriteBatch batch;
     Engine engine;
     Texture img;
 
-    com.badlogic.gdx.Game game;
+    public static com.badlogic.gdx.Game game;
 
     public Game() {
         game = this;
@@ -26,12 +21,12 @@ public class Game extends com.badlogic.gdx.Game {
         batch = new SpriteBatch();
         img = new Texture("badlogic.jpg");
         engine = new Engine();
+        game.setScreen(new MainMenuScreen(game));
     }
 
     @Override
     public void render() {
         super.render();
-        game.setScreen(new MainMenu(game));
 
         /*
         Gdx.gl.glClearColor(0, 0, 0, 1);
