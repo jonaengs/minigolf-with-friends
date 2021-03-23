@@ -9,6 +9,8 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.utils.Array;
 import com.mygdx.minigolf.model.components.Graphical;
 import com.mygdx.minigolf.model.components.Physical;
@@ -52,23 +54,38 @@ public class GraphicsSystem extends SortedIteratingSystem {
 
         cam.update();
 
-        // Render shapes (for testing purposes)
+        // Render shapes
         shapeRenderer.setProjectionMatrix(cam.combined);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setAutoShapeType(true);
+        shapeRenderer.begin();
+        shapeRenderer.setColor(Color.WHITE);
 
         for (Entity entity : renderQueue) {
             Physical physical = physicalMapper.get(entity);
-            Graphical graphical = graphicalMapper.get(entity);
 
             switch (physical.getShape().getType()) {
                 case Circle:
-                    shapeRenderer.setColor(Color.WHITE);
+                    shapeRenderer.set(ShapeRenderer.ShapeType.Filled);
                     shapeRenderer.circle(physical.getPosition().x, physical.getPosition().y, physical.getShape().getRadius(), 50);
                     break;
                 case Polygon:
-                    shapeRenderer.setColor(Color.GRAY);
-                    // Assuming polygon is a rectangle (as this is just for testing)
-                    shapeRenderer.rect(physical.getPosition().x, physical.getPosition().y, graphical.getWidth(), graphical.getHeight());
+                    shapeRenderer.set(ShapeRenderer.ShapeType.Line);
+                    PolygonShape polygonShape = (PolygonShape) physical.getShape();
+
+                    Vector2 vertex1 = new Vector2();
+                    Vector2 vertex2 = new Vector2();
+
+                    for (int i = 0; i < polygonShape.getVertexCount(); i++) {
+                        polygonShape.getVertex(i, vertex1);
+                        if (i == 0) {
+                            polygonShape.getVertex(polygonShape.getVertexCount() - 1, vertex2);
+                        } else {
+                            polygonShape.getVertex(i - 1, vertex2);
+                        }
+                        vertex1.add(physical.getPosition());
+                        vertex2.add(physical.getPosition());
+                        shapeRenderer.line(vertex2, vertex1);
+                    }
             }
         }
 
@@ -114,4 +131,7 @@ public class GraphicsSystem extends SortedIteratingSystem {
         renderQueue.add(entity);
     }
 
+    public OrthographicCamera getCam() {
+        return cam;
+    }
 }
