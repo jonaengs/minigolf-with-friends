@@ -22,6 +22,7 @@ import com.mygdx.minigolf.model.components.Physical;
 public class Game extends ApplicationAdapter {
 
     private World world;
+    public static final Vector2 spawnPosition = new Vector2(0,0);
 
     private SpriteBatch batch;
     private Engine engine;

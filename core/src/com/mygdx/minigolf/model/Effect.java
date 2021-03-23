@@ -31,6 +31,7 @@ public enum Effect {
 
     Effect(Constraint constraint){
         this.constraint = constraint;
+
     }
 
     public void setConstraintAmount(int i){

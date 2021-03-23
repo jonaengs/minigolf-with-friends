@@ -21,7 +21,8 @@ public class EntityFactory {
         OBSTACLE(Physical.class, Graphical.class),
         POWERUP(Physical.class, Graphical.class, PowerUpGiver.class),
         SPAWN(Physical.class),
-        SURFACE(Physical.class, Graphical.class);
+        SURFACE(Physical.class, Graphical.class),
+        PARTICLE(Physical.class, Graphical.class);
 
         public final List<Class<? extends Component>> components;
 

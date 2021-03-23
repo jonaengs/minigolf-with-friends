@@ -16,10 +16,13 @@ public class PowerUpTaker implements Component {
         effects.add(effect);
     }
 
+    public List<Effect> getEffects() { return this.effects; }
+
     public void removeEffect(Effect effect){
         effects.remove(effect);
     }
 
+    //Kanskje skummelt å la poweruptakers endre constraint amount på effects de har fått?
     public void setEffectConstraintAmount(Effect effect, int amount){
         effects.get(effects.indexOf(effect)).setConstraintAmount(amount);
     }

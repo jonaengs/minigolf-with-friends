@@ -31,6 +31,10 @@ public class Physical implements Component {
         return body.getPosition();
     }
 
+    public void setPosition(Vector2 position) {
+        body.getPosition().set(position.x, position.y);
+    }
+
     public Vector2 getVelocity() {
         return this.body.getLinearVelocity();
     }
