@@ -1,17 +1,16 @@
 package com.mygdx.minigolf.model.components;
 
 import com.badlogic.ashley.core.Component;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
-import com.badlogic.gdx.physics.box2d.Shape;
+import com.badlogic.gdx.physics.box2d.Body;
 
 public class Physical implements Component {
 
-    private Vector2 position;
-    private Vector2 velocity;
-    private Shape shape;
-    private BodyType bodyType;
-    private boolean collidable;
+    private Body body;
+    private boolean collidable; // TODO: handle this
+
+    public Physical(Body body) {
+        this.body = body;
+    }
 
     public boolean isCollidable() {
         return collidable;
@@ -21,35 +20,27 @@ public class Physical implements Component {
         this.collidable = collidable;
     }
 
-    public Vector2 getPosition() {
-        return position;
+    public float getBounce() {
+        return this.body.getFixtureList().get(0).getRestitution();
     }
 
-    public void setPosition(Vector2 position) {
-        this.position = position;
+    /**
+     * Set bounce [0, 1].<br>
+     * 1 => 100% bounce, would never stop bouncing on a flat surface.<br>
+     * 0 => No bounce.
+     *
+     * @param bounce Float from 0 to 1.
+     */
+    public void setBounce(float bounce) {
+        this.body.getFixtureList().get(0).setRestitution(bounce);
     }
 
-    public Vector2 getVelocity() {
-        return velocity;
+    public Body getBody() {
+        return body;
     }
 
-    public void setVelocity(Vector2 velocity) {
-        this.velocity = velocity;
+    public void setBody(Body body) {
+        this.body = body;
     }
 
-    public Shape getShape() {
-        return shape;
-    }
-
-    public void setShape(Shape shape) {
-        this.shape = shape;
-    }
-
-    public BodyType getBodyType() {
-        return bodyType;
-    }
-
-    public void setBodyType(BodyType bodyType) {
-        this.bodyType = bodyType;
-    }
 }

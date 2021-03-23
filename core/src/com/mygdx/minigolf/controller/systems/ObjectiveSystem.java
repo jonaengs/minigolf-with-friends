@@ -29,14 +29,12 @@ public class ObjectiveSystem extends EntitySystem {
         for (Entity objectiveEntity : objectives) {
             Objective objective = objectiveMapper.get(objectiveEntity);
             for (Entity playerEntity : players) {
-                Vector2 playerPosition = physicalMapper.get(playerEntity).getPosition();
+                Vector2 playerPosition = physicalMapper.get(playerEntity).getBody().getPosition();
                 Player player = playerMapper.get(playerEntity);
                 if (objective.contains(playerPosition) && !player.isCompleted()) {
                     player.complete();
                 }
             }
-
-
         }
     }
 

@@ -4,6 +4,7 @@ import com.badlogic.ashley.core.Component;
 
 
 public class Player implements Component {
+
     private int strokes = 0;
     private boolean completed = false;
 
