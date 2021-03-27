@@ -11,6 +11,7 @@ public class Graphical implements Component {
 
     public Graphical(Sprite sprite, int layer) {
         this.texture = sprite;
+        this.layer = layer;
     }
 
     public Graphical(EntityFactory.Sprite sprite, int layer) {
