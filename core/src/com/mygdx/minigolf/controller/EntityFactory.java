@@ -68,7 +68,7 @@ public class EntityFactory {
         Entity entity = engine.createEntity();
 
         CircleShape shape = new CircleShape();
-        shape.setRadius(1);
+        shape.setRadius(0.15f);
         Physical physical = createPhysical(x, y, shape, BodyDef.BodyType.DynamicBody);
         /*
         Set bounce to 0. This way we can more easily control bounce between the player and other objects.
@@ -77,7 +77,7 @@ public class EntityFactory {
         physical.setBounce(0);
         entity.add(physical);
 
-        entity.add(new Graphical(Sprite.Player));
+        entity.add(new Graphical(Sprite.Player, 0));
 
         if (controllable) {
             // TODO: add input controller
@@ -93,10 +93,10 @@ public class EntityFactory {
         Entity entity = engine.createEntity();
 
         CircleShape shape = new CircleShape();
-        shape.setRadius(1f);
+        shape.setRadius(0.15f);
         entity.add(createPhysical(x, y, shape, BodyDef.BodyType.StaticBody));
 
-        entity.add(new Graphical(Sprite.Hole.sprite));
+        entity.add(new Graphical(Sprite.Hole.sprite, 0));
         entity.add(new Objective());
 
         engine.addEntity(entity);
@@ -110,7 +110,7 @@ public class EntityFactory {
         shape.set(points);
         entity.add(createPhysical(x, y, shape, BodyDef.BodyType.StaticBody));
 
-        entity.add(new Graphical(Sprite.Obstacle.sprite));
+        entity.add(new Graphical(Sprite.Obstacle.sprite, 0));
 
         engine.addEntity(entity);
         return entity;
@@ -123,7 +123,7 @@ public class EntityFactory {
         shape.setRadius(1f);
         entity.add(createPhysical(x, y, shape, BodyDef.BodyType.StaticBody));
 
-        entity.add(new Graphical(Sprite.Powerup));
+        entity.add(new Graphical(Sprite.Powerup, 0));
 
         engine.addEntity(entity);
         return entity;
@@ -151,7 +151,7 @@ public class EntityFactory {
         physical.setCollidable(false);
         entity.add(physical);
 
-        entity.add(new Graphical(sprite));
+        entity.add(new Graphical(sprite, 0));
 
         engine.addEntity(entity);
         return entity;

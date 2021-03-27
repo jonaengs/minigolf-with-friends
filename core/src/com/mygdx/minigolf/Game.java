@@ -4,37 +4,43 @@ import com.badlogic.ashley.core.Engine;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.minigolf.controller.EntityFactory;
+import com.mygdx.minigolf.controller.systems.GraphicsSystem;
 import com.mygdx.minigolf.controller.systems.Physics;
 import com.mygdx.minigolf.controller.systems.PhysicsDebugSystem;
 
 public class Game extends ApplicationAdapter {
 
     Engine engine;
+    World world;
     EntityFactory factory;
 
     @Override
     public void create() {
         engine = new Engine();
-        World world = new World(new Vector2(0, -10), true);
-        OrthographicCamera camera = new OrthographicCamera(200, 200);
+        world = new World(new Vector2(0, -10), true);
+
+        GraphicsSystem graphicsSystem = new GraphicsSystem();
+
+        engine.addSystem(graphicsSystem);
         engine.addSystem(new Physics(world));
-        engine.addSystem(new PhysicsDebugSystem(world, camera));
+        // engine.addSystem(new PhysicsDebugSystem(world, graphicsSystem.getCam()));
+
         factory = new EntityFactory(engine, world);
 
         // --- Start dummy demo code ---
-        factory.createPlayer(50, 50, false);
+        factory.createPlayer(2, 4, false);
 
         Vector2[] triangle = new Vector2[]{
-                new Vector2(5, 5),
-                new Vector2(5, 0),
-                new Vector2(-5, 0),
+                new Vector2(0, 0),
+                new Vector2(2, 0),
+                new Vector2(2, 1),
         };
-        factory.createObstacle(50, -50, triangle);
+        factory.createObstacle(1, 1, triangle);
         // --- End dummy demo code ---
+
     }
 
     @Override

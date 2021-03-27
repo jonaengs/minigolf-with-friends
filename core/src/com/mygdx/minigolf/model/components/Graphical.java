@@ -7,13 +7,15 @@ import com.mygdx.minigolf.controller.EntityFactory;
 public class Graphical implements Component {
 
     private Sprite texture;
+    private int layer;
 
-    public Graphical(Sprite sprite) {
+    public Graphical(Sprite sprite, int layer) {
         this.texture = sprite;
+        this.layer = layer;
     }
 
-    public Graphical(EntityFactory.Sprite sprite) {
-        this(sprite.sprite);
+    public Graphical(EntityFactory.Sprite sprite, int layer) {
+        this(sprite.sprite, layer);
     }
 
     public Sprite getTexture() {
@@ -22,5 +24,13 @@ public class Graphical implements Component {
 
     public void setTexture(Sprite texture) {
         this.texture = texture;
+    }
+
+    public int getLayer() {
+        return layer;
+    }
+
+    public void setLayer(int layer) {
+        this.layer = layer;
     }
 }
