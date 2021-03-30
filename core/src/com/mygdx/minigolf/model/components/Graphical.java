@@ -2,19 +2,27 @@ package com.mygdx.minigolf.model.components;
 
 import com.badlogic.ashley.core.Component;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Vector2;
+import com.mygdx.minigolf.controller.EntityFactory;
 
 public class Graphical implements Component {
 
-    private TextureRegion texture = null;
+    private Sprite texture;
     private int layer;
 
-    public TextureRegion getTexture() {
+    public Graphical(Sprite sprite, int layer) {
+        this.texture = sprite;
+        this.layer = layer;
+    }
+
+    public Graphical(EntityFactory.Sprite sprite, int layer) {
+        this(sprite.sprite, layer);
+    }
+
+    public Sprite getTexture() {
         return texture;
     }
 
-    public void setTexture(TextureRegion texture) {
+    public void setTexture(Sprite texture) {
         this.texture = texture;
     }
 
@@ -22,27 +30,7 @@ public class Graphical implements Component {
         return layer;
     }
 
-    public void setLayer(int level) {
-        this.layer = level;
-    }
-
-    // TEMPORARY (since we are not using textures yet):
-    private float width;
-    private float height;
-
-    public float getWidth() {
-        return width;
-    }
-
-    public void setWidth(float width) {
-        this.width = width;
-    }
-
-    public float getHeight() {
-        return height;
-    }
-
-    public void setHeight(float height) {
-        this.height = height;
+    public void setLayer(int layer) {
+        this.layer = layer;
     }
 }

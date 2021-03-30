@@ -62,12 +62,12 @@ public class PowerUpSystem extends EntitySystem {
     }
 
     private void createExplosionParticle(Vector2 explosionPostion){
-        Entity explosionParticle = entityFactory.createEntity(EntityFactory.EntityType.PARTICLE);
+        //Entity explosionParticle = entityFactory.createEntity(EntityFactory.EntityType.PARTICLE);
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
         bodyDef.position.set(explosionPostion.x, explosionPostion.y);
         Body explosionBody = world.createBody(bodyDef);
-        physicalMapper.get(explosionParticle).setBody(explosionBody);
+        //physicalMapper.get(explosionParticle).setBody(explosionBody);
     }
 
 }
