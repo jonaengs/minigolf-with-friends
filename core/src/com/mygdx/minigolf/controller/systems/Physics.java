@@ -3,6 +3,7 @@ package com.mygdx.minigolf.controller.systems;
 import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.ashley.core.EntityListener;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -19,7 +20,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.StreamSupport;
 
-public class Physics extends IteratingSystem implements ContactListener {
+public class Physics extends IteratingSystem implements ContactListener, EntityListener {
 
     private static final float MAX_STEP_TIME = 1 / 30f;
     private static float accumulator = 0f;
@@ -35,6 +36,7 @@ public class Physics extends IteratingSystem implements ContactListener {
         this.world = world;
         this.engine = engine;
         world.setContactListener(this);
+        engine.addEntityListener(this.getFamily(), this);
     }
 
     @Override
@@ -83,5 +85,14 @@ public class Physics extends IteratingSystem implements ContactListener {
                 .stream(engine.getEntitiesFor(this.getFamily()).spliterator(), true)
                 .filter(e -> mapper.get(e).getBody().equals(body))
                 .findFirst().get());
+    }
+
+    @Override
+    public void entityAdded(Entity entity) {
+    }
+
+    @Override
+    public void entityRemoved(Entity entity) {
+        world.destroyBody(mapper.get(entity).getBody());
     }
 }
