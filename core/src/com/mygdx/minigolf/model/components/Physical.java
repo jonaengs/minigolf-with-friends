@@ -1,16 +1,23 @@
 package com.mygdx.minigolf.model.components;
 
 import com.badlogic.ashley.core.Component;
+import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Shape;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public class Physical implements Component {
 
     private Body body;
-    private boolean collidable; // TODO: handle this
+    private List<ContactListener> contactListeners = new ArrayList<>();
 
     public Physical(Body body) {
         this.body = body;
@@ -26,14 +33,6 @@ public class Physical implements Component {
 
     public Fixture getFixture() {
         return this.body.getFixtureList().get(0);
-    }
-
-    public boolean isCollidable() {
-        return collidable;
-    }
-
-    public void setCollidable(boolean collidable) {
-        this.collidable = collidable;
     }
 
     public float getBounce() {
@@ -89,6 +88,40 @@ public class Physical implements Component {
 
     public void setDensity(float density) {
         this.getFixture().setDensity(density);
+    }
+
+    public void addContactListener(ContactListener listener) {
+        contactListeners.add(listener);
+        contactListeners.sort(Comparator.comparingInt(a -> a.priority));
+    }
+
+    public boolean removeContactListener(ContactListener listener) {
+        return contactListeners.remove(listener);
+    }
+
+    public List<ContactListener> getContactListeners() {
+        return Collections.unmodifiableList(contactListeners);
+    }
+
+    public static class ContactListener {
+
+        public final int priority;
+
+        public ContactListener(int priority) {
+            this.priority = priority;
+        }
+
+        public void beginContact(Entity other, Contact contact) {
+        }
+
+        public void endContact(Entity other, Contact contact) {
+        }
+
+        /**
+         * Called before contact happens. Set contact. Set <code>contact.setEnabled(false);</code> to ignore this contact.
+         */
+        public void ignoreContact(Entity other, Contact contact) {
+        }
     }
 
 }
