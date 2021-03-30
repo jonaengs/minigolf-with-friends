@@ -135,7 +135,6 @@ public class EntityFactory {
         CircleShape shape = new CircleShape();
         shape.setRadius(0.1f);
         Physical physical = createPhysical(x, y, shape, BodyDef.BodyType.StaticBody);
-        physical.setCollidable(false);
         entity.add(physical);
 
         engine.addEntity(entity);
@@ -148,7 +147,6 @@ public class EntityFactory {
         PolygonShape shape = new PolygonShape();
         shape.set(points);
         Physical physical = createPhysical(x, y, shape, BodyDef.BodyType.StaticBody);
-        physical.setCollidable(false);
         entity.add(physical);
 
         entity.add(new Graphical(sprite, 0));
