@@ -1,18 +1,21 @@
 package com.mygdx.minigolf.model.levels;
 
+import com.mygdx.minigolf.controller.systems.GraphicsSystem;
+
 import java.util.Arrays;
 import java.util.stream.Stream;
 
 public class CourseElement {
-    public final int x, y, width, height, rotation;
+    public final float x, y, width, height, rotation;
     public final Function function;
     public final Shape shape;
 
-    protected CourseElement(int x, int y, int width, int height, int rotation, Shape shape, Function function) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
+    // Using GraphicsSystem values here is not exactly good decoupling. Consider moving to somewhere else like LevelLoader
+    protected CourseElement(float x, float y, float width, float height, float rotation, Shape shape, Function function) {
+        this.x = x / GraphicsSystem.PPM;
+        this.y = GraphicsSystem.FRUSTUM_HEIGHT - (y / GraphicsSystem.PPM);
+        this.width = width / GraphicsSystem.PPM;
+        this.height = height / GraphicsSystem.PPM;
         this.rotation = rotation;
         this.shape = shape;
         this.function = function;

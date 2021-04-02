@@ -20,11 +20,11 @@ import java.util.Comparator;
 public class GraphicsSystem extends SortedIteratingSystem {
 
     // Number of pixels per meter
-    private static final float PPM = 32.0f;
+    public static final float PPM = 32.0f;
 
     // Height and width of camera frustum, based off width and height of the screen and pixel per meter ratio
     private static final float FRUSTUM_WIDTH = Gdx.graphics.getWidth() / PPM;
-    private static final float FRUSTUM_HEIGHT = Gdx.graphics.getHeight() / PPM;
+    public static final float FRUSTUM_HEIGHT = Gdx.graphics.getHeight() / PPM;
 
     private final OrthographicCamera cam = new OrthographicCamera(FRUSTUM_WIDTH, FRUSTUM_HEIGHT);
 
