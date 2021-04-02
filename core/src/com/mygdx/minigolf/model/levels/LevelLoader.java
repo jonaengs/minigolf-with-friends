@@ -6,7 +6,6 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.mygdx.minigolf.controller.EntityFactory;
 import com.mygdx.minigolf.controller.systems.GraphicsSystem;
-import com.mygdx.minigolf.model.components.Graphical;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -58,7 +57,7 @@ public class LevelLoader {
             case SPAWN:
                 return factory.createSpawn(elem.x, elem.y);
             case OBSTACLE:
-                return factory.createObstacle(elem.x, elem.y, getShape(elem));
+                return factory.createObstacle(elem.x, elem.y, (PolygonShape) getShape(elem));
             case POWERUP:
                 return factory.createPowerup(elem.x, elem.y);
             default:

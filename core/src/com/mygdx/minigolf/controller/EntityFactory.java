@@ -4,6 +4,7 @@ import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
@@ -23,6 +24,18 @@ public class EntityFactory {
     public final static float DEFAULT_BOUNCE = 0.7f;
     private final Engine engine;
     private final World world;
+
+    static public float[] getVertices(PolygonShape shape) {
+        int nVertices = shape.getVertexCount();
+        float[] vertices = new float[2 * nVertices];
+        Vector2 v = new Vector2();
+        for (int i = 0; i < nVertices; i++) {
+            shape.getVertex(i, v);
+            vertices[2*i] = v.x;
+            vertices[2*i + 1] = v.y;
+        }
+        return vertices;
+    }
 
     public EntityFactory(Engine engine, World world) {
         this.engine = engine;
@@ -68,10 +81,10 @@ public class EntityFactory {
         );
     }
 
-    public Entity createObstacle(float x, float y, Shape shape) {
+    public Entity createObstacle(float x, float y, PolygonShape shape) {
         return createEntity(
                 createPhysical(x, y, shape, BodyDef.BodyType.StaticBody),
-                new Graphical(Sprite.Obstacle, 1)
+                new Graphical(Sprite.Obstacle.color, 1, getVertices(shape))
         );
     }
 
@@ -90,14 +103,14 @@ public class EntityFactory {
         return createEntity(createPhysical(x, y, shape, BodyDef.BodyType.StaticBody));
     }
 
-    public Entity createSurface(float x, float y, Sprite sprite, Shape shape) {
+    public Entity createSurface(float x, float y, Sprite sprite, PolygonShape shape) {
         return createSurface(x, y, sprite, shape, 0);
     }
 
-    public Entity createSurface(float x, float y, Sprite sprite, Shape shape, int layer) {
+    public Entity createSurface(float x, float y, Sprite sprite, PolygonShape shape, int layer) {
         return createEntity(
                 createPhysical(x, y, shape, BodyDef.BodyType.StaticBody),
-                new Graphical(sprite, layer)
+                new Graphical(sprite.color, layer, getVertices(shape))
         );
     }
 

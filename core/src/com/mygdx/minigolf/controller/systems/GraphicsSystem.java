@@ -4,17 +4,10 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.SortedIteratingSystem;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.PolygonRegion;
-import com.badlogic.gdx.graphics.g2d.PolygonRegionLoader;
-import com.badlogic.gdx.graphics.g2d.PolygonSprite;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.mygdx.minigolf.controller.ComponentMappers.GraphicalMapper;
 import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
@@ -40,6 +33,7 @@ public class GraphicsSystem extends SortedIteratingSystem {
 
     // A shape renderer used for testing purpose (not using textures)
     private final ShapeRenderer shapeRenderer = new ShapeRenderer();
+    private final PolygonSpriteBatch polygonSpriteBatch = new PolygonSpriteBatch();
 
     public GraphicsSystem() {
         super(Family.all(Physical.class, Graphical.class).get(), new LayerComparator());
@@ -60,6 +54,8 @@ public class GraphicsSystem extends SortedIteratingSystem {
         shapeRenderer.setProjectionMatrix(cam.combined);
         shapeRenderer.setAutoShapeType(true);
         shapeRenderer.begin();
+        polygonSpriteBatch.setProjectionMatrix(cam.combined);
+        polygonSpriteBatch.begin();
 
         for (Entity entity : renderQueue) {
             Physical physical = PhysicalMapper.get(entity);
@@ -70,22 +66,13 @@ public class GraphicsSystem extends SortedIteratingSystem {
                     shapeRenderer.circle(physical.getPosition().x, physical.getPosition().y, physical.getShape().getRadius(), 50);
                     break;
                 case Polygon:
-                    PolygonShape polygonShape = (PolygonShape) physical.getShape();
-                    float[] vertices = new float[2 * polygonShape.getVertexCount()];
-                    Vector2 v = new Vector2(), position = physical.getPosition();
-                    for (int i = 0; i < polygonShape.getVertexCount(); i++) {
-                        polygonShape.getVertex(i, v);
-                        v.add(position);
-                        vertices[2*i] = v.x;
-                        vertices[2*i + 1] = v.y;
-                    }
-                    shapeRenderer.polygon(vertices);
-                    break;
+                    polygonSpriteBatch.draw(GraphicalMapper.get(entity).polygonRegion, physical.getPosition().x, physical.getPosition().y);
             }
         }
 
         shapeRenderer.end();
-        renderQueue.clear(); // why?
+        polygonSpriteBatch.end();
+        renderQueue.clear();
     }
 
     @Override
