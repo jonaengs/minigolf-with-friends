@@ -23,7 +23,7 @@ public class Game extends HeadlessGame {
 
     @Override
     public void render() {
-        Gdx.gl.glClearColor(0f, 0f, 0f, 1);
+        Gdx.gl.glClearColor(0.5f, 0.4f, 0.6f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         engine.update(Gdx.graphics.getDeltaTime()); // TODO: Move stuff to GameView

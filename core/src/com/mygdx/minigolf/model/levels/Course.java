@@ -60,7 +60,7 @@ public class Course {
                 List<String> styles = Arrays.asList(node.getAttribute("style").split(";"));
                 elements.add(new CourseElement(
                         Integer.parseInt(geometry.get("x", "0")),
-                        Integer.parseInt(geometry.get("y", "0")),
+                        height - Integer.parseInt(geometry.get("y", "0")), // ugly af
                         Integer.parseInt(geometry.get("width")),
                         Integer.parseInt(geometry.get("height")),
                         Integer.parseInt(getRotation(styles)),

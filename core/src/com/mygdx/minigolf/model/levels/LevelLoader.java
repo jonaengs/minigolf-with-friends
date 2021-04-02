@@ -5,6 +5,8 @@ import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.mygdx.minigolf.controller.EntityFactory;
+import com.mygdx.minigolf.controller.systems.GraphicsSystem;
+import com.mygdx.minigolf.model.components.Graphical;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,7 +25,8 @@ public class LevelLoader {
 
     public List<Entity> loadLevel(Course course) {
         List<Entity> entities = course.getElements().stream().map(this::createEntity).collect(Collectors.toList());
-        entities.add(factory.createCourse(course.width, course.height));
+        // again, really ugly
+        entities.add(factory.createCourse(course.width / GraphicsSystem.PPM, course.height / GraphicsSystem.PPM));
         return entities;
     }
 
