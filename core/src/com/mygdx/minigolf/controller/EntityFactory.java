@@ -65,52 +65,35 @@ public class EntityFactory {
     }
 
     public Entity createPlayer(float x, float y, boolean controllable) {
-        Entity entity = engine.createEntity();
-
         CircleShape shape = new CircleShape();
         shape.setRadius(0.15f);
         Physical physical = createPhysical(x, y, shape, BodyDef.BodyType.DynamicBody);
-        /*
-        Set bounce to 0. This way we can more easily control bounce between the player and other objects.
-        E.g. if we set another wall to have 0 bounce, then the player will not bounce at all against it.
-         */
-        physical.setBounce(0);
-        entity.add(physical);
 
-        entity.add(new Graphical(Sprite.Player, 0));
+        /* Set bounce to 0. This way we can more easily control bounce between the player and other objects.
+        E.g. if we set another wall to have 0 bounce, then the player will not bounce at all against it.*/
+        physical.setBounce(0);
 
         if (controllable) {
             // TODO: add input controller
         }
-        entity.add(new Player());
-        entity.add(new PowerUpTaker());
 
-        engine.addEntity(entity);
-        return entity;
+        return createEntity(
+                physical,
+                new Graphical(Sprite.Player, 1),
+                new Player(),
+                new PowerUpTaker()
+        );
     }
 
     public Entity createHole(float x, float y) {
-        Entity entity = engine.createEntity();
-
         CircleShape shape = new CircleShape();
         shape.setRadius(0.15f);
-        entity.add(createPhysical(x, y, shape, BodyDef.BodyType.StaticBody));
 
-        entity.add(new Graphical(Sprite.Hole.sprite, 0));
-        entity.add(new Objective());
-
-        engine.addEntity(entity);
-        return entity;
-    }
-
-    public Entity createObstacle(float x, float y, Shape shape) {
-        Entity entity = engine.createEntity();
-
-        entity.add(createPhysical(x, y, shape, BodyDef.BodyType.StaticBody));
-        entity.add(new Graphical(Sprite.Obstacle.sprite, 0));
-
-        engine.addEntity(entity);
-        return entity;
+        return createEntity(
+                createPhysical(x, y, shape, BodyDef.BodyType.StaticBody),
+                new Graphical(Sprite.Hole.sprite, 0),
+                new Objective()
+        );
     }
 
     public Entity createObstacle(float x, float y, Vector2... points) {
@@ -119,42 +102,29 @@ public class EntityFactory {
         return createObstacle(x, y, shape);
     }
 
-    public Entity createPowerup(float x, float y) {
-        Entity entity = engine.createEntity();
+    public Entity createObstacle(float x, float y, Shape shape) {
+        return createEntity(
+                createPhysical(x, y, shape, BodyDef.BodyType.StaticBody),
+                new Graphical(Sprite.Obstacle.sprite, 1)
+        );
+    }
 
+    public Entity createPowerup(float x, float y) {
         Shape shape = new CircleShape();
         shape.setRadius(1f);
-        entity.add(createPhysical(x, y, shape, BodyDef.BodyType.StaticBody));
-
-        entity.add(new Graphical(Sprite.Powerup, 0));
-
-        engine.addEntity(entity);
-        return entity;
+        return createEntity(
+                createPhysical(x, y, shape, BodyDef.BodyType.StaticBody),
+                new Graphical(Sprite.Powerup, 1)
+        );
     }
 
     public Entity createSpawn(float x, float y) {
-        Entity entity = engine.createEntity();
-
         CircleShape shape = new CircleShape();
         shape.setRadius(0.1f);
-        Physical physical = createPhysical(x, y, shape, BodyDef.BodyType.StaticBody);
-        entity.add(physical);
 
-        engine.addEntity(entity);
-        return entity;
+        return createEntity(createPhysical(x, y, shape, BodyDef.BodyType.StaticBody));
     }
 
-    public Entity createSurface(float x, float y, Sprite sprite, Shape shape) {
-        Entity entity = engine.createEntity();
-
-        Physical physical = createPhysical(x, y, shape, BodyDef.BodyType.StaticBody);
-        entity.add(physical);
-
-        entity.add(new Graphical(sprite, 0));
-
-        engine.addEntity(entity);
-        return entity;
-    }
 
     public Entity createSurface(float x, float y, Sprite sprite, Vector2... points) {
         PolygonShape shape = new PolygonShape();
@@ -162,13 +132,21 @@ public class EntityFactory {
         return createSurface(x, y, sprite, shape);
     }
 
+    public Entity createSurface(float x, float y, Sprite sprite, Shape shape) {
+        return createSurface(x, y, sprite, shape, 0);
+    }
+
+    public Entity createSurface(float x, float y, Sprite sprite, Shape shape, int layer) {
+        return createEntity(
+                createPhysical(x, y, shape, BodyDef.BodyType.StaticBody),
+                new Graphical(sprite, layer)
+        );
+    }
+
     public Entity createCourse(float width, float height) {
-        Entity entity = engine.createEntity();
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(width, height);
-        entity.add(createPhysical(0, 0, shape, BodyDef.BodyType.StaticBody));
-        entity.add(new Graphical(Sprite.SurfaceA, 0));
-        return createSurface(0, 0, Sprite.SurfaceA, new Vector2(width, 0), new Vector2(width, height), new Vector2(0, height));
+        return createSurface(0, 0, Sprite.SurfaceA, shape, -1);
     }
 
     private Physical createPhysical(float x, float y, Shape shape, BodyDef.BodyType type) {

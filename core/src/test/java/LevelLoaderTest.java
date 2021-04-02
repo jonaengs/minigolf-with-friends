@@ -26,11 +26,15 @@ public class LevelLoaderTest extends TestFileLoader {
         this.dir = "levels/copies/";
     }
 
+    HeadlessGame game;
+
     @BeforeAll
     public void setup() throws InterruptedException {
         HeadlessApplicationConfiguration config = new HeadlessApplicationConfiguration();
-        config.renderInterval = 1/30f;
-        new HeadlessApplication(new HeadlessGame(), config);
+        game = new HeadlessGame();
+
+        // config.renderInterval = 1/30f;
+        new HeadlessApplication(game, config);
         // Game runs in separate thread. Must wait for it to start. Better solution needed.
         Thread.sleep(1000);
     }
@@ -50,7 +54,7 @@ public class LevelLoaderTest extends TestFileLoader {
                                 }
                         )));
         List<List<Entity>> levelsContents = courses.stream()
-                .map(LevelLoader::loadLevel)
+                .map(game.levelLoader::loadLevel)
                 .collect(Collectors.toList());
     }
 }

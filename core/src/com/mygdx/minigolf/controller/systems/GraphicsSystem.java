@@ -1,6 +1,5 @@
 package com.mygdx.minigolf.controller.systems;
 
-import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.SortedIteratingSystem;
@@ -11,6 +10,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.utils.Array;
+import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
+import com.mygdx.minigolf.controller.LayerComparator;
 import com.mygdx.minigolf.model.components.Graphical;
 import com.mygdx.minigolf.model.components.Physical;
 
@@ -28,10 +29,7 @@ public class GraphicsSystem extends SortedIteratingSystem {
     private final OrthographicCamera cam = new OrthographicCamera(FRUSTUM_WIDTH, FRUSTUM_HEIGHT);
 
     private final Array<Entity> renderQueue = new Array<>(); // A sorted array of entities based on level
-    private final Comparator<Entity> comparator = new LayerComparator(); // A comparator to sort entities based on their level
-
-    private final ComponentMapper<Physical> physicalMapper = ComponentMapper.getFor(Physical.class);
-    private final ComponentMapper<Graphical> graphicalMapper = ComponentMapper.getFor(Graphical.class);
+    private final Comparator<Entity> comparator = new com.mygdx.minigolf.controller.LayerComparator(); // A comparator to sort entities based on their level
 
     // A shape renderer used for testing purpose (not using textures)
     private final ShapeRenderer shapeRenderer = new ShapeRenderer();
@@ -58,7 +56,7 @@ public class GraphicsSystem extends SortedIteratingSystem {
         shapeRenderer.setColor(Color.WHITE);
 
         for (Entity entity : renderQueue) {
-            Physical physical = physicalMapper.get(entity);
+            Physical physical = PhysicalMapper.get(entity);
 
             switch (physical.getShape().getType()) {
                 case Circle:
