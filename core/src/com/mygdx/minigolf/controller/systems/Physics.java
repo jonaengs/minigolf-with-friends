@@ -6,12 +6,16 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntityListener;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.joints.FrictionJoint;
+import com.badlogic.gdx.physics.box2d.joints.FrictionJointDef;
 import com.mygdx.minigolf.model.components.Physical;
 
 import java.util.AbstractMap;
@@ -30,6 +34,9 @@ public class Physics extends IteratingSystem implements ContactListener, EntityL
     private ComponentMapper<Physical> mapper = ComponentMapper.getFor(Physical.class);
     private Map<Body, Entity> cache = new HashMap<>();
 
+    // A common friction body to be used by all bodies that want friction
+    public final Body frictionBody;
+
     @SuppressWarnings("unchecked")
     public Physics(World world, Engine engine) {
         super(Family.all(Physical.class).get());
@@ -37,6 +44,7 @@ public class Physics extends IteratingSystem implements ContactListener, EntityL
         this.engine = engine;
         world.setContactListener(this);
         engine.addEntityListener(this.getFamily(), this);
+        this.frictionBody = world.createBody(new BodyDef());
     }
 
     @Override
@@ -52,6 +60,23 @@ public class Physics extends IteratingSystem implements ContactListener, EntityL
 
     @Override
     protected void processEntity(Entity entity, float deltaTime) {
+        Physical physical = mapper.get(entity);
+
+        // Check if a new friction value has been set
+        if (physical != null && physical.getFriction() != physical.getBodyFriction()) {
+            // Destroy old friction joint
+            if (physical.getFrictionJoint() != null) {
+                world.destroyJoint(physical.getFrictionJoint());
+            }
+
+            // Create new friction joint with new friction value
+            FrictionJointDef frictionJointDef = new FrictionJointDef();
+            frictionJointDef.initialize(frictionBody, physical.getBody(), new Vector2(0, 0));
+            frictionJointDef.maxForce = physical.getFriction();
+            FrictionJoint frictionJoint = (FrictionJoint) world.createJoint(frictionJointDef);
+
+            physical.setFrictionJoint(frictionJoint);
+        }
     }
 
     @Override

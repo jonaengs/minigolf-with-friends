@@ -79,6 +79,7 @@ public class EntityFactory {
         E.g. if we set another wall to have 0 bounce, then the player will not bounce at all against it.
          */
         physical.setBounce(0);
+        physical.setFriction(8f);
         entity.add(physical);
 
         entity.add(new Graphical(Sprite.Player, 0));
