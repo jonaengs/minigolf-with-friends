@@ -17,7 +17,7 @@ public class Game extends HeadlessGame {
         engine.addSystem(new GraphicsSystem());
 
         // Test code. Loads a level
-        List<Entity> levelContents = levelLoader.loadLevel(CourseLoader.getCourses().get(0));
+        List<Entity> levelContents = levelLoader.loadLevel(CourseLoader.getCourses().get(1));
         factory.createPlayer(9, 12, false);
     }
 

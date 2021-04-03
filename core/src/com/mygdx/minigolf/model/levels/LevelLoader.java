@@ -24,10 +24,7 @@ public class LevelLoader {
     }
 
     public List<Entity> loadLevel(Course course) {
-        List<Entity> entities = course.getElements().stream().map(this::createEntity).collect(Collectors.toList());
-        // again, really ugly
-        entities.add(factory.createCourse(course.width / GraphicsSystem.PPM, course.height / GraphicsSystem.PPM));
-        return entities;
+        return course.getElements().stream().map(this::createEntity).collect(Collectors.toList());
     }
 
     static private Shape getShape(CourseElement elem) {
@@ -61,6 +58,8 @@ public class LevelLoader {
                 return factory.createObstacle(elem.x, elem.y, getShape(elem));
             case POWERUP:
                 return factory.createPowerup(elem.x, elem.y);
+            case COURSE:
+                return factory.createCourse(elem.x, elem.y);
             default:
                 throw new IllegalArgumentException("Illegal course element function");
         }

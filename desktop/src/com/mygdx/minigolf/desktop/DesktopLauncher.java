@@ -27,8 +27,10 @@ public class DesktopLauncher {
 			System.out.println("SERVER UP!");
 		} else {
 			LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-			config.x = 500;
-			config.y = 200;
+			config.x = 100;
+			config.y = 100;
+			config.width = 1280;
+			config.height = 720;
 			new LwjglApplication(new Game(), config);
 		}
 	}

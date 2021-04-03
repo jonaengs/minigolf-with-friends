@@ -32,14 +32,8 @@ public class CourseTest extends TestFileLoader {
 
     @Test
     void missingCourseElementFailsValidate() throws IOException {
-        assertThrows(IllegalArgumentException.class, () -> getCourse("missing_course.xml"));
-    }
-
-    @Test
-    void negativeCourseDimensionsFailValidate() throws IOException {
-        Course course = getCourse("invalid_course_dims.xml");
-        Exception e = assertThrows(IllegalArgumentException.class, course::validate);
-        assertEquals("Illegal course dimensions", e.getMessage());
+        Course course = getCourse("missing_course.xml");
+        assertThrows(IllegalArgumentException.class, course::validate);
     }
 
     @Test
@@ -53,7 +47,7 @@ public class CourseTest extends TestFileLoader {
     void invalidCoursElementsFailValidate() throws IOException {
         Course course = getCourse("illegal_element_position.xml");
         Exception e = assertThrows(IllegalArgumentException.class, course::validate);
-        assertEquals("Negative size or position", e.getMessage());
+        assertEquals("Element has negative size or position", e.getMessage());
     }
 
     @Test

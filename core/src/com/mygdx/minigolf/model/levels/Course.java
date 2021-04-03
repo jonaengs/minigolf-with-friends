@@ -3,6 +3,7 @@ package com.mygdx.minigolf.model.levels;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.XmlReader;
 import com.badlogic.gdx.utils.XmlReader.Element;
+import com.mygdx.minigolf.controller.systems.GraphicsSystem;
 import com.mygdx.minigolf.model.levels.CourseElement.Function;
 
 import java.io.InputStream;
@@ -12,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.mygdx.minigolf.model.levels.CourseElement.Function.COURSE;
 import static com.mygdx.minigolf.model.levels.CourseElement.Function.HOLE;
 import static com.mygdx.minigolf.model.levels.CourseElement.Function.SPAWN;
 
@@ -31,11 +33,12 @@ import static com.mygdx.minigolf.model.levels.CourseElement.Function.SPAWN;
  */
 public class Course {
     private static final List<Function> requiredFunctions = Arrays.asList(
-            SPAWN, HOLE
+            SPAWN, HOLE, COURSE
     );
-    public final String name;
-    public final int width, height;
     private final ArrayList<CourseElement> elements = new ArrayList<>();
+
+    public static final int WIDTH = 1280;
+    public static final int HEIGHT = 720;
 
     protected Course(String filename) {
         this(Gdx.files.internal(CourseLoader.LEVELS_DIR + filename).read(), filename);
@@ -43,27 +46,17 @@ public class Course {
 
     protected Course(InputStream data, String filename) {
         Element root = new XmlReader().parse(data).getChildByNameRecursive("root");  // closes InputStream
-
-        // Setup the course itself
-        Element courseNode = getCourseNode(root);
-        Element courseGeometry = courseNode.getChild(0);
-        String[] split = courseNode.get("value").split(" ", 2);
-        name = split.length == 2 ? split[1] : filename.split("\\.")[0];
-        width = Integer.parseInt(courseGeometry.getAttribute("width"));
-        height = Integer.parseInt(courseGeometry.getAttribute("height"));
-
-        // Find and add all course elements
         for (int i = 0; i < root.getChildCount(); i++) {
-            Element node = (Element) root.getChild(i);
-            if (node.getChildCount() > 0) {
-                Element geometry = (Element) node.getChild(0);
+            Element node = root.getChild(i);
+            if (node.getChildCount() > 0 && !node.getAttribute("value").contentEquals("BACKGROUND")) {
+                Element geometry = node.getChild(0);
                 List<String> styles = Arrays.asList(node.getAttribute("style").split(";"));
                 elements.add(new CourseElement(
-                        Integer.parseInt(geometry.get("x", "0")),
-                        height - Integer.parseInt(geometry.get("y", "0")), // ugly af
-                        Integer.parseInt(geometry.get("width")),
-                        Integer.parseInt(geometry.get("height")),
-                        Integer.parseInt(getRotation(styles)),
+                        Float.parseFloat(geometry.get("x", "0")),
+                        Float.parseFloat(geometry.get("y", "0")),
+                        Float.parseFloat(geometry.get("width")),
+                        Float.parseFloat(geometry.get("height")),
+                        Float.parseFloat(getRotation(styles)),
                         // Assumes that shape type is always the first element of the style attribute.
                         CourseElement.Shape.strValueOf(styles.get(0)),
                         CourseElement.Function.strValueOf(node.getAttribute("value"))
@@ -80,40 +73,17 @@ public class Course {
                 .orElse("0");
     }
 
-    private static Element getCourseNode(Element root) {
-        for (int i = 0; i < root.getChildCount(); i++) {
-            Element node = root.getChild(i);
-            if (node.hasAttribute("value") && node.getAttribute("value").startsWith("COURSE")) {
-                root.removeChild(i);
-                return node;
-            }
-        }
-        throw new IllegalArgumentException("No COURSE node found");
-    }
-
     public void validate() throws IllegalArgumentException {
+        float scaledWidth = WIDTH / GraphicsSystem.PPM, scaledHeight = HEIGHT / GraphicsSystem.PPM;
         List<CourseElement.Function> elementFunctions = elements.stream().map(e -> e.function).collect(Collectors.toList());
         if (!elementFunctions.containsAll(requiredFunctions))
             throw new IllegalArgumentException("Course required functions not satisfied");
-        if (width <= 0 || height <= 0)
-            throw new IllegalArgumentException("Illegal course dimensions");
-        if (elements.stream().anyMatch(ce -> ce.x + ce.width > width || ce.y + ce.height > height))
+        if (elements.stream().peek(System.out::println).anyMatch(ce -> ce.x + ce.width > scaledWidth || ce.y + ce.height > scaledHeight))
             throw new IllegalArgumentException("Course element outside course bounds");
         elements.forEach(CourseElement::validate);
     }
 
     public List<CourseElement> getElements() {
         return Collections.unmodifiableList(elements);
-    }
-
-    public String toString() {
-        return "Course " + name + " {" +
-                "width=" + width +
-                ", height=" + height +
-                // String.join requires API level 26...
-                ", elements=" + elements.stream()
-                .map(e -> "\n\t" + e)
-                .collect(Collectors.joining()) + "\n" +
-                '}';
     }
 }

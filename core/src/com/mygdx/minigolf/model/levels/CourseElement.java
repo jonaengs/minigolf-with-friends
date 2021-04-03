@@ -23,7 +23,7 @@ public class CourseElement {
 
     public void validate() {
         if (Stream.of(x, y, width, height).anyMatch(i -> i < 0))
-            throw new IllegalArgumentException("Negative size or position");
+            throw new IllegalArgumentException("Element has negative size or position");
     }
 
     public String toString() {

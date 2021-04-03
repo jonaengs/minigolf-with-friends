@@ -14,7 +14,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.mygdx.minigolf.controller.ComponentMappers.GraphicalMapper;
 import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
@@ -85,7 +84,7 @@ public class GraphicsSystem extends SortedIteratingSystem {
         }
 
         shapeRenderer.end();
-        renderQueue.clear(); // why?
+        renderQueue.clear();
     }
 
     @Override
