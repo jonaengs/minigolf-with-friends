@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
@@ -97,12 +98,34 @@ public class ScreenController {
         });
     }
 
+    public void newGame(TextButton start, final Game parent) {
+        start.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                // Go to game actual game
+            }
+        });
+    }
+
     public void joinGame(TextButton join, final TextField code, final Game parent) {
         join.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 // Join lobby, access text in textfield
                 // code.getText();
+            }
+        });
+    }
+
+    public void settings(final CheckBox volume, final Game parent) {
+        volume.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if(volume.isChecked()) {
+                    com.mygdx.minigolf.Game.music.play();
+                } else {
+                    com.mygdx.minigolf.Game.music.pause();
+                }
             }
         });
     }

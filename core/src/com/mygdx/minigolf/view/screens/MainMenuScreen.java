@@ -20,10 +20,6 @@ public class MainMenuScreen implements Screen {
     private Stage stage;
     private ScreenController controller;
 
-    TextButton newGame;
-    TextButton joinGame;
-    TextButton settings;
-    TextButton tutorial;
 
     public MainMenuScreen(Game game) {
         this.parent = game;
@@ -45,10 +41,10 @@ public class MainMenuScreen implements Screen {
         Skin skin = new Skin(Gdx.files.internal("skin/vhs-ui.json"));
 
         // Creating elements
-        newGame = new TextButton("New Game", skin);
-        joinGame = new TextButton("Join Game", skin);
-        settings = new TextButton("Settings", skin);
-        tutorial = new TextButton("Tutorial", skin);
+        TextButton newGame = new TextButton("New Game", skin);
+        TextButton joinGame = new TextButton("Join Game", skin);
+        TextButton settings = new TextButton("Settings", skin);
+        TextButton tutorial = new TextButton("Tutorial", skin);
 
         ArrayList<TextButton> buttons = new ArrayList<>();
         buttons.add(newGame);
@@ -56,13 +52,14 @@ public class MainMenuScreen implements Screen {
         buttons.add(settings);
         buttons.add(tutorial);
 
-
+        // Transform actors
         for(TextButton btn : buttons) {
             btn.setTransform(true);
             btn.scaleBy(1f);
             btn.setOrigin(Align.center);
         }
 
+        // Add actors to table
         table.add(newGame).expand();
         table.row().pad(30, 0, 30, 0).expand();
         table.add(joinGame).expand();

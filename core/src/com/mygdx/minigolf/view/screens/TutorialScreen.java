@@ -35,9 +35,17 @@ public class TutorialScreen implements Screen {
 
         Skin skin = new Skin(Gdx.files.internal("skin/vhs-ui.json"));
 
+        // Creating actors
         Label label = new Label("Tutorial", skin);
+        Label text = new Label("Insert tutorial text?", skin);
 
+        // Transform actors
+        label.setFontScale(3f);
+
+        // Adding actors to table
         table.add(label);
+        table.row().pad(60f, 0, 0, 0);
+        table.add(text);
     }
 
     @Override

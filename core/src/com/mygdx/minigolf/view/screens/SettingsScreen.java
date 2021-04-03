@@ -5,9 +5,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.minigolf.controller.screenControllers.ScreenController;
@@ -38,14 +38,22 @@ public class SettingsScreen implements Screen {
 
         // Creating actors
         Label label = new Label("Settings", skin);
-        Slider volume = new Slider(0, 100, 1, false, skin);
+        Label volume_text = new Label("Volume: ", skin);
+        CheckBox volume = new CheckBox("Music ON/OFF", skin);
 
 
-        // Adding actors
+        // Transform actors
+        label.setFontScale(3f);
+        volume_text.setFontScale(2f);
+        volume.setScale(1f);
+
+        // Adding actors to table
         table.add(label);
         table.row().pad(30, 0, 60, 0);
+        table.add(volume_text);
         table.add(volume);
 
+        controller.settings(volume, parent);
     }
 
     @Override

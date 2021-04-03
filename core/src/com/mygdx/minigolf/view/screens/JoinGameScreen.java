@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.minigolf.controller.screenControllers.ScreenController;
 
@@ -41,11 +42,17 @@ public class JoinGameScreen implements Screen {
         TextField code = new TextField("", skin);
         TextButton join = new TextButton("Join", skin);
 
-        table.add(label).fillX().uniform();
-        table.row().pad(60, 0, 0, 0);
-        table.add(code).fillX().uniform();
-        table.row();
-        table.add(join).fillX().uniform();
+        label.setFontScale(3f);
+        code.setScale(2f);
+        join.setTransform(true);
+        join.scaleBy(1f);
+        join.setOrigin(Align.center);
+
+        table.add(label).expandX();
+        table.row().pad(250f, 0, 0, 0);
+        table.add(code).expandX();
+        table.row().pad(100f, 0, 0, 0);
+        table.add(join).expandX();
 
         controller.joinGame(join, code, parent);
     }

@@ -8,6 +8,8 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.minigolf.controller.screenControllers.ScreenController;
 
@@ -35,9 +37,37 @@ public class NewGameScreen implements Screen {
 
         Skin skin = new Skin(Gdx.files.internal("skin/vhs-ui.json"));
 
+        // Creating actors
         Label label = new Label("New Game", skin);
+        Label players_label = new Label("Players", skin);
+        TextButton start = new TextButton("Start", skin);
 
-        table.add(label).fillX().uniform();
+        // Transform actors
+        label.setFontScale(3f);
+        label.setOrigin(Align.center);
+        players_label.setFontScale(2f);
+        players_label.setOrigin(Align.center);
+        start.setTransform(true);
+        start.scaleBy(1f);
+        start.setOrigin(Align.center);
+
+        // Add actors to table
+        table.add(label).expandX();
+        table.row().pad(100f, 0, 40f, 0);
+        table.add(players_label).expandX();
+
+        // For testing purposes
+        Label player;
+        for(int i = 0; i < 4; i++) {
+            player = new Label("Player X", skin);
+            table.row().pad(10f, 0, 10f, 0);
+            table.add(player).expandX();
+        }
+
+        table.row().pad(100f, 0, 0, 0);
+        table.add(start).expandX();
+
+        controller.newGame(start, parent);
     }
 
     @Override
