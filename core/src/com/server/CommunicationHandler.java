@@ -1,7 +1,9 @@
 package com.server;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PushbackInputStream;
 import java.net.Socket;
@@ -16,17 +18,17 @@ class CommunicationHandler implements Runnable {
     final String name;
     final Socket socket;
 
+    public CommunicationHandler(Socket s, String n) {
+        socket = s;
+        name = n;
+    }
+
     public void close() {
         System.out.println(Thread.currentThread().getName() + " told to stop");
         try {
             socket.close();
         } catch (IOException ignored) {
         }
-    }
-
-    public CommunicationHandler(Socket s, String n) {
-        socket = s;
-        name = n;
     }
 
     @Override

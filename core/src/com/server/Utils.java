@@ -12,17 +12,15 @@ public class Utils {
     }
 
     // Attempt at creating non-blocking readLine.
-    // Possible that this will return incomplete data?
+    // Immediately returns empty string if no data available. Otherwise reads until newline.
     public static String readStream(PushbackInputStream in) throws IOException {
-        return readStream(in, true);
-    }
-
-    public static String readStream(PushbackInputStream in, boolean dropNewline) throws IOException {
         StringBuilder data = new StringBuilder();
-        while (in.available() > 0) {
-            char c = (char) in.read();
-            if (dropNewline && c == '\n') break;
-            data.append(c);
+        if (in.available() > 0) {
+            while (true) {
+                char c = (char) in.read();
+                if (c == '\n') break;
+                data.append(c);
+            }
         }
         return data.toString();
     }

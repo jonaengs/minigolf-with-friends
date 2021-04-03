@@ -12,37 +12,41 @@ import java.util.Random;
 public class TestRoutine {
 
     public static void main(String... args) throws IOException, InterruptedException {
-        Thread netController = new Thread(() -> {
+        Thread connectionDelegator = new Thread(() -> {
             try {
                 new ConnectionDelegator().accept();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
-        netController.start();
+        connectionDelegator.start();
         System.out.println(Thread.activeCount());
         Thread.sleep(2000);
 
-        Client leader = new Client();
+        Client leader = new Client("leader");
         String lobbyID = leader.createLobby();
         leader.printRcv();
 
-        Client follower1 = new Client();
+        Client follower1 = new Client("f1");
         follower1.joinLobby(lobbyID);
+        follower1.printRcv();
 
-        Client follower2 = new Client();
+        Client follower2 = new Client("f2");
         follower2.joinLobby(lobbyID);
+        follower2.printRcv();
 
-        Client follower3 = new Client();
+        Client follower3 = new Client("f3");
         follower3.joinLobby(lobbyID);
 
         System.out.println(Thread.activeCount());
-        Thread.sleep(3000);
+        Thread.sleep(5_000);
+        follower1.close();
+        Thread.sleep(5_000);
         leader.close();
-        Thread.sleep(6000);
+        Thread.sleep(5_000);
         System.out.println(Thread.activeCount()); // should equal first value printed
 
-        netController.join();
+        connectionDelegator.join();
     }
 
 

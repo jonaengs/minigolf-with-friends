@@ -3,6 +3,7 @@ package com.server;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -33,12 +34,12 @@ class LobbyController implements Runnable {
         update.set(true);
     }
 
-    private void broadCastState() {
-        String playerSocks;
+    private void broadcastPlayerList() {
+        String playerNames;
         synchronized (comms) {
-            playerSocks = comms.stream().map(comm -> comm.name).collect(toList()).toString();
+            playerNames = comms.stream().map(comm -> comm.name).collect(Collectors.joining(", "));
         }
-        broadcastMsg(playerSocks);
+        broadcastMsg(playerNames);
     }
 
     private List<CommunicationHandler> copyComms() {
@@ -50,9 +51,11 @@ class LobbyController implements Runnable {
     }
 
     private void broadcastMsg(String msg) {
-        for (CommunicationHandler ch : copyComms()) {
-            synchronized (ch.sendBuffer) {
-                ch.sendBuffer.add(msg);
+        synchronized (comms) {
+            for (CommunicationHandler ch : comms) {
+                synchronized (ch.sendBuffer) {
+                    ch.sendBuffer.add(msg);
+                }
             }
         }
     }
@@ -79,27 +82,25 @@ class LobbyController implements Runnable {
                     closeConnections();
                     return;
                 }
-                broadCastState();
+                broadcastPlayerList();
                 update.set(false);
             }
             for (CommunicationHandler comm : copyComms()) {
                 String msg;
-                do {
-                    synchronized (comm.recvBuffer) {
-                        msg = comm.recvBuffer.poll();
+                synchronized (comm.recvBuffer) {
+                    msg = comm.recvBuffer.poll();
+                }
+                if (msg != null) {
+                    System.out.println(tn + " Read msg: " + msg);
+                    if (msg.contentEquals("EXIT")) {
+                        System.out.println(tn + " Removing player: " + comm.socket.toString());
+                        comms.remove(comm);
+                        update.set(true);
+                    } else if (msg.contentEquals("START GAME") && comm == leader) {
+                        startGame();
+                        return;
                     }
-                    if (msg != null) {
-                        System.out.println(tn + " Read msg: " + msg);
-                        if (msg.contentEquals("EXIT")) {
-                            System.out.println(tn + " Removing player: " + comm.socket.toString());
-                            comms.remove(comm);
-                            update.set(true);
-                        } else if (msg.contentEquals("START GAME") && comm == leader) {
-                            startGame();
-                            return;
-                        }
-                    }
-                } while (msg != null);
+                }
             }
         }
     }

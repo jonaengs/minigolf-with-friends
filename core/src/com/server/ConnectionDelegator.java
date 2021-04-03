@@ -1,6 +1,8 @@
 package com.server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PushbackInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -57,24 +59,20 @@ public class ConnectionDelegator {
 
         @Override
         public void run() {
-            String tn = Thread.currentThread().getName();
-            System.out.println(tn + " Starting connection handler");
             try {
-                PushbackInputStream in = new PushbackInputStream((socket.getInputStream()));
-                String data = Utils.readStream(in);
-                System.out.println(tn + " Received data: " + data);
+                PushbackInputStream pbin = new PushbackInputStream((socket.getInputStream()));
+                String data = Utils.readStream(pbin);
                 String name = data.contains("NAME: ") ? data.substring(data.indexOf("NAME: ")) : "";
+                System.out.println("ConnH Received data: " + data + " from: " + name);
                 CommunicationHandler comm = new CommunicationHandler(socket, name);
                 if (data.startsWith("CREATE")) {
                     int lobbyID = getId();
                     LobbyController lobby = new LobbyController(comm, lobbyID);
                     lobbies.put(lobbyID, lobby);
                     new Thread(lobby, "Lobby-" + lobbyID).start();
-                    System.out.println(tn + " Created lobby " + lobbyID);
                 } else if (data.startsWith("JOIN")) { // FORMAT: "JOIN XXXXXX"
                     int lobbyID = Integer.parseInt(data.split(" ")[1]);
                     lobbies.get(lobbyID).addPlayer(comm);
-                    System.out.println(tn + " Joined lobby " + lobbyID);
                 }
                 new Thread(comm).start();
             } catch (IOException e) {

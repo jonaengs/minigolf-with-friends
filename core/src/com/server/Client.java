@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PushbackInputStream;
 import java.net.Socket;
 import java.util.Random;
 
@@ -13,6 +14,7 @@ class Client {
 
     Socket socket;
     BufferedWriter out;
+    PushbackInputStream pbin;
     BufferedReader in;
     String name;
 
@@ -20,9 +22,15 @@ class Client {
         this("localhost", 8888);
     }
 
+    public Client(String name) throws IOException {
+        this("localhost", 8888);
+        this.name = name;
+    }
+
     public Client(String url, int port) throws IOException {
         socket = new Socket(url, port);
-        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        pbin = new PushbackInputStream(socket.getInputStream());
+        in = new BufferedReader(new InputStreamReader(pbin));
         out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         name = names[new Random().nextInt(names.length)];
     }
@@ -54,6 +62,9 @@ class Client {
         new Thread(() -> {
             while (true) {
                 try {
+                    if (Utils.isEOF(pbin)) {
+                       break;
+                    }
                     System.out.println(name + " recvs: " + recv());
                 } catch (IOException e) {
                     break;
