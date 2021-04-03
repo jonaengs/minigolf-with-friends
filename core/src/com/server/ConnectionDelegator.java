@@ -1,8 +1,6 @@
 package com.server;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PushbackInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -40,7 +38,7 @@ public class ConnectionDelegator {
         System.out.println("Accepting connections...");
         while (true) {
             Socket s = ss.accept();
-            System.out.println("Accepted socket:" + s.toString());
+            s.setTcpNoDelay(true);
             new Thread(new ConnectionHandler(s)).start();
         }
     }

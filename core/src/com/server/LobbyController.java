@@ -60,8 +60,25 @@ class LobbyController implements Runnable {
         }
     }
 
+    private void receiveFromAll(String msg) {
+        synchronized (comms) {
+            for (CommunicationHandler comm: comms) {
+                synchronized (comm.recvBuffer) {
+                    String data;
+                    do {
+                        data = comm.recvBuffer.poll();
+                    } while (data == null || !data.contentEquals(msg));
+                }
+            }
+        }
+    }
+
     private void startGame() {
-        broadcastMsg("GAME STARTING");
+        synchronized (comms) {
+            broadcastMsg("ENTER GAME");
+            receiveFromAll("GAME READY");
+            new Thread(new GameController(comms)).start();
+        }
     }
 
     private void closeConnections() {
@@ -96,7 +113,7 @@ class LobbyController implements Runnable {
                         System.out.println(tn + " Removing player: " + comm.socket.toString());
                         comms.remove(comm);
                         update.set(true);
-                    } else if (msg.contentEquals("START GAME") && comm == leader) {
+                    } else if (msg.contentEquals("ENTER GAME") && comm == leader) {
                         startGame();
                         return;
                     }

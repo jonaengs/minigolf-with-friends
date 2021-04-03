@@ -12,6 +12,7 @@ import java.util.Random;
 class Client {
     static final String[] names = {"Xzavier", "Alfonso", "Darian", "Kylian", "Maison", "Foster", "Keenan", "Yahya", "Heath", "Javion", "Jericho", "Aziel", "Darwin", "Marquis", "Mylo", "Ambrose", "Anakin", "Jordy", "Juelz", "Toby", "Yael"};
 
+    String lobbyId;
     Socket socket;
     BufferedWriter out;
     PushbackInputStream pbin;
@@ -37,11 +38,23 @@ class Client {
 
     public String createLobby() throws IOException {
         send("CREATE NAME: " + name);
+
+        new Thread(() -> {
+
+        }).start();
+
         return recv();
     }
 
     public void joinLobby(String id) throws IOException {
         send("JOIN " + id + " NAME: " + name);
+    }
+
+    public void startGame() throws IOException {
+        send("ENTER GAME");
+        while (!recv().contentEquals("ENTER GAME")) {
+        }
+        send("GAME READY");
     }
 
     public void send(String msg) throws IOException {

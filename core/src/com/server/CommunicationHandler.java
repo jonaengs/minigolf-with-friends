@@ -17,6 +17,7 @@ class CommunicationHandler implements Runnable {
     final String name;
     final Socket socket;
     public AtomicBoolean running = new AtomicBoolean(true);
+    Thread t;
 
     public CommunicationHandler(Socket s, String n) {
         socket = s;
@@ -37,6 +38,7 @@ class CommunicationHandler implements Runnable {
 
     @Override
     public void run() {
+        t = Thread.currentThread();
         String tn = Thread.currentThread().getName();
         String sendMsg, recvMsg;
         try {
