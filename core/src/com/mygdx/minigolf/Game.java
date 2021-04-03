@@ -90,12 +90,14 @@ public class Game extends ApplicationAdapter {
         Entity surface = factory.createSurface(0, 0, EntityFactory.Sprite.SurfaceA, surfaceShape);
 
         // Friction between surface and player
+        // May be other (better) ways to do this
+        // TODO: Move to appropriate system (physics?)
         Physical playerPhys = player.getComponent(Physical.class);
         Physical surfacePhys = surface.getComponent(Physical.class);
 
         FrictionJointDef frictionJointDef = new FrictionJointDef();
         frictionJointDef.initialize(surfacePhys.getBody(), playerPhys.getBody(), new Vector2(0, 0));
-        frictionJointDef.maxForce = 10.0f;
+        frictionJointDef.maxForce = 8.0f;
         world.createJoint(frictionJointDef);
 
         // --- End dummy demo code ---
