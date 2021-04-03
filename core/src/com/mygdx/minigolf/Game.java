@@ -8,9 +8,11 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.joints.FrictionJointDef;
 import com.mygdx.minigolf.controller.EntityFactory;
 import com.mygdx.minigolf.controller.systems.GraphicsSystem;
 import com.mygdx.minigolf.controller.systems.Physics;
+import com.mygdx.minigolf.controller.systems.PhysicsDebugSystem;
 import com.mygdx.minigolf.model.components.Physical;
 
 public class Game extends ApplicationAdapter {
@@ -22,7 +24,7 @@ public class Game extends ApplicationAdapter {
     @Override
     public void create() {
         engine = new Engine();
-        world = new World(new Vector2(0, -10), true);
+        world = new World(new Vector2(0, 0), true);
 
         GraphicsSystem graphicsSystem = new GraphicsSystem();
 
@@ -30,10 +32,10 @@ public class Game extends ApplicationAdapter {
         engine.addSystem(new Physics(world, engine));
         // engine.addSystem(new PhysicsDebugSystem(world, graphicsSystem.getCam()));
 
-        factory = new EntityFactory(engine, world);
+        factory = new EntityFactory(engine, world, graphicsSystem.getCam());
 
         // --- Start dummy demo code ---
-        factory.createPlayer(9, 12, false);
+        Entity player = factory.createPlayer(9, 12, true);
 
         Vector2[] triangle = new Vector2[]{
                 new Vector2(0, 0),
@@ -76,6 +78,8 @@ public class Game extends ApplicationAdapter {
                 contact.setEnabled(false);
             }
         });
+        factory.createObstacle(5, 5, triangle);
+
         // --- End dummy demo code ---
 
     }
