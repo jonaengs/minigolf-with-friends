@@ -21,7 +21,7 @@ public class LevelLoader {
     }
 
     public List<Entity> loadLevel(String fileName) {
-        return loadLevel(CourseLoader.load(Gdx.files.internal(fileName).read()));
+        return loadLevel(CourseLoader.load(fileName));
     }
 
     public List<Entity> loadLevel(List<CourseElement> course) {

@@ -4,6 +4,10 @@ import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
@@ -11,6 +15,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.model.components.Graphical;
 import com.mygdx.minigolf.model.components.Objective;
 import com.mygdx.minigolf.model.components.Physical;
@@ -36,7 +41,7 @@ public class EntityFactory {
         return entity;
     }
 
-    public Entity createPlayer(float x, float y, boolean controllable) {
+    public Entity createPlayer(float x, float y) {
         CircleShape shape = new CircleShape();
         shape.setRadius(0.15f);
         Physical physical = createPhysical(x, y, shape, BodyDef.BodyType.DynamicBody);
@@ -45,16 +50,18 @@ public class EntityFactory {
         E.g. if we set another wall to have 0 bounce, then the player will not bounce at all against it.*/
         physical.setBounce(0);
 
-        if (controllable) {
-            // TODO: add input controller
-        }
-
         return createEntity(
                 physical,
                 new Graphical(Sprite.Player, 1),
                 new Player(),
                 new PowerUpTaker()
         );
+    }
+
+    public Entity createControllablePlayer(float x, float y, OrthographicCamera cam) {
+        Entity player = createPlayer(x, y);
+        Gdx.input.setInputProcessor(new InputHandler(cam, PhysicalMapper.get(player).getBody()));
+        return player;
     }
 
     public Entity createHole(float x, float y) {

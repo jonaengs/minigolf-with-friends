@@ -3,7 +3,15 @@ package com.mygdx.minigolf;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Contact;
+import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.joints.FrictionJointDef;
+import com.mygdx.minigolf.controller.EntityFactory;
 import com.mygdx.minigolf.controller.systems.GraphicsSystem;
+import com.mygdx.minigolf.controller.systems.Physics;
+import com.mygdx.minigolf.controller.systems.PhysicsDebugSystem;
+import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.levels.CourseLoader;
 
 import java.util.List;
@@ -14,11 +22,12 @@ public class Game extends HeadlessGame {
     public void create() {
         super.create();
 
-        engine.addSystem(new GraphicsSystem());
+        GraphicsSystem graphicsSystem = new GraphicsSystem();
+        engine.addSystem(graphicsSystem);
 
-        // Test code. Loads a level
-        List<Entity> levelContents = levelLoader.loadLevel(CourseLoader.getCourses().get(1));
-        factory.createPlayer(9, 12, false);
+        // --- Start dummy demo code ---
+        Entity player = factory.createControllablePlayer(9, 12, graphicsSystem.getCam());
+        levelLoader.loadLevel(CourseLoader.getCourses().get(0));
     }
 
     @Override

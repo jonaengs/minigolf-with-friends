@@ -41,6 +41,10 @@ public class CourseLoader {
             SPAWN, HOLE, COURSE
     );
 
+    static public List<CourseElement> load(String filename) {
+        return load(Gdx.files.internal(LEVELS_DIR + filename).read());
+    }
+
     static public List<CourseElement> load(InputStream data) {
         ArrayList<CourseElement> elements = new ArrayList<>();
         XmlReader.Element root = new XmlReader().parse(data).getChildByNameRecursive("root");  // closes InputStream
@@ -51,7 +55,7 @@ public class CourseLoader {
                 List<String> styles = Arrays.asList(node.getAttribute("style").split(";"));
                 elements.add(new CourseElement(
                         Float.parseFloat(geometry.get("x", "0")),
-                        Float.parseFloat(geometry.get("y", "0")),
+                        SCREEN_HEIGHT - Float.parseFloat(geometry.get("y", "0")),
                         Float.parseFloat(geometry.get("width")),
                         Float.parseFloat(geometry.get("height")),
                         Float.parseFloat(getRotation(styles)),
