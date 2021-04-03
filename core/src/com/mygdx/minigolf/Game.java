@@ -82,8 +82,8 @@ public class Game extends ApplicationAdapter {
 
         Vector2[] surfaceShape = new Vector2[]{
                 new Vector2(-1, -1),
-                new Vector2(12, -1),
-                new Vector2(12, 24),
+                new Vector2(22, -1),
+                new Vector2(22, 24),
                 new Vector2(-1, 24),
         };
 
