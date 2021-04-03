@@ -1,12 +1,9 @@
 import com.badlogic.ashley.core.Entity;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.backends.headless.HeadlessApplicationConfiguration;
-import com.badlogic.gdx.graphics.GL20;
 import com.mygdx.minigolf.HeadlessGame;
-import com.mygdx.minigolf.model.levels.Course;
+import com.mygdx.minigolf.model.levels.CourseElement;
 import com.mygdx.minigolf.model.levels.CourseLoader;
-import com.mygdx.minigolf.model.levels.LevelLoader;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -18,7 +15,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.mockito.Mockito.mock;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class LevelLoaderTest extends TestFileLoader {
@@ -42,7 +38,7 @@ public class LevelLoaderTest extends TestFileLoader {
     @Test
     public void allCoursesLoad() throws IOException {
         String content = getFileContents(CourseLoader.LEVELS_FILE);
-        List<Course> courses = CourseLoader.getCourses(
+        List<List<CourseElement>> courses = CourseLoader.getCourses(
                 Arrays.stream(content.split("\n"))
                         .collect(Collectors.toMap(
                                 fileName -> fileName, fileName -> {

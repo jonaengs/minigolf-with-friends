@@ -1,4 +1,4 @@
-import com.mygdx.minigolf.model.levels.Course;
+import com.mygdx.minigolf.model.levels.CourseElement;
 import com.mygdx.minigolf.model.levels.CourseLoader;
 
 import java.io.FileInputStream;
@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Objects;
 
 abstract class TestFileLoader {
@@ -33,7 +34,7 @@ abstract class TestFileLoader {
         return new String(Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8);
     }
 
-    Course getCourse(String filename) throws IOException {
-        return CourseLoader.getCourse(getFileStream(filename), filename);
+    List<CourseElement> getCourse(String filename) throws IOException {
+        return CourseLoader.load(getFileStream(filename));
     }
 }

@@ -1,6 +1,7 @@
 package com.mygdx.minigolf.model.levels;
 
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
@@ -20,11 +21,11 @@ public class LevelLoader {
     }
 
     public List<Entity> loadLevel(String fileName) {
-        return loadLevel(CourseLoader.getCourse(fileName));
+        return loadLevel(CourseLoader.load(Gdx.files.internal(fileName).read()));
     }
 
-    public List<Entity> loadLevel(Course course) {
-        return course.getElements().stream().map(this::createEntity).collect(Collectors.toList());
+    public List<Entity> loadLevel(List<CourseElement> course) {
+        return course.stream().map(this::createEntity).collect(Collectors.toList());
     }
 
     static private Shape getShape(CourseElement elem) {

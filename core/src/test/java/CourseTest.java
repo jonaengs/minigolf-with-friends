@@ -1,10 +1,11 @@
-import com.mygdx.minigolf.model.levels.Course;
 import com.mygdx.minigolf.model.levels.CourseElement;
+import com.mygdx.minigolf.model.levels.CourseLoader;
 
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,43 +18,43 @@ public class CourseTest extends TestFileLoader {
 
     @Test
     void bareMinimumCourseIsValid() throws IOException {
-        Course course = getCourse("bare_minimum.xml");
-        course.validate();
+        List<CourseElement> course = CourseLoader.load(getFileStream("bare_minimum.xml"));
+        CourseLoader.validate(course);
     }
 
     @Test
     void missingRequiredFunctionsFailsValidate() throws IOException {
-        Course course = getCourse("missing_spawn.xml");
-        assertThrows(IllegalArgumentException.class, course::validate);
+        final List<CourseElement> course1 = CourseLoader.load(getFileStream("missing_spawn.xml"));
+        assertThrows(IllegalArgumentException.class, () -> CourseLoader.validate(course1));
 
-        course = getCourse("missing_hole.xml");
-        assertThrows(IllegalArgumentException.class, course::validate);
+        final List<CourseElement> course2 = CourseLoader.load(getFileStream("missing_hole.xml"));
+        assertThrows(IllegalArgumentException.class, () -> CourseLoader.validate(course2));
     }
 
     @Test
     void missingCourseElementFailsValidate() throws IOException {
-        Course course = getCourse("missing_course.xml");
-        assertThrows(IllegalArgumentException.class, course::validate);
+        List<CourseElement> course = CourseLoader.load(getFileStream("missing_course.xml"));
+        assertThrows(IllegalArgumentException.class, () -> CourseLoader.validate(course));
     }
 
     @Test
     void outOfBoundsCourseElementsFailValidate() throws IOException {
-        Course course = getCourse("out_of_bounds_elem.xml");
-        Exception e = assertThrows(IllegalArgumentException.class, course::validate);
-        assertEquals("Course element outside course bounds", e.getMessage());
+        List<CourseElement> course = CourseLoader.load(getFileStream("out_of_bounds_elem.xml"));
+        Exception e = assertThrows(IllegalArgumentException.class, () -> CourseLoader.validate(course));
+        assertEquals("Course element outside screen bounds", e.getMessage());
     }
 
     @Test
     void invalidCoursElementsFailValidate() throws IOException {
-        Course course = getCourse("illegal_element_position.xml");
-        Exception e = assertThrows(IllegalArgumentException.class, course::validate);
+        List<CourseElement> course = CourseLoader.load(getFileStream("illegal_element_position.xml"));
+        Exception e = assertThrows(IllegalArgumentException.class, () -> CourseLoader.validate(course));
         assertEquals("Element has negative size or position", e.getMessage());
     }
 
     @Test
     void shapesAreParsedCorrectly() throws IOException {
-        Course course = getCourse("all_shapes.xml");
-        course.getElements().stream()
+        List<CourseElement> course = CourseLoader.load(getFileStream("all_shapes.xml"));
+        course.stream()
                 .map(ce -> ce.shape)
                 .collect(Collectors.toList())
                 .containsAll(
@@ -63,13 +64,13 @@ public class CourseTest extends TestFileLoader {
 
     @Test
     void rotationIsParsedCorrectly() throws IOException {
-        Course course = getCourse("all_shapes.xml");
-        CourseElement triangle = course.getElements().stream()
+        List<CourseElement> course = CourseLoader.load(getFileStream("all_shapes.xml"));
+        CourseElement triangle = course.stream()
                 .filter(ce -> ce.shape == CourseElement.Shape.TRIANGLE)
                 .findFirst().get();
         assertEquals(-219, triangle.rotation);
 
-        CourseElement notTriangle = course.getElements().stream()
+        CourseElement notTriangle = course.stream()
                 .filter(ce -> ce.shape != CourseElement.Shape.TRIANGLE)
                 .findFirst().get();
         assertEquals(0, notTriangle.rotation);
