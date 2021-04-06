@@ -1,4 +1,4 @@
-package com.mygdx.minigolf.view.screens;
+package com.mygdx.minigolf.view;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -8,9 +8,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.mygdx.minigolf.controller.screenControllers.ScreenController;
 
-public class JoinGameScreen extends View {
+public class JoinGameView extends View {
 
-    public JoinGameScreen() {
+    public JoinGameView() {
         super();
         Label label = new Label("Multiplayer", skin);
         TextField code = new TextField("", skin);

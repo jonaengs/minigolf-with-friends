@@ -1,11 +1,11 @@
-package com.mygdx.minigolf.view.screens;
+package com.mygdx.minigolf.view;
 
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 
-public class TutorialScreen extends View {
+public class TutorialView extends View {
 
 
-    public TutorialScreen() {
+    public TutorialView() {
         super();
 
         Label label = new Label("Tutorial", skin);

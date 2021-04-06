@@ -1,4 +1,4 @@
-package com.mygdx.minigolf.view.screens;
+package com.mygdx.minigolf.view;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
@@ -6,9 +6,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.mygdx.minigolf.Game;
 
-public class SettingsScreen extends View {
+public class SettingsView extends View {
 
-    public SettingsScreen() {
+    public SettingsView() {
         super();
 
         // Creating actors
@@ -31,7 +31,7 @@ public class SettingsScreen extends View {
         volume.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if(volume.isChecked()) {
+                if (volume.isChecked()) {
                     Game.getInstance().music.play();
                 } else {
                     Game.getInstance().music.pause();

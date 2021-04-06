@@ -1,4 +1,4 @@
-package com.mygdx.minigolf.view.screens;
+package com.mygdx.minigolf.view;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -10,12 +10,12 @@ import com.mygdx.minigolf.controller.screenControllers.ScreenController;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NewGameScreen extends View {
+public class NewGameView extends View {
 
     private List<Label> players = new ArrayList<>();
 
 
-    public NewGameScreen() {
+    public NewGameView() {
         super();
 
         // Creating actors
@@ -38,7 +38,7 @@ public class NewGameScreen extends View {
         table.add(players_label).expandX();
 
         // For testing purposes
-        for(int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) {
             Label player = new Label("Player [empty]", skin);
             table.row().pad(10f, 0, 10f, 0);
             table.add(player).expandX();

@@ -1,4 +1,4 @@
-package com.mygdx.minigolf.view.screens;
+package com.mygdx.minigolf.view;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -15,7 +15,7 @@ public class View implements Screen {
     protected Stage stage;
     protected Table table;
     protected Skin skin;
-    protected Color backgroundColor = new Color(51f/255f, 153f/255f, 51f/255f, 0);
+    protected Color backgroundColor = new Color(51f / 255f, 153f / 255f, 51f / 255f, 0);
 
     public View() {
         stage = new Stage(new ScreenViewport());
@@ -50,13 +50,16 @@ public class View implements Screen {
     }
 
     @Override
-    public void pause() {}
+    public void pause() {
+    }
 
     @Override
-    public void resume() {}
+    public void resume() {
+    }
 
     @Override
-    public void hide() {}
+    public void hide() {
+    }
 
     @Override
     public void dispose() {

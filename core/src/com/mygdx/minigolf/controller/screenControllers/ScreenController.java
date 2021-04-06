@@ -7,20 +7,20 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.view.GameView;
-import com.mygdx.minigolf.view.screens.JoinGameScreen;
-import com.mygdx.minigolf.view.screens.MainMenuScreen;
-import com.mygdx.minigolf.view.screens.NewGameScreen;
-import com.mygdx.minigolf.view.screens.SettingsScreen;
-import com.mygdx.minigolf.view.screens.TutorialScreen;
+import com.mygdx.minigolf.view.JoinGameView;
+import com.mygdx.minigolf.view.MainMenuView;
+import com.mygdx.minigolf.view.NewGameView;
+import com.mygdx.minigolf.view.SettingsView;
+import com.mygdx.minigolf.view.TutorialView;
 
 public class ScreenController {
 
     public static final GameView gameView = new GameView();
-    public static final TutorialScreen tutorialScreen = new TutorialScreen();
-    public static final SettingsScreen settingsScreen = new SettingsScreen();
-    public static final NewGameScreen newGameScreen = new NewGameScreen();
-    public static final JoinGameScreen joinGameScreen = new JoinGameScreen();
-    public static final MainMenuScreen mainMenuScreen = new MainMenuScreen();
+    public static final TutorialView TUTORIAL_VIEW = new TutorialView();
+    public static final SettingsView SETTINGS_VIEW = new SettingsView();
+    public static final NewGameView NEW_GAME_VIEW = new NewGameView();
+    public static final JoinGameView JOIN_GAME_VIEW = new JoinGameView();
+    public static final MainMenuView MAIN_MENU_VIEW = new MainMenuView();
 
     public static void changeScreen(Screen screen) {
         Game.getInstance().setScreen(screen);
@@ -28,8 +28,8 @@ public class ScreenController {
 
     public static void catchBackKey() {
         Gdx.input.setCatchKey(Input.Keys.BACK, true);
-        if(Gdx.input.isKeyPressed(Input.Keys.BACK) ||Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
-            changeScreen(mainMenuScreen);
+        if (Gdx.input.isKeyPressed(Input.Keys.BACK) || Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
+            changeScreen(MAIN_MENU_VIEW);
         }
     }
 
