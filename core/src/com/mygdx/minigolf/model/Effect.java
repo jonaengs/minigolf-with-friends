@@ -1,12 +1,15 @@
 package com.mygdx.minigolf.model;
 
-enum Constraint {
-    STROKES(0),
-    USES(0);
+class Constraint {
 
     private int amount;
+    private final ConstraintType type;
 
-    Constraint(int amount){
+    //only relevant if constrainttype is strokes
+    private int start;
+
+    Constraint(ConstraintType type, int amount){
+        this.type = type;
         this.amount = amount;
     }
 
@@ -21,18 +24,28 @@ enum Constraint {
     public int getAmount(){
         return amount;
     }
+
+    public void setStart(int start){
+        this.start = start;
+    }
+
+    public int getStart(){
+        return this.start;
+    }
 }
 
-public enum Effect {
-    // The exploding effect can be attained by a player and used to send another player back to spawn on collision
-    EXPLODING(Constraint.USES),
-    // The no_collision effect makes the player unable to colloide with anything expect world bounderies
-    NO_COLLISION(Constraint.STROKES);
+public class Effect {
 
+    private final Power power;
     private final Constraint constraint;
 
-    Effect(Constraint constraint){
+    Effect(Power power, Constraint constraint){
+        this.power = power;
         this.constraint = constraint;
+    }
+
+    public Power getPower(){
+        return this.power;
     }
 
     public void setConstraintAmount(int i){
@@ -45,6 +58,14 @@ public enum Effect {
 
     public int getConstraintAmount(){
         return this.constraint.getAmount();
+    }
+
+    public void setConstraintStart(int start){
+        this.constraint.setStart(start);
+    }
+
+    public int getConstraintStart(){
+        return this.constraint.getStart();
     }
 
 

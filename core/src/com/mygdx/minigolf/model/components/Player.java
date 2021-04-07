@@ -7,13 +7,13 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 public class Player implements Component {
     private int strokes = 0;
     private boolean completed = false;
-    private Set<Effect> affectedBy = new HashSet<>();
-    private final List<Effect> effects = new ArrayList<>();
+    private List<Effect> effects = new ArrayList<>();
 
     public boolean isCompleted() {
         return completed;
@@ -31,29 +31,20 @@ public class Player implements Component {
         this.strokes += 1;
     }
 
-    public void addAffix(Effect effect){
-        affectedBy.add(effect);
-    }
-
-    public void removeAffix(Effect effect) {
-        affectedBy.remove(effect);
-    }
-
-    public Set<Effect> getAffixes(){
-        return this.affectedBy;
-    }
-
     public void addEffect(Effect effect){
         effects.add(effect);
     }
 
     public List<Effect> getEffects() { return this.effects; }
 
-    public void removeEffect(Effect effect){
-        effects.remove(effect);
+    public void removeEffects(){
+        this.effects = effects.stream().filter(effect -> effect.getConstraintAmount() > 0).collect(Collectors.toList());
     }
 
-    //Kanskje skummelt å la poweruptakers endre constraint amount på effects de har fått?
+    public void removeEffect(Effect effect){
+        this.effects.remove(effects.indexOf(effect));
+    }
+
     public void setEffectConstraintAmount(Effect effect, int amount){
         effects.get(effects.indexOf(effect)).setConstraintAmount(amount);
     }

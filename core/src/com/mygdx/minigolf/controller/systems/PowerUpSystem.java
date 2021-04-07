@@ -1,5 +1,6 @@
 package com.mygdx.minigolf.controller.systems;
 
+import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
@@ -9,10 +10,12 @@ import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.controller.EntityFactory;
 import com.mygdx.minigolf.model.Effect;
+import com.mygdx.minigolf.model.Power;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.components.Player;
 import com.mygdx.minigolf.model.components.PowerUpGiver;
@@ -37,25 +40,61 @@ public class PowerUpSystem extends EntitySystem {
         this.world = world;
         this.players = engine.getEntitiesFor(Family.all(Player.class).get());
         this.powerups = engine.getEntitiesFor(Family.all(PowerUpGiver.class).get());
+
     }
 
-    //loop through all players, check if they have collided with other players or powerups, perform updates based on this.
     public void update(float dt){
         super.update(dt);
-        //use physics system to determine collisions between players and obstacles
-    }
 
+        for(Entity player : players){
+            Player playerComponent = playerMapper.get(player);
+            playerComponent.removeEffects();
+        }
+    }
+    //need factory default col. for powerup entities to call this method
     private void givePowerUp(Entity player, Entity powerUp){
-        playerMapper.get(player).addEffect(powerUpGiverMapper.get(powerUp).getPowerup());
+        Effect effect = powerUpGiverMapper.get(powerUp).getPowerup();
+        playerMapper.get(player).addEffect(effect);
+        effect.setConstraintStart(playerMapper.get(player).getStrokes());
+        switch (effect.getPower()){
+            case EXPLODING:
+                physicalMapper.get(player).addContactListener(new Physical.ContactListener(1) {
+                    @Override
+                    public void beginContact(Entity other, Contact contact) {
+                        applyEffectToPlayer(player, other);
+                    }
+                    @Override
+                    public void endContact(Entity other, Contact contact) {
+                        Player playerComponent = playerMapper.get(player);
+                        playerComponent.decrementConstraint(effect);
+                    }
+                });
+                break;
+            case NO_COLLISION:
+                physicalMapper.get(player).addContactListener(new Physical.ContactListener(1) {
+                    @Override
+                    public void ignoreContact(Entity other, Contact contact) {
+                        if(effect.getConstraintStart() + 3 >= playerMapper.get(player).getStrokes()){
+                            playerMapper.get(player).removeEffect(effect);
+                            contact.setEnabled(true);
+                        }
+                        else{
+                            contact.setEnabled(false);
+                        }
+
+                    }
+                });
+                break;
+        }
+
     }
 
     private void applyEffectToPlayer(Entity effectApplier, Entity effectReciever){
         List<Effect> effects = playerMapper.get(effectApplier).getEffects();
         for(Effect effect : effects){
-            if (effect == Effect.EXPLODING) {
+            if (effect.getPower() == Power.EXPLODING) {
                 Vector2 collisionVector = physicalMapper.get(effectReciever).getPosition();
-                createExplosionParticle(collisionVector);
-                playerMapper.get(effectReciever).addAffix(effect);
+                //createExplosionParticle(collisionVector);
                 physicalMapper.get(effectReciever).setPosition(Game.spawnPosition);
             }
         }
