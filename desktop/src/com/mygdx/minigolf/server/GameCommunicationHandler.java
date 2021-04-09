@@ -1,4 +1,4 @@
-package com.server;
+package com.mygdx.minigolf.server;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -6,7 +6,7 @@ import java.io.OutputStreamWriter;
 import java.io.PushbackInputStream;
 import java.net.Socket;
 
-import static com.server.Utils.isEOF;
+import static com.mygdx.minigolf.server.Utils.isEOF;
 
 
 class GameCommunicationHandler implements Runnable {

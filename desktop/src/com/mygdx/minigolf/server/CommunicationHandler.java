@@ -1,20 +1,14 @@
-package com.server;
+package com.mygdx.minigolf.server;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PushbackInputStream;
 import java.net.Socket;
-import java.util.PriorityQueue;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedTransferQueue;
-import java.util.concurrent.TransferQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
-import static com.server.Utils.isEOF;
+import static com.mygdx.minigolf.server.Utils.isEOF;
 
 
 class CommunicationHandler implements Runnable {

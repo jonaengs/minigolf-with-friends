@@ -1,4 +1,4 @@
-package com.server;
+package com.mygdx.minigolf.server;
 
 import java.io.IOException;
 import java.io.PushbackInputStream;

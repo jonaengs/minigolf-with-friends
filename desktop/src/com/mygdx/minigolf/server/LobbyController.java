@@ -1,4 +1,4 @@
-package com.server;
+package com.mygdx.minigolf.server;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,8 +9,10 @@ class LobbyController implements Runnable {
     private final List<CommunicationHandler> comms;
     private final CommunicationHandler leader;
     private final AtomicBoolean playerListUpdated = new AtomicBoolean(true);
+    private final Integer lobbyID;
 
     public LobbyController(CommunicationHandler comm, Integer lobbyID) {
+        this.lobbyID = lobbyID;
         this.leader = comm;
         comms = new ArrayList<>();
         comms.add(leader);

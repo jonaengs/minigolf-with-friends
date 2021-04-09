@@ -1,4 +1,5 @@
-package com.server;
+package com.mygdx.minigolf.server;
+
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -67,7 +68,7 @@ class Client {
 
     public void runAsThread() {
         new Thread(() -> {
-            Thread.currentThread().setName(this.getClass().getName());
+            Thread.currentThread().setName(this.getClass().getName() + "-" + name);
             while (true) {
                 String msg;
                 try {
@@ -75,7 +76,7 @@ class Client {
                         break;
                     }
                     msg = recv();
-                    if (msg.contentEquals("ENTER GAME")) {
+                    if (msg != null && msg.contentEquals("ENTER GAME")) {
                         send("GAME READY");
                     }
                 } catch (IOException e) {

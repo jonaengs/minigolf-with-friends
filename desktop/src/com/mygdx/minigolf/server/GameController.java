@@ -1,17 +1,30 @@
-package com.server;
+package com.mygdx.minigolf.server;
 
+import com.badlogic.gdx.backends.headless.HeadlessApplication;
+import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
+import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.HeadlessGame;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class GameController implements Runnable {
-    HeadlessGame game;
     List<GameCommunicationHandler> comms;
+
+    HeadlessGame game;
+    HeadlessApplication app;
+    boolean showGame = true;
 
     // Receive LobbyComms. Shut them down and transfer sockets to GameComms
     GameController(List<CommunicationHandler> comms) {
-        this.game = new HeadlessGame();
+
+        if (showGame) {
+            new LwjglApplication(new Game());
+        } else {
+            game = new HeadlessGame();
+            app = new HeadlessApplication(game);
+        }
+
         comms.forEach(comm -> {
             try {
                 comm.running.set(false);

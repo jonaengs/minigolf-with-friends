@@ -1,4 +1,4 @@
-package com.server;
+package com.mygdx.minigolf.server;
 
 import java.io.IOException;
 import java.io.PushbackInputStream;
@@ -61,12 +61,24 @@ public class ConnectionDelegator {
                 PushbackInputStream pbin = new PushbackInputStream((socket.getInputStream()));
                 String data = Utils.readLine(pbin);
                 String name = data.contains("NAME: ") ? data.substring(data.indexOf("NAME: ") + "NAME: ".length()) : "";
-                System.out.println("ConnH Received data: " + data + " from: " + name);
                 CommunicationHandler comm = new CommunicationHandler(socket, name);
                 if (data.startsWith("CREATE")) {
                     int lobbyID = getId();
                     LobbyController lobby = new LobbyController(comm, lobbyID);
                     lobbies.put(lobbyID, lobby);
+                    // Start lobby thread plus a separate thread to remove it from the lobbies index once it terminates
+                    new Thread(() -> {
+                        Thread.currentThread().setName("LobbySupervisor");
+                        Thread lobbyThread = new Thread(lobby);
+                        lobbyThread.start();
+                        try {
+                            lobbyThread.join();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        // Problem: This solution will make lobby unjoinable if this thread is ever interrupted
+                        ConnectionDelegator.lobbies.remove(lobbyID);
+                    }).start();
                 } else if (data.startsWith("JOIN")) { // FORMAT: "JOIN XXXXXX"
                     int lobbyID = Integer.parseInt(data.split(" ")[1]);
                     lobbies.get(lobbyID).addPlayer(comm);

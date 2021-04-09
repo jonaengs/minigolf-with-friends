@@ -1,4 +1,4 @@
-package com.server;
+package com.mygdx.minigolf.server;
 
 public class Msg {
     public static final String CREATE = "CREATE";
