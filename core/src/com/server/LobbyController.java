@@ -5,34 +5,28 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toList;
-
 class LobbyController implements Runnable {
-    final private List<CommunicationHandler> comms;
+    private final List<CommunicationHandler> comms;
     private final CommunicationHandler leader;
-    final int lobbyID;
-    AtomicBoolean update = new AtomicBoolean(true);
+    private final AtomicBoolean playerListUpdated = new AtomicBoolean(true);
 
-    public LobbyController(CommunicationHandler comm, Integer id) {
+    public LobbyController(CommunicationHandler comm, Integer lobbyID) {
         this.leader = comm;
-        lobbyID = id;
         comms = new ArrayList<>();
         comms.add(leader);
-        send(leader, id.toString());
-    }
-
-    private void send(CommunicationHandler comm, String msg) {
-        synchronized (comm.sendBuffer) {
-            comm.sendBuffer.add(msg);
-        }
+        leader.sendBuffer.add(lobbyID.toString());
     }
 
     public void addPlayer(CommunicationHandler comm) {
         synchronized (comms) {
             comms.add(comm);
         }
-        update.set(true);
+        playerListUpdated.set(true);
     }
+
+    ///////////////////////////
+    // THREAD FUNCTIONS BELOW
+    ///////////////////////////
 
     private void broadcastPlayerList() {
         String playerNames;
@@ -53,37 +47,36 @@ class LobbyController implements Runnable {
     private void broadcastMsg(String msg) {
         synchronized (comms) {
             for (CommunicationHandler ch : comms) {
-                synchronized (ch.sendBuffer) {
-                    ch.sendBuffer.add(msg);
-                }
+                ch.sendBuffer.add(msg);
             }
         }
     }
 
     private void receiveFromAll(String msg) {
         synchronized (comms) {
-            for (CommunicationHandler comm: comms) {
-                synchronized (comm.recvBuffer) {
-                    String data;
-                    do {
-                        data = comm.recvBuffer.poll();
-                    } while (data == null || !data.contentEquals(msg));
-                }
+            for (CommunicationHandler comm : comms) {
+                String data;
+                // TODO: Change to not do spin waiting
+                do {
+                    data = comm.recvBuffer.poll();
+                } while (data == null || !data.contentEquals(msg));
             }
         }
     }
 
     private void startGame() {
+        GameController gameController;
         synchronized (comms) {
             broadcastMsg("ENTER GAME");
             receiveFromAll("GAME READY");
-            new Thread(new GameController(comms)).start();
+            gameController = new GameController(comms);
         }
+        new Thread(gameController).start();
     }
 
     private void closeConnections() {
         synchronized (comms) {
-            for (CommunicationHandler comm: comms) {
+            for (CommunicationHandler comm : comms) {
                 comm.close();
             }
         }
@@ -91,33 +84,35 @@ class LobbyController implements Runnable {
 
     @Override
     public void run() {
-        String tn = Thread.currentThread().getName();
-        while (true) {
-            if (update.get()) {
-                if (leader.socket.isClosed()) {
-                    System.out.println("Shutting down lobby " + tn);
+        Thread.currentThread().setName(this.getClass().getName());
+        boolean hasPlayers = true;
+        while (hasPlayers) {
+            // If the player list (comms) has been updated, broadcast it.
+            if (playerListUpdated.getAndSet(false)) { // set to false immediately to capture any later update
+                broadcastPlayerList();
+                if (!leader.running.get()) { // If leader no longer running, shut down lobby.
                     closeConnections();
                     return;
                 }
-                broadcastPlayerList();
-                update.set(false);
             }
+
+            // Receive and react to messages
             for (CommunicationHandler comm : copyComms()) {
                 String msg;
-                synchronized (comm.recvBuffer) {
-                    msg = comm.recvBuffer.poll();
-                }
+                msg = comm.recvBuffer.poll();
                 if (msg != null) {
-                    System.out.println(tn + " Read msg: " + msg);
                     if (msg.contentEquals("EXIT")) {
-                        System.out.println(tn + " Removing player: " + comm.socket.toString());
                         comms.remove(comm);
-                        update.set(true);
+                        playerListUpdated.set(true);
                     } else if (msg.contentEquals("ENTER GAME") && comm == leader) {
                         startGame();
                         return;
                     }
                 }
+            }
+            // unnecessary?
+            synchronized (comms) {
+                hasPlayers = !comms.isEmpty();
             }
         }
     }

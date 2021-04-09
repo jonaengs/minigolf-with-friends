@@ -32,6 +32,7 @@ class GameCommunicationHandler implements Runnable {
 
     @Override
     public void run() {
+        Thread.currentThread().setName(this.getClass().getName());
         String sendMsg, recvMsg;
         try {
             BufferedWriter sendStream = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
@@ -46,11 +47,11 @@ class GameCommunicationHandler implements Runnable {
                     sendStream.flush();
                 }
 
-                if (isEOF(recvStream)) {
+                if (isEOF(socket, recvStream)) {
                     socket.close();
                     break;
                 }
-                recvMsg = Utils.readStream(recvStream);
+                recvMsg = Utils.readLine(recvStream);
                 if (!recvMsg.isEmpty()) {
                     synchronized (recvBuffer) {
                        recvBuffer[0] = recvMsg;

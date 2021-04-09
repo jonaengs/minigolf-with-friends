@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 
 public class TestRoutine {
@@ -14,6 +15,7 @@ public class TestRoutine {
     public static void main(String... args) throws IOException, InterruptedException {
         Thread connectionDelegator = new Thread(() -> {
             try {
+                Thread.currentThread().setName(ConnectionDelegator.class.getName());
                 new ConnectionDelegator().accept();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -28,22 +30,25 @@ public class TestRoutine {
 
         Client follower1 = new Client("f1");
         follower1.joinLobby(lobbyID);
-        follower1.printRcv();
+        follower1.runAsThread();
 
         Client follower2 = new Client("f2");
         follower2.joinLobby(lobbyID);
-        follower2.printRcv();
+        follower2.runAsThread();
 
         Client follower3 = new Client("f3");
         follower3.joinLobby(lobbyID);
+        follower3.runAsThread();
 
         System.out.println(Thread.activeCount());
-        Thread.sleep(5_000);
-        follower1.close();
-        Thread.sleep(5_000);
+        Thread.sleep(2_000);
         leader.startGame();
-        Thread.sleep(5_000);
+        leader.runAsThread();
+        Thread.sleep(2_000);
         System.out.println(Thread.activeCount()); // should equal first value printed
+        Thread.sleep(2_000);
+        System.out.println("\nACTIVE THREADS:");
+        System.out.println(Thread.getAllStackTraces().keySet().stream().map(Thread::toString).collect(Collectors.joining("\n\t")));
 
         connectionDelegator.join();
     }

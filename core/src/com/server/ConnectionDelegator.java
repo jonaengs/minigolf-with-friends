@@ -35,7 +35,6 @@ public class ConnectionDelegator {
     }
 
     public void accept() throws IOException {
-        System.out.println("Accepting connections...");
         while (true) {
             Socket s = ss.accept();
             s.setTcpNoDelay(true);
@@ -57,17 +56,17 @@ public class ConnectionDelegator {
 
         @Override
         public void run() {
+            Thread.currentThread().setName(this.getClass().getName());
             try {
                 PushbackInputStream pbin = new PushbackInputStream((socket.getInputStream()));
-                String data = Utils.readStream(pbin);
-                String name = data.contains("NAME: ") ? data.substring(data.indexOf("NAME: ")) : "";
+                String data = Utils.readLine(pbin);
+                String name = data.contains("NAME: ") ? data.substring(data.indexOf("NAME: ") + "NAME: ".length()) : "";
                 System.out.println("ConnH Received data: " + data + " from: " + name);
                 CommunicationHandler comm = new CommunicationHandler(socket, name);
                 if (data.startsWith("CREATE")) {
                     int lobbyID = getId();
                     LobbyController lobby = new LobbyController(comm, lobbyID);
                     lobbies.put(lobbyID, lobby);
-                    new Thread(lobby, "Lobby-" + lobbyID).start();
                 } else if (data.startsWith("JOIN")) { // FORMAT: "JOIN XXXXXX"
                     int lobbyID = Integer.parseInt(data.split(" ")[1]);
                     lobbies.get(lobbyID).addPlayer(comm);

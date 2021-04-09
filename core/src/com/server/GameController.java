@@ -14,11 +14,11 @@ public class GameController implements Runnable {
         this.game = new HeadlessGame();
         comms.forEach(comm -> {
             try {
+                comm.running.set(false);
                 comm.t.join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            comm.running.set(false);
         });
         this.comms = comms.stream()
                 .map(comm -> new GameCommunicationHandler(comm.socket, comm.name))
@@ -28,6 +28,7 @@ public class GameController implements Runnable {
 
     @Override
     public void run() {
+        Thread.currentThread().setName(this.getClass().getName());
         System.out.println("GameController up!");
     }
 }

@@ -38,11 +38,6 @@ class Client {
 
     public String createLobby() throws IOException {
         send("CREATE NAME: " + name);
-
-        new Thread(() -> {
-
-        }).start();
-
         return recv();
     }
 
@@ -52,9 +47,6 @@ class Client {
 
     public void startGame() throws IOException {
         send("ENTER GAME");
-        while (!recv().contentEquals("ENTER GAME")) {
-        }
-        send("GAME READY");
     }
 
     public void send(String msg) throws IOException {
@@ -64,21 +56,28 @@ class Client {
     }
 
     public String recv() throws IOException {
-        return in.readLine();
+        String msg = in.readLine();
+        System.out.println(name + " recv: " + msg);
+        return msg;
     }
 
     public void close() throws IOException {
         socket.close();
     }
 
-    public void printRcv() {
+    public void runAsThread() {
         new Thread(() -> {
+            Thread.currentThread().setName(this.getClass().getName());
             while (true) {
+                String msg;
                 try {
-                    if (Utils.isEOF(pbin)) {
-                       break;
+                    if (Utils.isEOF(socket, pbin)) {
+                        break;
                     }
-                    System.out.println(name + " recvs: " + recv());
+                    msg = recv();
+                    if (msg.contentEquals("ENTER GAME")) {
+                        send("GAME READY");
+                    }
                 } catch (IOException e) {
                     break;
                 }

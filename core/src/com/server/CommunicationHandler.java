@@ -6,31 +6,35 @@ import java.io.OutputStreamWriter;
 import java.io.PushbackInputStream;
 import java.net.Socket;
 import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.TransferQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static com.server.Utils.isEOF;
 
 
 class CommunicationHandler implements Runnable {
-    public final PriorityQueue<String> sendBuffer = new PriorityQueue<>();
-    public final PriorityQueue<String> recvBuffer = new PriorityQueue<>();
+    public final ConcurrentLinkedQueue<String> sendBuffer = new ConcurrentLinkedQueue<>();
+    public final ConcurrentLinkedQueue<String> recvBuffer = new ConcurrentLinkedQueue<>();
     final String name;
     final Socket socket;
     public AtomicBoolean running = new AtomicBoolean(true);
     Thread t;
 
-    public CommunicationHandler(Socket s, String n) {
-        socket = s;
-        name = n;
+    public CommunicationHandler(Socket socket, String name) {
+        this.socket = socket;
+        this.name = name;
     }
 
     public void close() {
-        System.out.println(Thread.currentThread().getName() + " told to stop");
+        System.out.println(name + "CH CLOSING!");
         running.set(false);
         try {
-            synchronized (recvBuffer) {
-                recvBuffer.add("EXIT");
-            }
+            recvBuffer.add(Msg.EXIT);
             socket.close();
         } catch (IOException ignored) {
         }
@@ -39,40 +43,34 @@ class CommunicationHandler implements Runnable {
     @Override
     public void run() {
         t = Thread.currentThread();
-        String tn = Thread.currentThread().getName();
+        t.setName(this.getClass().getName());
         String sendMsg, recvMsg;
         try {
             BufferedWriter sendStream = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             PushbackInputStream recvStream = new PushbackInputStream(socket.getInputStream());
             while (running.get()) {
-                do {
-                    synchronized (this.sendBuffer) {
-                        sendMsg = this.sendBuffer.poll();
-                    }
+                while (!sendBuffer.isEmpty()) {
+                    sendMsg = this.sendBuffer.poll();
                     if (sendMsg != null) {
-                        System.out.println(tn + " Sending msg: " + sendMsg);
+                        System.out.println(name + "CH Sending msg: " + sendMsg);
                         sendStream.write(sendMsg + "\n");
                         sendStream.flush();
                     }
-                } while (sendMsg != null);
-
-                if (isEOF(recvStream)) {
+                }
+                if (isEOF(socket, recvStream)) {
                     close();
                     break;
                 }
                 do {
-                    recvMsg = Utils.readStream(recvStream);
+                    recvMsg = Utils.readLine(recvStream);
                     if (!recvMsg.isEmpty()) {
-                        System.out.println(tn + " Received msg: " + recvMsg);
-                        synchronized (this.recvBuffer) {
-                            this.recvBuffer.add(recvMsg);
-                        }
+                        this.recvBuffer.add(recvMsg);
                     }
                 } while(!recvMsg.isEmpty());
             }
         } catch (IOException ignored) {
         } finally {
-            System.out.println(tn + " Exiting");
+            System.out.println(name + "CH Exiting");
         }
     }
 }
