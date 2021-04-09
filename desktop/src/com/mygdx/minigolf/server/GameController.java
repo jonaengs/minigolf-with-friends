@@ -15,12 +15,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class GameController implements Runnable {
-    private String gameData = "START GAME";
+    private GameState gameData;
     private static final int REFRESH_RATE = 1_000 / 30; // in milliseconds
     private final List<GameCommunicationHandler> comms;
 
     HeadlessGame game;
-    boolean showGame = true;
+    boolean showGame = false;
 
     // Receive LobbyComms. Shut them down and transfer sockets to GameComms
     GameController(List<CommunicationHandler> comms) {
@@ -72,7 +72,7 @@ public class GameController implements Runnable {
         Map<GameCommunicationHandler, Entity> players = comms.stream()
                 .collect(Collectors.toMap(
                         comm -> comm,
-                        comm -> game.getFactory().createPlayer(0, 0, true)
+                        comm -> game.getFactory().createPlayer(10, 10, false)
                 ));
         Map<GameCommunicationHandler, Physical> playerPhysicalComponents = players.keySet().stream()
                 .collect(Collectors.toMap(
@@ -89,21 +89,34 @@ public class GameController implements Runnable {
                     comm.recvBuffer[0] = null;
                 }
                 if (data != null) {
-                    Physical playerPhysics = playerPhysicalComponents.get(comm);
-                    if (playerPhysics.getVelocity().isZero()) {
-                        String[] split = data.split(", "); // format: "vel_x, vel_y"
-                        Vector2 v = new Vector2(Float.parseFloat(split[0]), Float.parseFloat(split[1]));
-                        playerPhysics.setVelocity(v);
+                    System.out.println("DATA: " + data);
+                    if (data.contentEquals("EXIT")) {
+                        comms.remove(comm);
+                    } else {
+                        Physical playerPhysics = playerPhysicalComponents.get(comm);
+                        // TODO: if (playerPhysics.getVelocity().isZero()) {
+                        if (true) {
+                            String[] split = data.split(", "); // format: "vel_x, vel_y"
+                            Vector2 v = new Vector2(Float.parseFloat(split[0]), Float.parseFloat(split[1]));
+                            System.out.println("V: " + v.toString());
+                            playerPhysics.setVelocity(v);
+                        }
                     }
                 }
             });
 
-            gameData = playerPhysicalComponents.entrySet().stream()
-                    .map(entry -> entry.getKey().name + ": "
-                            + Arrays.toString(new Vector2[]{entry.getValue().getPosition(), entry.getValue().getVelocity()}))
-                    .collect(Collectors.joining("|"));
+            gameData = new GameState(
+                    comms.stream()
+                            .collect(Collectors.toMap(
+                                    comm -> comm.name,
+                                    comm -> {
+                                        Physical phys = playerPhysicalComponents.get(comm);
+                                        return new GameState.PlayerState(phys.getPosition(), phys.getVelocity());
+                                    }
+                            ))
+            );
 
-            System.out.println(gameData);
+            // System.out.println(gameData);
 
             long delta = System.currentTimeMillis() - t0;
             try {
@@ -114,7 +127,7 @@ public class GameController implements Runnable {
         }
     }
 
-    public String getGameData() {
+    public GameState getGameData() {
         return gameData;
     }
 }

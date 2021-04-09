@@ -2,18 +2,23 @@ package com.mygdx.minigolf.server;
 
 
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
+import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.Game;
+import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.model.components.Physical;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.OutputStreamWriter;
 import java.io.PushbackInputStream;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -29,6 +34,8 @@ class Client {
     BufferedReader in;
     String name;
 
+    boolean headless = true;
+
     public Client() throws IOException {
         this("localhost", 8888);
     }
@@ -36,6 +43,7 @@ class Client {
     public Client(String name) throws IOException {
         this("localhost", 8888);
         this.name = name;
+        headless = !name.contentEquals("leader");
     }
 
     public Client(String url, int port) throws IOException {
@@ -77,9 +85,12 @@ class Client {
 
     public void runAsThread() {
         new Thread(() -> {
-            Game game;
-            String[] playerList = new String[]{name};
+            HeadlessGame game;
+            String[] playerList = null;
             Thread.currentThread().setName(this.getClass().getName() + "-" + name);
+
+            Map<String, Entity> players;
+            Map<String, Physical> playerPhysicalComponents = new HashMap<>();
             while (true) {
                 String msg;
                 try {
@@ -88,43 +99,61 @@ class Client {
                     }
                     msg = recv();
                     if (msg != null && msg.contentEquals("ENTER GAME")) {
-                        game = new Game();
-                        new LwjglApplication(game);
-                        Game finalGame = game;
-                        Thread.sleep(1000); // Sleep to allow create method to run
+                        if (headless) {
+                            game = new HeadlessGame();
+                            new HeadlessApplication(game);
+                            Thread.sleep(2_000); // Sleep to allow create method to run
+                            game.getFactory().setUseGraphics(false);
+                        } else {
+                            game = new Game();
+                            new LwjglApplication(game);
+                            Thread.sleep(2_000); // Sleep to allow create method to run
+                        }
+                        HeadlessGame finalGame = game;
 
-                        Map<String, Entity> players = Arrays.stream(playerList)
+                        System.out.println("PLAYER LIST: " + Arrays.toString(playerList));
+                        players = Arrays.stream(playerList)
                                 .collect(Collectors.toMap(
                                         player -> player,
-                                        player -> finalGame.getFactory().createPlayer(0, 0, player.contentEquals(name))
+                                        player -> finalGame.getFactory().createPlayer(10, 10, false)
                                 ));
-                        Map<String, Physical> playerPhysicalComponents = players.keySet().stream()
+                        Map<String, Entity> finalPlayers = players;
+                        playerPhysicalComponents = players.keySet().stream()
                                 .collect(Collectors.toMap(
                                         comm -> comm,
-                                        comm -> players.get(comm).getComponent(Physical.class)
+                                        comm -> finalPlayers.get(comm).getComponent(Physical.class)
                                 ));
 
                         send("GAME READY");
                     }
                     if (msg != null && msg.contentEquals("START GAME")) {
                         Random r = new Random();
-                        Thread.sleep(r.nextInt(3_000));
                         send(5 * r.nextGaussian() + ", " + 5 * r.nextFloat());
                         // Assume names are unique. TODO: set names server-side and send them to clients when they join a lobby
+                        ObjectInputStream objIn = new ObjectInputStream(socket.getInputStream());
                         while (true) {
-                            String data = recv();
-                            Arrays.stream(data.split("/")).forEach(info -> {
-                                String[] split = info.split(", ");
-
-                            });
+                            GameState gameState = (GameState) objIn.readObject();
+                            if (!headless) {
+                                System.out.println("RECEIVED STATE: " + gameState + "");
+                            }
+                            if (gameState != null) {
+                                Map<String, Physical> finalPlayerPhysicalComponents = playerPhysicalComponents;
+                                gameState.data.entrySet().forEach(entry -> {
+                                    Physical phys = finalPlayerPhysicalComponents.get(entry.getKey());
+                                    phys.setVelocity(entry.getValue().velocity);
+                                    phys.setPosition(entry.getValue().position);
+                                });
+                            }
                         }
                     }
                     else {
-                        playerList = msg.split(", ");
+                        System.out.println("MSG: " + msg);
+                        String[] split = msg.split(", ");
+                        playerList = split.length >= 1 ? split : playerList;
                     }
                 } catch (IOException e) {
                     break;
-                } catch (InterruptedException e) {
+                } catch (InterruptedException | ClassNotFoundException e) {
                     e.printStackTrace();
                     break;
                 }

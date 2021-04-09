@@ -7,15 +7,14 @@ import java.util.stream.Collectors;
 public class TestRoutine {
 
     public static void main(String... args) throws IOException, InterruptedException {
-        Thread connectionDelegator = new Thread(() -> {
+        new Thread(() -> {
             try {
                 Thread.currentThread().setName(ConnectionDelegator.class.getName());
                 new ConnectionDelegator().accept();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        });
-        connectionDelegator.start();
+        }).start();
         System.out.println(Thread.activeCount());
         Thread.sleep(2000);
 
@@ -40,11 +39,8 @@ public class TestRoutine {
         leader.startGame();
         Thread.sleep(2_000);
         System.out.println(Thread.activeCount()); // should equal first value printed
-        Thread.sleep(2_000);
-        System.out.println("\nACTIVE THREADS:");
-        System.out.println(Thread.getAllStackTraces().keySet().stream().map(Thread::toString).collect(Collectors.joining("\n\t")));
-
-        connectionDelegator.join();
+        // System.out.println("\nACTIVE THREADS:");
+        // System.out.println(Thread.getAllStackTraces().keySet().stream().map(Thread::toString).collect(Collectors.joining("\n\t")));
     }
 
 

@@ -23,7 +23,6 @@ public class ScreenController {
     public static final MainMenuView MAIN_MENU_VIEW = new MainMenuView();
 
     public static void changeScreen(Screen screen) {
-        Game.getInstance().setScreen(screen);
     }
 
     public static void catchBackKey() {

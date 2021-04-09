@@ -14,13 +14,15 @@ public class HeadlessGame implements ApplicationListener {
         // implement game logic here
         // extend with Game class. Implement Headless-less things there.
 
-    private Engine engine;
-    private EntityFactory factory;
+    Engine engine;
+    EntityFactory factory;
+    World world;
 
     @Override
     public void create() {
         engine = new Engine();
-        factory = new EntityFactory(engine, new World(new Vector2(0, 0), true), new OrthographicCamera());
+        world = new World(new Vector2(0, -1), true);
+        factory = new EntityFactory(engine, world, new OrthographicCamera());
     }
 
     @Override

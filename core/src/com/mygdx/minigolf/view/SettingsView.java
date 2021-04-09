@@ -31,11 +31,6 @@ public class SettingsView extends View {
         volume.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if (volume.isChecked()) {
-                    Game.getInstance().music.play();
-                } else {
-                    Game.getInstance().music.pause();
-                }
             }
         });
     }

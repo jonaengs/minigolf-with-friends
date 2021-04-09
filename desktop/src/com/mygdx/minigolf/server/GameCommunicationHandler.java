@@ -2,6 +2,7 @@ package com.mygdx.minigolf.server;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PushbackInputStream;
 import java.net.Socket;
@@ -33,13 +34,14 @@ class GameCommunicationHandler implements Runnable {
     @Override
     public void run() {
         Thread.currentThread().setName(this.getClass().getName());
-        String sendMsg, recvMsg;
+        String recvMsg;
+        GameState sendState;
         try {
-            BufferedWriter sendStream = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            ObjectOutputStream sendStream = new ObjectOutputStream(socket.getOutputStream());
             PushbackInputStream recvStream = new PushbackInputStream(socket.getInputStream());
             while (socket.isConnected()) {
-                sendMsg = gameController.getGameData();
-                sendStream.write(sendMsg);
+                sendState = gameController.getGameData();
+                sendStream.writeObject(sendState);
                 sendStream.flush();
 
                 if (isEOF(socket, recvStream)) {
@@ -53,7 +55,8 @@ class GameCommunicationHandler implements Runnable {
                     }
                 }
             }
-        } catch (IOException ignored) {
+        } catch (IOException e) {
+            e.printStackTrace();
         } finally {
             synchronized (recvBuffer) {
                 recvBuffer[0] = "EXIT";

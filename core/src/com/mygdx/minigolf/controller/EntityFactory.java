@@ -5,6 +5,7 @@ import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -49,7 +50,8 @@ public class EntityFactory {
         Sprite(String path) {
             this.path = path;
             // texture = new Texture(path);
-            texture = new Texture("badlogic.jpg"); // TODO: load actual path, temp to suppress errors
+            texture = new Texture(new Pixmap(1, 1, Pixmap.Format.RGB888));
+            // texture = new Texture("badlogic.jpg"); // TODO: load actual path, temp to suppress errors
             sprite = new com.badlogic.gdx.graphics.g2d.Sprite(texture);
         }
 

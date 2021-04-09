@@ -64,7 +64,7 @@ class CommunicationHandler implements Runnable {
             }
         } catch (IOException ignored) {
         } finally {
-            System.out.println(name + "CH Exiting");
+            System.out.println(name + "CH Terminating");
         }
     }
 }
