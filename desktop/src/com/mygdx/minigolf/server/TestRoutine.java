@@ -21,6 +21,7 @@ public class TestRoutine {
 
         Client leader = new Client("leader");
         String lobbyID = leader.createLobby();
+        leader.runAsThread();
 
         Client follower1 = new Client("f1");
         follower1.joinLobby(lobbyID);
@@ -37,7 +38,6 @@ public class TestRoutine {
         System.out.println(Thread.activeCount());
         Thread.sleep(2_000);
         leader.startGame();
-        leader.runAsThread();
         Thread.sleep(2_000);
         System.out.println(Thread.activeCount()); // should equal first value printed
         Thread.sleep(2_000);

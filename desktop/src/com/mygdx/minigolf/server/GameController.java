@@ -6,10 +6,12 @@ import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.HeadlessGame;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class GameController implements Runnable {
-    List<GameCommunicationHandler> comms;
+    private static final int REFRESH_RATE = 1_000 / 30; // in milliseconds
+    private final List<GameCommunicationHandler> comms;
 
     HeadlessGame game;
     HeadlessApplication app;
@@ -36,12 +38,30 @@ public class GameController implements Runnable {
         this.comms = comms.stream()
                 .map(comm -> new GameCommunicationHandler(comm.socket, comm.name))
                 .collect(Collectors.toList());
-        this.comms.forEach(gc -> new Thread(gc).start());
+        this.comms.forEach(gameComm -> new Thread(gameComm).start());
     }
 
     @Override
     public void run() {
         Thread.currentThread().setName(this.getClass().getName());
         System.out.println("GameController up!");
+        List<String> inputs;
+        String output;
+        do {
+            long t0 = System.currentTimeMillis();
+
+            inputs = comms.stream().map(comm -> {
+                synchronized (comm.recvBuffer) {
+                    return comm.recvBuffer[0];
+                }
+            }).filter(Objects::nonNull).collect(Collectors.toList());
+
+            long delta = System.currentTimeMillis() - t0;
+            try {
+                Thread.sleep(Math.max(0, REFRESH_RATE - delta));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        } while (true);
     }
 }
