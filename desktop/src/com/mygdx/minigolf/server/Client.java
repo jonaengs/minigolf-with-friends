@@ -81,7 +81,15 @@ class Client {
                     if (msg != null && msg.contentEquals("ENTER GAME")) {
                         send("GAME READY");
                     }
+                    if (msg != null && msg.contentEquals("START GAME")) {
+                        Random r = new Random();
+                        Thread.sleep(r.nextInt(3_000));
+                        send(r.nextFloat() + ", " + r.nextFloat());
+                    }
                 } catch (IOException e) {
+                    break;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                     break;
                 }
             }

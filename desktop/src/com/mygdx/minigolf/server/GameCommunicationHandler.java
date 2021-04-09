@@ -10,15 +10,15 @@ import static com.mygdx.minigolf.server.Utils.isEOF;
 
 
 class GameCommunicationHandler implements Runnable {
-    final public String[] sendBuffer = new String[1];
     final public String[] recvBuffer = new String[1];
     final String name;
     final Socket socket;
+    final GameController gameController;
 
-    public GameCommunicationHandler(Socket socket, String name) {
+    public GameCommunicationHandler(Socket socket, String name, GameController gameController) {
+        this.gameController = gameController;
         this.socket = socket;
         this.name = name;
-        sendBuffer[0] = "START GAME";
         recvBuffer[0] = null;
     }
 
@@ -38,14 +38,9 @@ class GameCommunicationHandler implements Runnable {
             BufferedWriter sendStream = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             PushbackInputStream recvStream = new PushbackInputStream(socket.getInputStream());
             while (socket.isConnected()) {
-                synchronized (sendBuffer) {
-                    sendMsg = sendBuffer[0];
-                    sendBuffer[0] = null;
-                }
-                if (sendMsg != null) {
-                    sendStream.write(sendMsg + "\n");
-                    sendStream.flush();
-                }
+                sendMsg = gameController.getGameData();
+                sendStream.write(sendMsg);
+                sendStream.flush();
 
                 if (isEOF(socket, recvStream)) {
                     socket.close();

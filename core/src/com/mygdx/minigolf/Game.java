@@ -18,6 +18,7 @@ public class Game extends HeadlessGame {
 
 	@Override
 	public void create() {
+		super.create();
 		batch = new SpriteBatch();
 		img = new Texture("badlogic.jpg");
 
@@ -30,11 +31,18 @@ public class Game extends HeadlessGame {
 
 	@Override
 	public void render() {
+		if (screen != null) screen.render(Gdx.graphics.getDeltaTime());
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		batch.begin();
 		batch.draw(img, 0, 0);
 		batch.end();
+	}
+
+
+	@Override
+	public void resize (int width, int height) {
+		if (screen != null) screen.resize(width, height);
 	}
 
 	@Override

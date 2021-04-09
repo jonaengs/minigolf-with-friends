@@ -26,6 +26,14 @@ public class EntityFactory {
 
     public final static float DEFAULT_BOUNCE = 0.7f;
 
+    public boolean isUseGraphics() {
+        return useGraphics;
+    }
+
+    public void setUseGraphics(boolean useGraphics) {
+        this.useGraphics = useGraphics;
+    }
+
     public static enum Sprite {
         Player("/sprite/player.png"),
         Hole("/sprite/hole.png"),
@@ -54,6 +62,7 @@ public class EntityFactory {
     private final Engine engine;
     private final World world;
     private final OrthographicCamera cam;
+    private boolean useGraphics = true;
 
     public EntityFactory(Engine engine, World world, OrthographicCamera cam) {
         this.engine = engine;
@@ -81,7 +90,9 @@ public class EntityFactory {
         physical.setBounce(0);
         entity.add(physical);
 
-        entity.add(new Graphical(Sprite.Player, 0));
+        if (useGraphics) {
+            entity.add(new Graphical(Sprite.Player, 0));
+        }
 
         if (controllable) {
             Gdx.input.setInputProcessor(new InputHandler(cam, physical.getBody()));
@@ -101,7 +112,9 @@ public class EntityFactory {
         shape.setRadius(0.15f);
         entity.add(createPhysical(x, y, shape, BodyDef.BodyType.StaticBody));
 
-        entity.add(new Graphical(Sprite.Hole.sprite, 0));
+        if (useGraphics) {
+            entity.add(new Graphical(Sprite.Hole.sprite, 0));
+        }
         entity.add(new Objective());
 
         engine.addEntity(entity);
@@ -115,7 +128,9 @@ public class EntityFactory {
         shape.set(points);
         entity.add(createPhysical(x, y, shape, BodyDef.BodyType.StaticBody));
 
-        entity.add(new Graphical(Sprite.Obstacle.sprite, 0));
+        if (useGraphics) {
+            entity.add(new Graphical(Sprite.Obstacle.sprite, 0));
+        }
 
         engine.addEntity(entity);
         return entity;
@@ -128,7 +143,9 @@ public class EntityFactory {
         shape.setRadius(1f);
         entity.add(createPhysical(x, y, shape, BodyDef.BodyType.StaticBody));
 
-        entity.add(new Graphical(Sprite.Powerup, 0));
+        if (useGraphics) {
+            entity.add(new Graphical(Sprite.Powerup, 0));
+        }
 
         engine.addEntity(entity);
         return entity;
@@ -154,7 +171,9 @@ public class EntityFactory {
         Physical physical = createPhysical(x, y, shape, BodyDef.BodyType.StaticBody);
         entity.add(physical);
 
-        entity.add(new Graphical(sprite, 0));
+        if (useGraphics) {
+            entity.add(new Graphical(sprite, 0));
+        }
 
         engine.addEntity(entity);
         return entity;
