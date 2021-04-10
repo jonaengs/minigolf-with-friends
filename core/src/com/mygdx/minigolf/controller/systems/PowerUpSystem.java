@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Contact;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.controller.EntityFactory;
@@ -51,7 +52,7 @@ public class PowerUpSystem extends EntitySystem {
             playerComponent.removeEffects();
         }
     }
-    //need factory default col. for powerup entities to call this method
+
     public void givePowerUp(Entity player, Effect effect){
         playerMapper.get(player).addEffect(effect);
         effect.setConstraintStart(playerMapper.get(player).getStrokes());
@@ -60,12 +61,17 @@ public class PowerUpSystem extends EntitySystem {
                 physicalMapper.get(player).addContactListener(new Physical.ContactListener(1) {
                     @Override
                     public void beginContact(Entity other, Contact contact) {
-                        applyEffectToPlayer(player, other);
+                        if(other.getComponent(Player.class) != null){
+                            applyEffectToPlayer(player, other);
+                        }
+
                     }
                     @Override
                     public void endContact(Entity other, Contact contact) {
-                        Player playerComponent = playerMapper.get(player);
-                        playerComponent.decrementConstraint(effect);
+                        if(other.getComponent(Player.class) != null){
+                            Player playerComponent = playerMapper.get(player);
+                            playerComponent.decrementConstraint(effect);
+                        }
                     }
                 });
                 break;
@@ -99,7 +105,9 @@ public class PowerUpSystem extends EntitySystem {
                         new Vector2(2, 2),
                         new Vector2(0,2)
                 };
-                entityFactory.createParticle(collisionVector.x, collisionVector.y, explosionShape);
+                PolygonShape shape = new PolygonShape();
+                shape.set(explosionShape);
+                entityFactory.createParticle(collisionVector.x, collisionVector.y, shape);
                 physicalMapper.get(effectReciever).setPosition(Game.spawnPosition);
             }
         }

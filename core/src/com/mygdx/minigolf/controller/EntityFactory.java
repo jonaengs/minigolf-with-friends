@@ -16,10 +16,13 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
+import com.mygdx.minigolf.controller.systems.PowerUpSystem;
+import com.mygdx.minigolf.model.Effect;
 import com.mygdx.minigolf.model.components.Graphical;
 import com.mygdx.minigolf.model.components.Objective;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.components.Player;
+import com.mygdx.minigolf.model.components.PowerUpGiver;
 
 import java.util.Arrays;
 
@@ -64,8 +67,7 @@ public class EntityFactory {
         return createEntity(
                 physical,
                 new Graphical(Sprite.Player, 1),
-                new Player(),
-                new PowerUpTaker()
+                new Player()
         );
     }
 
@@ -90,30 +92,33 @@ public class EntityFactory {
         );
     }
 
-    public Entity createPowerup(float x, float y, PolygonShape shape,  Effect effect) {
-        Entity entity = engine.createEntity();
+    public Entity createPowerup(float x, float y, PolygonShape shape, Effect effect) {
+        Entity entity = createEntity();
+
+        PowerUpGiver powerUpGiver = new PowerUpGiver();
+        powerUpGiver.setPowerup(effect);
+
+        Graphical graphical = new Graphical(Sprite.Powerup, 1);
+
+        entity.add(powerUpGiver);
+        entity.add(graphical);
 
         Physical physical = createPhysical(x, y, shape, BodyDef.BodyType.StaticBody);
-
         physical.addContactListener(new Physical.ContactListener(1) {
             @Override
             public void beginContact(Entity other, Contact contact) {
-                engine.getSystem(PowerUpSystem.class).givePowerUp(other, effect);
+                engine.getSystem(PowerUpSystem.class).givePowerUp(other, entity.getComponent(PowerUpGiver.class).getPowerup());
+            }
+
+            @Override
+            public void endContact(Entity other, Contact contact) {
+                engine.removeEntity(entity);
             }
         });
 
         entity.add(physical);
 
-        entity.add(new Graphical(Sprite.Powerup, 0));
-
-        engine.addEntity(entity);
         return entity;
-        /*
-    public Entity createPowerup(float x, float y, CircleShape shape) {
-        return createEntity(
-                createPhysical(x + shape.getRadius(), y + shape.getRadius(), shape, BodyDef.BodyType.StaticBody),
-                new Graphical(Sprite.Powerup, 1)
-        );*/
     }
 
     public Entity createSpawn(float x, float y) {
@@ -140,27 +145,16 @@ public class EntityFactory {
         );
     }
 
-        engine.addEntity(entity);
-        return entity;
-    }
-
-    public Entity createParticle(float x, float y, Vector2... points) {
-        Entity entity = engine.createEntity();
-
-        PolygonShape shape = new PolygonShape();
-        shape.set(points);
-        Physical physical = createPhysical(x, y, shape, BodyDef.BodyType.StaticBody);
-
-        entity.add(physical);
-        entity.add(new Graphical(Sprite.Particle, 0));
-
-        engine.addEntity(entity);
-        return entity;
-
+    public Entity createParticle(float x, float y, PolygonShape shape) {
+        return createEntity(
+                createPhysical(x,y, shape, BodyDef.BodyType.StaticBody),
+                new Graphical(Sprite.Particle, 1)
+        );
     }
 
     public Entity createCourse(float x, float y, PolygonShape shape) {
         return createSurface(x, y, Sprite.SurfaceA, shape, -1);
+    }
 
     private Physical createPhysical(float x, float y, Shape shape, BodyDef.BodyType type) {
         BodyDef def = new BodyDef();
@@ -180,7 +174,8 @@ public class EntityFactory {
         Powerup(Color.BLUE),
         SurfaceA(Color.GREEN),
         SurfaceB(Color.FIREBRICK),
-        Obstacle(Color.FIREBRICK);
+        Obstacle(Color.FIREBRICK),
+        Particle(Color.GOLD);
 
         public final Color color;
 
