@@ -23,9 +23,9 @@ public class GameState implements Serializable {
 
         @Override
         public String toString() {
-            return "PlayerState{" +
-                    "position=" + position +
-                    ", velocity=" + velocity +
+            return "{" +
+                    "pos=" + position +
+                    ", vel=" + velocity +
                     '}';
         }
     }
@@ -33,7 +33,7 @@ public class GameState implements Serializable {
     @Override
     public String toString() {
         return "GameState{" +
-                "data=" + data +
+                data +
                 '}';
     }
 }

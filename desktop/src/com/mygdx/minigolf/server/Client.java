@@ -4,7 +4,7 @@ package com.mygdx.minigolf.server;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.model.components.Physical;
@@ -19,7 +19,6 @@ import java.io.PushbackInputStream;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -27,7 +26,6 @@ import java.util.stream.Collectors;
 class Client {
     static final String[] names = {"Hannah", "Ludo", "Bathilda", "Katie", "Cuthbert", "Phineas", "Sirius", "Amelia", "Susan", "Terry", "Lavender", "Millicent", "Charity", "Frank", "Alecto", "Amycus", "Reginald", "Mary", "Cho", "Penelope", "Michael", "Vincent", "Vincent", "Colin", "Dennis", "Dirk", "Bartemius", "Bartemius", "Roger", "Dawlish", "Fleur", "Gabrielle", "Dedalus", "Amos", "Cedric", "Elphias", "Antonin", "Aberforth", "Albus", "Dudley", "Marjorie", "Petunia", "Vernon", "Marietta", "Arabella", "Argus", "Justin", "Seamus", "Marcus", "Mundungus", "Filius", "Florean", "Cornelius", "Marvolo", "Merope", "Morfin", "Anthony", "Goyle", "Gregory", "Hermione", "Astoria", "Gregorovitch", "Fenrir", "Gellert", "Wilhelmina", "Godric", "Rubeus", "Madam", "Mafalda", "Helga", "Lee", "Bertha", "Igor", "Viktor", "Bellatrix", "Rabastan", "Rodolphus", "Gilderoy", "Alice", "Augusta", "Frank", "Neville", "Luna", "Xenophilius", "Remus", "Edward", "Walden", "Draco", "Lucius", "Narcissa", "Scorpius", "Madam", "Griselda", "Madam", "Olympe", "Ernie", "Minerva", "Cormac", "Graham", "Alastor", "Auntie", "Theodore", "Bob", "Garrick", "Pansy", "Padma", "Parvati", "Peter", "Antioch", "Cadmus", "Ignotus", "Irma", "Sturgis", "Poppy", "Harry", "James", "Lily", "Quirinus", "Helena", "Rowena", "Tom", "Demelza", "Augustus", "Albert", "Newt", "Rufus", "Kingsley", "Stanley", "Aurora", "Rita", "Horace", "Salazar", "Hepzibah", "Zacharias", "Severus", "Alicia", "Pomona", "Pius", "Dean", "Andromeda", "Nymphadora", "Ted", "Travers", "Sybill", "Wilky", "Dolores", "Emmeline", "Romilda", "Septima", "Lord", "Angelina", "Myrtle", "Arthur", "Bill", "Charlie", "Fred", "George", "Ginny", "Hugo", "Molly", "Percy", "Ron", "Rose", "Oliver", "Yaxley", "Blaise"};
 
-    String lobbyId;
     Socket socket;
     BufferedWriter out;
     PushbackInputStream pbin;
@@ -106,7 +104,9 @@ class Client {
                             game.getFactory().setUseGraphics(false);
                         } else {
                             game = new Game();
-                            new LwjglApplication(game);
+                            LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
+                            config.x = 200; config.y = 200;
+                            new LwjglApplication(game, config);
                             Thread.sleep(2_000); // Sleep to allow create method to run
                         }
                         HeadlessGame finalGame = game;
@@ -115,7 +115,7 @@ class Client {
                         players = Arrays.stream(playerList)
                                 .collect(Collectors.toMap(
                                         player -> player,
-                                        player -> finalGame.getFactory().createPlayer(10, 10, false)
+                                        player -> finalGame.getFactory().createPlayer(10, 10, !headless)
                                 ));
                         Map<String, Entity> finalPlayers = players;
                         playerPhysicalComponents = players.keySet().stream()

@@ -94,7 +94,7 @@ public class GameController implements Runnable {
                         comms.remove(comm);
                     } else {
                         Physical playerPhysics = playerPhysicalComponents.get(comm);
-                        // TODO: if (playerPhysics.getVelocity().isZero()) {
+                        // if (playerPhysics.getVelocity().isZero()) {
                         if (true) {
                             String[] split = data.split(", "); // format: "vel_x, vel_y"
                             Vector2 v = new Vector2(Float.parseFloat(split[0]), Float.parseFloat(split[1]));
