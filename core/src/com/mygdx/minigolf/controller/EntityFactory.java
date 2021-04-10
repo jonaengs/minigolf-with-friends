@@ -29,6 +29,18 @@ public class EntityFactory {
     private final Engine engine;
     private final World world;
 
+    static public float[] getVertices(PolygonShape shape) {
+        int nVertices = shape.getVertexCount();
+        float[] vertices = new float[2 * nVertices];
+        Vector2 v = new Vector2();
+        for (int i = 0; i < nVertices; i++) {
+            shape.getVertex(i, v);
+            vertices[2*i] = v.x;
+            vertices[2*i + 1] = v.y;
+        }
+        return vertices;
+    }
+
     public EntityFactory(Engine engine, World world) {
         this.engine = engine;
         this.world = world;
@@ -64,29 +76,24 @@ public class EntityFactory {
         return player;
     }
 
-    public Entity createHole(float x, float y) {
-        CircleShape shape = new CircleShape();
-        shape.setRadius(0.15f);
-
+    public Entity createHole(float x, float y, CircleShape shape) {
         return createEntity(
-                createPhysical(x, y, shape, BodyDef.BodyType.StaticBody),
+                createPhysical(x + shape.getRadius(), y + shape.getRadius(), shape, BodyDef.BodyType.StaticBody),
                 new Graphical(Sprite.Hole, 0),
                 new Objective()
         );
     }
 
-    public Entity createObstacle(float x, float y, Shape shape) {
+    public Entity createObstacle(float x, float y, PolygonShape shape) {
         return createEntity(
                 createPhysical(x, y, shape, BodyDef.BodyType.StaticBody),
-                new Graphical(Sprite.Obstacle, 1)
+                new Graphical(Sprite.Obstacle.color, 1, getVertices(shape))
         );
     }
 
-    public Entity createPowerup(float x, float y) {
-        Shape shape = new CircleShape();
-        shape.setRadius(1f);
+    public Entity createPowerup(float x, float y, CircleShape shape) {
         return createEntity(
-                createPhysical(x, y, shape, BodyDef.BodyType.StaticBody),
+                createPhysical(x + shape.getRadius(), y + shape.getRadius(), shape, BodyDef.BodyType.StaticBody),
                 new Graphical(Sprite.Powerup, 1)
         );
     }
@@ -97,21 +104,19 @@ public class EntityFactory {
         return createEntity(createPhysical(x, y, shape, BodyDef.BodyType.StaticBody));
     }
 
-    public Entity createSurface(float x, float y, Sprite sprite, Shape shape) {
+    public Entity createSurface(float x, float y, Sprite sprite, PolygonShape shape) {
         return createSurface(x, y, sprite, shape, 0);
     }
 
-    public Entity createSurface(float x, float y, Sprite sprite, Shape shape, int layer) {
+    public Entity createSurface(float x, float y, Sprite sprite, PolygonShape shape, int layer) {
         return createEntity(
                 createPhysical(x, y, shape, BodyDef.BodyType.StaticBody),
-                new Graphical(sprite, layer)
+                new Graphical(sprite.color, layer, getVertices(shape))
         );
     }
 
-    public Entity createCourse(float width, float height) {
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox(width, height);
-        return createSurface(0, 0, Sprite.SurfaceA, shape, -1);
+    public Entity createCourse(float x, float y, PolygonShape shape) {
+        return createSurface(x, y, Sprite.SurfaceA, shape, -1);
     }
 
     private Physical createPhysical(float x, float y, Shape shape, BodyDef.BodyType type) {

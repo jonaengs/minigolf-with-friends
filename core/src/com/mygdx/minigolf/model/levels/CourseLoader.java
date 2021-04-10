@@ -55,7 +55,7 @@ public class CourseLoader {
                 List<String> styles = Arrays.asList(node.getAttribute("style").split(";"));
                 elements.add(new CourseElement(
                         Float.parseFloat(geometry.get("x", "0")),
-                        SCREEN_HEIGHT - Float.parseFloat(geometry.get("y", "0")),
+                        Float.parseFloat(geometry.get("y", "0")),
                         Float.parseFloat(geometry.get("width")),
                         Float.parseFloat(geometry.get("height")),
                         Float.parseFloat(getRotation(styles)),

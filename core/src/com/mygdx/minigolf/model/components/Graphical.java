@@ -4,22 +4,34 @@ import com.badlogic.ashley.core.Component;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.PolygonSprite;
-import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.PolygonRegion;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.EarClippingTriangulator;
 import com.mygdx.minigolf.controller.EntityFactory;
 
 public class Graphical implements Component {
 
+    public PolygonRegion polygonRegion;
     public final Color color;
     private int layer;
-
-    public Graphical(Color color) {
-        this(color, 1);
-    }
 
     public Graphical(Color color, int layer) {
         this.color = color;
         this.layer = layer;
+    }
+
+    public Graphical(Color color, int layer, float[] vertices) {
+        this(color, layer);
+
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGB888);
+        pixmap.setColor(color);
+        pixmap.fill();
+        Texture texture = new Texture(pixmap);
+        polygonRegion = new PolygonRegion(
+                new TextureRegion(texture),
+                vertices,
+                new EarClippingTriangulator().computeTriangles(vertices).toArray()
+        );
     }
 
     public Graphical(EntityFactory.Sprite sprite, int layer) {

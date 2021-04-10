@@ -13,10 +13,10 @@ public class CourseElement {
     // Using GraphicsSystem values here is not exactly good decoupling. Consider moving to somewhere else like LevelLoader
     protected CourseElement(float x, float y, float width, float height, float rotation, Shape shape, Function function) {
         this.x = x / GraphicsSystem.PPM;
-        this.y = y / GraphicsSystem.PPM;
+        this.y = (CourseLoader.SCREEN_HEIGHT - (y + height)) / GraphicsSystem.PPM;
         this.width = width / GraphicsSystem.PPM;
         this.height = height / GraphicsSystem.PPM;
-        this.rotation = rotation;
+        this.rotation = -rotation;
         this.shape = shape;
         this.function = function;
     }
