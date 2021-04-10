@@ -6,9 +6,7 @@ import com.mygdx.minigolf.controller.screenControllers.ScreenController;
 
 
 public class Game extends com.badlogic.gdx.Game {
-
-    private static Game instance; // singleton, gdx is the only one creating the game instance
-
+    private static Game instance;
     public Music music;
 
     @Override
