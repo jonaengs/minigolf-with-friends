@@ -13,9 +13,9 @@ import com.mygdx.minigolf.model.levels.LevelLoader;
 // https://github.com/TomGrill/gdx-testing/blob/master/tests/src/de/tomgrill/gdxtesting/GdxTestRunner.java
 public class HeadlessGame implements ApplicationListener {
     // Implement game logic here. Extend with Game. Implement Headless-less things there.
-    Engine engine;
-    World world;
-    EntityFactory factory;
+    public Engine engine;
+    public World world;
+    public EntityFactory factory;
     public LevelLoader levelLoader;
 
     @Override
