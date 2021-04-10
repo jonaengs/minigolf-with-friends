@@ -40,8 +40,7 @@ public class CourseTest extends TestFileLoader {
     @Test
     void outOfBoundsCourseElementsFailValidate() throws IOException {
         List<CourseElement> course = CourseLoader.load(getFileStream("out_of_bounds_elem.xml"));
-        Exception e = assertThrows(IllegalArgumentException.class, () -> CourseLoader.validate(course));
-        assertEquals("Course element outside screen bounds", e.getMessage());
+        assertThrows(IllegalArgumentException.class, () -> CourseLoader.validate(course));
     }
 
     @Test
@@ -68,11 +67,11 @@ public class CourseTest extends TestFileLoader {
         CourseElement triangle = course.stream()
                 .filter(ce -> ce.shape == CourseElement.Shape.TRIANGLE)
                 .findFirst().get();
-        assertEquals(-219, triangle.rotation);
+        assertEquals(219, triangle.rotation);
 
         CourseElement notTriangle = course.stream()
                 .filter(ce -> ce.shape != CourseElement.Shape.TRIANGLE)
                 .findFirst().get();
-        assertEquals(0, notTriangle.rotation);
+        assertEquals(-0f, notTriangle.rotation);
     }
 }
