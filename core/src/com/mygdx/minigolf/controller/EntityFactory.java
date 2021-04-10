@@ -108,6 +108,13 @@ public class EntityFactory {
         return createSurface(x, y, sprite, shape, 0);
     }
 
+    public Entity createWall(float x, float y, PolygonShape shape) {
+        return createEntity(
+                createPhysical(x, y, shape, BodyDef.BodyType.StaticBody),
+                new Graphical(Sprite.SurfaceB.color, 1, getVertices(shape))
+        );
+    }
+
     public Entity createSurface(float x, float y, Sprite sprite, PolygonShape shape, int layer) {
         return createEntity(
                 createPhysical(x, y, shape, BodyDef.BodyType.StaticBody),
@@ -136,8 +143,8 @@ public class EntityFactory {
         Hole(Color.BLACK),
         Powerup(Color.BLUE),
         SurfaceA(Color.GREEN),
-        SurfaceB(Color.RED),
-        Obstacle(Color.WHITE);
+        SurfaceB(Color.FIREBRICK),
+        Obstacle(Color.FIREBRICK);
 
         public final Color color;
 

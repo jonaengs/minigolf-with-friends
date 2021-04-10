@@ -73,6 +73,8 @@ public class LevelLoader {
                 return factory.createPowerup(elem.x, elem.y, (CircleShape) getShape(elem));
             case COURSE:
                 return factory.createCourse(elem.x, elem.y, (PolygonShape) getShape(elem));
+            case WALL:
+                return factory.createWall(elem.x, elem.y, (PolygonShape) getShape(elem));
             default:
                 throw new IllegalArgumentException("Illegal course element function");
         }
