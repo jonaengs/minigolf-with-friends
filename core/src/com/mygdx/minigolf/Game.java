@@ -7,11 +7,19 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Contact;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.minigolf.controller.EntityFactory;
 import com.mygdx.minigolf.controller.systems.GraphicsSystem;
 import com.mygdx.minigolf.controller.systems.Physics;
+import com.mygdx.minigolf.controller.systems.PowerUpSystem;
+import com.mygdx.minigolf.model.Constraint;
+import com.mygdx.minigolf.model.ConstraintType;
+import com.mygdx.minigolf.model.Effect;
+import com.mygdx.minigolf.model.Power;
 import com.mygdx.minigolf.model.components.Physical;
+
+import javax.xml.bind.ValidationEvent;
 
 public class Game extends ApplicationAdapter {
 
@@ -23,61 +31,43 @@ public class Game extends ApplicationAdapter {
     @Override
     public void create() {
         engine = new Engine();
-        world = new World(new Vector2(0, -10), true);
+        world = new World(new Vector2(0, 0), true);
+
 
         GraphicsSystem graphicsSystem = new GraphicsSystem();
+        factory = new EntityFactory(engine, world, graphicsSystem.getCam());
 
         engine.addSystem(graphicsSystem);
         engine.addSystem(new Physics(world, engine));
+        engine.addSystem(new PowerUpSystem(engine, factory, world));
         // engine.addSystem(new PhysicsDebugSystem(world, graphicsSystem.getCam()));
 
-        factory = new EntityFactory(engine, world);
-
-        // --- Start dummy demo code ---
+        // --- Scenario 1: Exploding power up ---
         factory.createPlayer(9, 12, false);
 
-        Vector2[] triangle = new Vector2[]{
-                new Vector2(0, 0),
-                new Vector2(2, 0),
-                new Vector2(2, 1),
+        //Creating a power up effect with a constraint
+        Constraint constraint = new Constraint(ConstraintType.USES, 1).setStart();
+        Effect effect = new Effect(Power.EXPLODING, constraint);
+        Vector2[] powerupShape = new Vector2[]{
+                new Vector2(0,0),
+                new Vector2(2,0),
+                new Vector2(1,1),
         };
+        PolygonShape ps = new PolygonShape();
+        ps.set(powerupShape);
+        factory.createPowerup(9, 9, ps, effect);
 
-        // demo highest priority wins
-        Entity e1 = factory.createObstacle(8, 1, triangle);
-        // added first, but highest priority, will be executed last and have final say
-        e1.getComponent(Physical.class).addContactListener(new Physical.ContactListener(100) {
-            @Override
-            public void ignoreContact(Entity other, Contact contact) {
-                contact.setEnabled(true);
-            }
-        });
-        // added second, but lower priority, will be executed first and later listeners might
-        // override decisions this listener caused
-        e1.getComponent(Physical.class).addContactListener(new Physical.ContactListener(10) {
-            @Override
-            public void ignoreContact(Entity other, Contact contact) {
-                contact.setEnabled(false);
-            }
-        });
 
-        // demo disable contact; fall through entity
-        factory.createObstacle(8, 4, triangle).getComponent(Physical.class).addContactListener(new Physical.ContactListener(1) {
-            @Override
-            public void ignoreContact(Entity other, Contact contact) {
-                contact.setEnabled(false);
-            }
-        });
+        factory.createPlayer(9,5, true);
 
-        // demo removing entity on contact (e.g. power-up)
-        Entity e3 = factory.createObstacle(8, 7, triangle);
-        e3.getComponent(Physical.class).addContactListener(new Physical.ContactListener(1) {
-            @Override
-            public void ignoreContact(Entity other, Contact contact) {
-                engine.removeEntity(e3);
-                contact.setEnabled(false);
-            }
-        });
-        // --- End dummy demo code ---
+        // --- Scenario 2: No collision power-up ----
+        factory.createPlayer(12,5, true);
+
+
+
+
+
+
 
     }
 

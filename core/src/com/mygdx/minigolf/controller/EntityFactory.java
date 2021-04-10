@@ -9,10 +9,13 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
+import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.mygdx.minigolf.controller.systems.PowerUpSystem;
+import com.mygdx.minigolf.model.Effect;
 import com.mygdx.minigolf.model.components.Graphical;
 import com.mygdx.minigolf.model.components.Objective;
 import com.mygdx.minigolf.model.components.Physical;
@@ -78,6 +81,9 @@ public class EntityFactory {
         E.g. if we set another wall to have 0 bounce, then the player will not bounce at all against it.
          */
         physical.setBounce(0);
+        physical.addContactListener(new Physical.ContactListener(1) {
+
+        });
         entity.add(physical);
 
         entity.add(new Graphical(Sprite.Player, 0));
@@ -119,12 +125,19 @@ public class EntityFactory {
         return entity;
     }
 
-    public Entity createPowerup(float x, float y) {
+    public Entity createPowerup(float x, float y, PolygonShape shape,  Effect effect) {
         Entity entity = engine.createEntity();
 
-        Shape shape = new CircleShape();
-        shape.setRadius(1f);
-        entity.add(createPhysical(x, y, shape, BodyDef.BodyType.StaticBody));
+        Physical physical = createPhysical(x, y, shape, BodyDef.BodyType.StaticBody);
+
+        physical.addContactListener(new Physical.ContactListener(1) {
+            @Override
+            public void beginContact(Entity other, Contact contact) {
+                engine.getSystem(PowerUpSystem.class).givePowerUp(other, effect);
+            }
+        });
+
+        entity.add(physical);
 
         entity.add(new Graphical(Sprite.Powerup, 0));
 
@@ -160,7 +173,14 @@ public class EntityFactory {
 
     public Entity createParticle(float x, float y, Vector2... points) {
         Entity entity = engine.createEntity();
-        //create particle
+
+        PolygonShape shape = new PolygonShape();
+        shape.set(points);
+        Physical physical = createPhysical(x, y, shape, BodyDef.BodyType.StaticBody);
+
+        entity.add(physical);
+        entity.add(new Graphical(Sprite.Particle, 0));
+
         engine.addEntity(entity);
         return entity;
     }

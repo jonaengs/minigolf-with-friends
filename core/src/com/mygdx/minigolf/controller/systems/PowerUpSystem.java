@@ -34,7 +34,7 @@ public class PowerUpSystem extends EntitySystem {
     private final ComponentMapper<Physical> physicalMapper = ComponentMapper.getFor(Physical.class);
     private final ComponentMapper<PowerUpGiver> powerUpGiverMapper = ComponentMapper.getFor(PowerUpGiver.class);
 
-    PowerUpSystem(Engine engine, EntityFactory ef, World world){
+    public PowerUpSystem(Engine engine, EntityFactory ef, World world){
         super();
         this.entityFactory = ef;
         this.world = world;
@@ -52,8 +52,7 @@ public class PowerUpSystem extends EntitySystem {
         }
     }
     //need factory default col. for powerup entities to call this method
-    private void givePowerUp(Entity player, Entity powerUp){
-        Effect effect = powerUpGiverMapper.get(powerUp).getPowerup();
+    public void givePowerUp(Entity player, Effect effect){
         playerMapper.get(player).addEffect(effect);
         effect.setConstraintStart(playerMapper.get(player).getStrokes());
         switch (effect.getPower()){
@@ -94,19 +93,18 @@ public class PowerUpSystem extends EntitySystem {
         for(Effect effect : effects){
             if (effect.getPower() == Power.EXPLODING) {
                 Vector2 collisionVector = physicalMapper.get(effectReciever).getPosition();
-                //createExplosionParticle(collisionVector);
+                Vector2[] explosionShape = new Vector2[]{
+                        new Vector2(0, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 2),
+                        new Vector2(0,2)
+                };
+                entityFactory.createParticle(collisionVector.x, collisionVector.y, explosionShape);
                 physicalMapper.get(effectReciever).setPosition(Game.spawnPosition);
             }
         }
     }
 
-    private void createExplosionParticle(Vector2 explosionPostion){
-        //Entity explosionParticle = entityFactory.createEntity(EntityFactory.EntityType.PARTICLE);
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.type = BodyDef.BodyType.StaticBody;
-        bodyDef.position.set(explosionPostion.x, explosionPostion.y);
-        Body explosionBody = world.createBody(bodyDef);
-        //physicalMapper.get(explosionParticle).setBody(explosionBody);
-    }
+
 
 }
