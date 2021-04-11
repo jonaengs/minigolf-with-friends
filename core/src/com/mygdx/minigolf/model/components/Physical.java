@@ -8,6 +8,7 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Shape;
+import com.badlogic.gdx.physics.box2d.joints.FrictionJoint;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,10 +18,18 @@ import java.util.List;
 public class Physical implements Component {
 
     private Body body;
+    private float friction;
+    private FrictionJoint frictionJoint = null;
     private List<ContactListener> contactListeners = new ArrayList<>();
 
     public Physical(Body body) {
         this.body = body;
+        this.friction = 0f;
+    }
+
+    public Physical(Body body, float friction) {
+        this.body = body;
+        this.friction = friction;
     }
 
     public Body getBody() {
@@ -75,11 +84,27 @@ public class Physical implements Component {
     }
 
     public float getFriction() {
-        return this.getFixture().getFriction();
+        return this.friction;
+    }
+
+    public float getBodyFriction() {
+        if (frictionJoint != null) {
+            return frictionJoint.getMaxForce();
+        }
+
+        return 0f;
     }
 
     public void setFriction(float friction) {
-        this.getFixture().setFriction(friction);
+        this.friction = friction;
+    }
+
+    public FrictionJoint getFrictionJoint() {
+        return frictionJoint;
+    }
+
+    public void setFrictionJoint(FrictionJoint frictionJoint) {
+        this.frictionJoint = frictionJoint;
     }
 
     public float getDensity() {

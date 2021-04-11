@@ -105,7 +105,10 @@ class Client {
                         } else {
                             game = new GameView();
                             LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-                            config.x = 200; config.y = 200;
+                            config.x = 100;
+                            config.y = 100;
+                            config.width = 1280;
+                            config.height = 720;
                             new LwjglApplication(game, config);
                             Thread.sleep(2_000); // Sleep to allow create method to run
                         }
