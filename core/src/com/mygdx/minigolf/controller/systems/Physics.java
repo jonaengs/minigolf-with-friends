@@ -29,10 +29,10 @@ public class Physics extends IteratingSystem implements ContactListener, EntityL
     private static final float MAX_STEP_TIME = 1 / 30f;
     private static float accumulator = 0f;
 
-    private World world;
-    private Engine engine;
-    private ComponentMapper<Physical> mapper = ComponentMapper.getFor(Physical.class);
-    private Map<Body, Entity> cache = new HashMap<>();
+    private final World world;
+    private final Engine engine;
+    private final ComponentMapper<Physical> mapper = ComponentMapper.getFor(Physical.class);
+    private final Map<Body, Entity> cache = new HashMap<>();
 
     // A common friction body to be used by all bodies that want friction
     public final Body frictionBody;
@@ -98,6 +98,7 @@ public class Physics extends IteratingSystem implements ContactListener, EntityL
     public void postSolve(Contact contact, ContactImpulse impulse) {
     }
 
+    @SuppressWarnings("unchecked")
     private void callListeners(Contact contact, Consumer<Map.Entry<Physical.ContactListener, Entity>> func) {
         Entity entityA = getEntity(contact.getFixtureA().getBody());
         mapper.get(entityA).getContactListeners().forEach(listener -> func.accept(new AbstractMap.SimpleEntry(listener, entityA)));
