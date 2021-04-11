@@ -6,7 +6,6 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -61,6 +60,7 @@ public class EntityFactory {
         /* Set bounce to 0. This way we can more easily control bounce between the player and other objects.
         E.g. if we set another wall to have 0 bounce, then the player will not bounce at all against it.*/
         physical.setBounce(0);
+        physical.setFriction(8f);
 
         return createEntity(
                 physical,
