@@ -4,12 +4,11 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.math.Vector2;
-import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.model.components.Physical;
+import com.mygdx.minigolf.view.GameView;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,7 +25,7 @@ public class GameController implements Runnable {
     GameController(List<CommunicationHandler> comms) {
 
         if (showGame) {
-            game = new Game();
+            game = new GameView();
             new LwjglApplication(game);
             try {
                 Thread.sleep(1000);
@@ -41,7 +40,6 @@ public class GameController implements Runnable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            game.getFactory().setUseGraphics(false);
         }
 
         comms.forEach(comm -> {
@@ -72,7 +70,7 @@ public class GameController implements Runnable {
         Map<GameCommunicationHandler, Entity> players = comms.stream()
                 .collect(Collectors.toMap(
                         comm -> comm,
-                        comm -> game.getFactory().createPlayer(10, 10, false)
+                        comm -> game.getFactory().createPlayer(10, 10)
                 ));
         Map<GameCommunicationHandler, Physical> playerPhysicalComponents = players.keySet().stream()
                 .collect(Collectors.toMap(
@@ -115,8 +113,6 @@ public class GameController implements Runnable {
                                     }
                             ))
             );
-
-            // System.out.println(gameData);
 
             long delta = System.currentTimeMillis() - t0;
             try {

@@ -16,7 +16,7 @@ public class Objective implements Component {
         this.area = area;
     }
 
-    public boolean contains(Vector2 position){
+    public boolean contains(Vector2 position) {
         return area.contains(position);
     }
 }

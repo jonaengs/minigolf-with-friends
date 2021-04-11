@@ -8,6 +8,7 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.model.components.Physical;
+import com.mygdx.minigolf.view.GameView;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -101,9 +102,8 @@ class Client {
                             game = new HeadlessGame();
                             new HeadlessApplication(game);
                             Thread.sleep(2_000); // Sleep to allow create method to run
-                            game.getFactory().setUseGraphics(false);
                         } else {
-                            game = new Game();
+                            game = new GameView();
                             LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
                             config.x = 200; config.y = 200;
                             new LwjglApplication(game, config);
@@ -115,7 +115,7 @@ class Client {
                         players = Arrays.stream(playerList)
                                 .collect(Collectors.toMap(
                                         player -> player,
-                                        player -> finalGame.getFactory().createPlayer(10, 10, !headless)
+                                        player -> finalGame.getFactory().createPlayer(10, 10)
                                 ));
                         Map<String, Entity> finalPlayers = players;
                         playerPhysicalComponents = players.keySet().stream()
@@ -151,9 +151,7 @@ class Client {
                         String[] split = msg.split(", ");
                         playerList = split.length >= 1 ? split : playerList;
                     }
-                } catch (IOException e) {
-                    break;
-                } catch (InterruptedException | ClassNotFoundException e) {
+                } catch (IOException | InterruptedException | ClassNotFoundException e) {
                     e.printStackTrace();
                     break;
                 }
