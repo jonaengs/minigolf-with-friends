@@ -2,6 +2,7 @@ package com.mygdx.minigolf.controller;
 
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 
@@ -15,6 +16,8 @@ public class InputHandler extends InputAdapter {
 
     private final Vector3 dragStartPos = new Vector3();
     private final Vector3 draggingPos = new Vector3(); // Use this to draw the crosshair (when ball is not moving)
+
+    public final static Vector2 input = new Vector2(0, 0);
 
     public InputHandler(OrthographicCamera cam, Body ballBody) {
         this.cam = cam;
@@ -46,6 +49,8 @@ public class InputHandler extends InputAdapter {
 
             // Convert dragging distance to amount of force to apply to the ball
             Vector3 force = dragStartPos.sub(dragEndPos);
+            System.out.println("FORCE: " + force);
+            input.set(force.x, force.y);
 
             // Apply force
             ballBody.applyLinearImpulse(force.x, force.y, dragEndPos.x, dragEndPos.y, true);

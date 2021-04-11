@@ -28,7 +28,7 @@ class CommunicationHandler implements Runnable {
         System.out.println(name + "CH CLOSING!");
         running.set(false);
         try {
-            recvBuffer.add(Msg.EXIT);
+            recvBuffer.add("EXIT");
             socket.close();
         } catch (IOException ignored) {
         }

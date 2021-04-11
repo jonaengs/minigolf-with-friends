@@ -70,4 +70,9 @@ public class GameView extends HeadlessGame implements Screen {
     @Override
     public void dispose() {
     }
+
+    public GraphicsSystem getGraphicsSystem() {
+        return graphicsSystem;
+    }
+
 }
