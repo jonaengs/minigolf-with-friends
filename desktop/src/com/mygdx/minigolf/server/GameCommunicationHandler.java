@@ -1,9 +1,9 @@
 package com.mygdx.minigolf.server;
 
-import java.io.BufferedWriter;
+import com.mygdx.minigolf.server.messages.GameState;
+
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PushbackInputStream;
 import java.net.Socket;
 

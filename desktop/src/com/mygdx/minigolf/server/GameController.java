@@ -6,6 +6,7 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.model.components.Physical;
+import com.mygdx.minigolf.server.messages.GameState;
 import com.mygdx.minigolf.view.GameView;
 
 import java.io.IOException;

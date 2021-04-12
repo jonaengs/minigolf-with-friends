@@ -1,23 +1,23 @@
 package com.mygdx.minigolf.server;
 
-import java.io.BufferedWriter;
+import com.mygdx.minigolf.server.messages.Message;
+import com.mygdx.minigolf.server.messages.Message.ClientLobbyCommand;
+import com.mygdx.minigolf.server.messages.Message.ServerLobbyCommand;
+
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PushbackInputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.mygdx.minigolf.server.Utils.isEOF;
-
 
 class CommunicationHandler implements Runnable {
-    public final ConcurrentLinkedQueue<String> sendBuffer = new ConcurrentLinkedQueue<>();
-    public final ConcurrentLinkedQueue<String> recvBuffer = new ConcurrentLinkedQueue<>();
-    final String name;
+    public final ConcurrentLinkedQueue<Message<ServerLobbyCommand>> sendBuffer = new ConcurrentLinkedQueue<>();
+    public final ConcurrentLinkedQueue<Message<ClientLobbyCommand>> recvBuffer = new ConcurrentLinkedQueue<>();
+    String name;
     final Socket socket;
     public AtomicBoolean running = new AtomicBoolean(true);
-    Thread t;
 
     public CommunicationHandler(Socket socket, String name) {
         this.socket = socket;
@@ -25,10 +25,9 @@ class CommunicationHandler implements Runnable {
     }
 
     public void close() {
-        System.out.println(name + "CH CLOSING!");
         running.set(false);
+        recvBuffer.add(new Message<>(ClientLobbyCommand.EXIT));
         try {
-            recvBuffer.add("EXIT");
             socket.close();
         } catch (IOException ignored) {
         }
@@ -36,33 +35,21 @@ class CommunicationHandler implements Runnable {
 
     @Override
     public void run() {
-        t = Thread.currentThread();
-        t.setName(this.getClass().getName());
-        String sendMsg, recvMsg;
+        Message<ServerLobbyCommand> sendMsg;
         try {
-            BufferedWriter sendStream = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            PushbackInputStream recvStream = new PushbackInputStream(socket.getInputStream());
+            ObjectOutputStream objSender = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream objRecv = new ObjectInputStream(socket.getInputStream());
             while (running.get()) {
                 while (!sendBuffer.isEmpty()) {
-                    sendMsg = this.sendBuffer.poll();
-                    if (sendMsg != null) {
-                        System.out.println(name + "CH Sending msg: " + sendMsg);
-                        sendStream.write(sendMsg + "\n");
-                        sendStream.flush();
-                    }
+                    sendMsg = sendBuffer.poll();
+                    objSender.writeObject(sendMsg);
                 }
-                if (isEOF(socket, recvStream)) {
-                    close();
-                    break;
+                while (objRecv.available() > 0) {
+                    recvBuffer.add((Message<ClientLobbyCommand>) objRecv.readObject());
                 }
-                do {
-                    recvMsg = Utils.readLine(recvStream);
-                    if (!recvMsg.isEmpty()) {
-                        this.recvBuffer.add(recvMsg);
-                    }
-                } while(!recvMsg.isEmpty());
             }
-        } catch (IOException ignored) {
+        } catch (ClassNotFoundException | IOException e) {
+            e.printStackTrace();
         } finally {
             System.out.println(name + "CH Terminating");
         }

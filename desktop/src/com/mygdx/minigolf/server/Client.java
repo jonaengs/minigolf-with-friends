@@ -11,6 +11,11 @@ import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.controller.InputHandler;
 import com.mygdx.minigolf.model.components.Physical;
+import com.mygdx.minigolf.server.messages.GameMessage;
+import com.mygdx.minigolf.server.messages.GameState;
+import com.mygdx.minigolf.server.messages.LobbyMessage;
+import com.mygdx.minigolf.server.messages.Message;
+import com.mygdx.minigolf.server.messages.Message.ServerLobbyCommand;
 import com.mygdx.minigolf.view.GameView;
 
 import java.io.BufferedReader;
@@ -27,9 +32,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-class Client {
-    static final String[] names = {"Hannah", "Ludo", "Bathilda", "Katie", "Cuthbert", "Phineas", "Sirius", "Amelia", "Susan", "Terry", "Lavender", "Millicent", "Charity", "Frank", "Alecto", "Amycus", "Reginald", "Mary", "Cho", "Penelope", "Michael", "Vincent", "Vincent", "Colin", "Dennis", "Dirk", "Bartemius", "Bartemius", "Roger", "Dawlish", "Fleur", "Gabrielle", "Dedalus", "Amos", "Cedric", "Elphias", "Antonin", "Aberforth", "Albus", "Dudley", "Marjorie", "Petunia", "Vernon", "Marietta", "Arabella", "Argus", "Justin", "Seamus", "Marcus", "Mundungus", "Filius", "Florean", "Cornelius", "Marvolo", "Merope", "Morfin", "Anthony", "Goyle", "Gregory", "Hermione", "Astoria", "Gregorovitch", "Fenrir", "Gellert", "Wilhelmina", "Godric", "Rubeus", "Madam", "Mafalda", "Helga", "Lee", "Bertha", "Igor", "Viktor", "Bellatrix", "Rabastan", "Rodolphus", "Gilderoy", "Alice", "Augusta", "Frank", "Neville", "Luna", "Xenophilius", "Remus", "Edward", "Walden", "Draco", "Lucius", "Narcissa", "Scorpius", "Madam", "Griselda", "Madam", "Olympe", "Ernie", "Minerva", "Cormac", "Graham", "Alastor", "Auntie", "Theodore", "Bob", "Garrick", "Pansy", "Padma", "Parvati", "Peter", "Antioch", "Cadmus", "Ignotus", "Irma", "Sturgis", "Poppy", "Harry", "James", "Lily", "Quirinus", "Helena", "Rowena", "Tom", "Demelza", "Augustus", "Albert", "Newt", "Rufus", "Kingsley", "Stanley", "Aurora", "Rita", "Horace", "Salazar", "Hepzibah", "Zacharias", "Severus", "Alicia", "Pomona", "Pius", "Dean", "Andromeda", "Nymphadora", "Ted", "Travers", "Sybill", "Wilky", "Dolores", "Emmeline", "Romilda", "Septima", "Lord", "Angelina", "Myrtle", "Arthur", "Bill", "Charlie", "Fred", "George", "Ginny", "Hugo", "Molly", "Percy", "Ron", "Rose", "Oliver", "Yaxley", "Blaise"};
+import static com.mygdx.minigolf.server.messages.GameMessage.Command.LOAD_LEVEL;
 
+class Client {
     Socket socket;
     BufferedWriter out;
     BufferedReader in;
@@ -42,23 +47,19 @@ class Client {
 
     boolean headless = true;
 
-    public Client() throws IOException {
-        this("localhost", 8888);
-    }
-
     public Client(String name) throws IOException {
         this("localhost", 8888);
         this.name = name;
         headless = !name.contentEquals("leader");
     }
 
-    public Client(String url, int port) throws IOException {
+    private Client(String url, int port) throws IOException {
         socket = new Socket(url, port);
+        socket.setTcpNoDelay(true);
         pbin = new PushbackInputStream(socket.getInputStream());
         in = new BufferedReader(new InputStreamReader(pbin));
         out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         objIn = new ObjectInputStream(socket.getInputStream());
-        name = names[new Random().nextInt(names.length)];
     }
 
     public String createLobby() throws IOException {
@@ -103,13 +104,16 @@ class Client {
             while (true) {
                 String msg;
                 try {
-                    LobbyMessage lm;
+                    Message<ServerLobbyCommand> lm;
                     GameMessage gm;
                     switch (state) {
                         // TODO: Consider combining cases into two: LobbyMessage & GameMessage (using fallthrough)
                         case IN_LOBBY:
-                            lm = (LobbyMessage) objIn.readObject();
+                            lm = (Message<ServerLobbyCommand>) objIn.readObject();
                             switch (lm.command) {
+                                case NAME:
+                                    name = (String) lm.data;
+                                    break;
                                 case ENTER_GAME:
                                     state = State.LOADING_GAME;
                                     break;

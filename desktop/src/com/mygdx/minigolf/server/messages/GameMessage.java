@@ -1,18 +1,11 @@
-package com.mygdx.minigolf.server;
+package com.mygdx.minigolf.server.messages;
 
 import java.util.HashMap;
 
-public class GameMessage {
-    Command command;
-    Object data;
+public class GameMessage<Command> extends Message<Command> {
 
     public GameMessage(Command command) {
-        this.command = command;
-    }
-
-    public GameMessage(Command command, Object data) {
-        this.command = command;
-        this.data = data;
+        super(command);
     }
 
     public enum Command {

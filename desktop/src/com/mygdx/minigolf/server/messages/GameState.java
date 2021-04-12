@@ -1,4 +1,4 @@
-package com.mygdx.minigolf.server;
+package com.mygdx.minigolf.server.messages;
 
 import com.badlogic.gdx.math.Vector2;
 
@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 public class GameState implements Serializable {
-    Map<String, PlayerState> data;
+    public Map<String, PlayerState> data;
 
     public GameState(Map<String, PlayerState> states) {
         this.data = states;
