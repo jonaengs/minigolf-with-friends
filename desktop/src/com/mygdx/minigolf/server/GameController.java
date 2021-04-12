@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.server.messages.GameState;
+import com.mygdx.minigolf.server.messages.Message;
 import com.mygdx.minigolf.view.GameView;
 
 import java.io.IOException;
@@ -46,7 +47,7 @@ public class GameController implements Runnable {
         comms.forEach(comm -> {
             try {
                 comm.running.set(false);
-                comm.t.join();
+                comm.runningThread.join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -82,28 +83,23 @@ public class GameController implements Runnable {
             long t0 = System.currentTimeMillis();
 
             comms.forEach(comm -> {
-                String data;
+                Message<Message.ClientGameCommand> msg;
                 synchronized (comm.recvBuffer) {
-                    data = comm.recvBuffer[0];
-                    comm.recvBuffer[0] = null;
+                    msg = comm.recvBuffer.get();
                 }
-                if (data != null) {
-                    System.out.println("DATA: " + data);
-                    if (data.contentEquals("EXIT")) {
-                        comms.remove(comm);
-                    } else {
-                        Physical playerPhysics = playerPhysicalComponents.get(comm);
-                        // if (playerPhysics.getVelocity().isZero()) {
-                        if (true) {
-                            String[] split = data.split(", "); // format: "vel_x, vel_y"
-                            Vector2 v = new Vector2(Float.parseFloat(split[0]), Float.parseFloat(split[1]));
-                            System.out.println("V: " + v.toString());
-                            playerPhysics.setVelocity(v);
-                        }
+                if (msg != null) {
+                    System.out.println("DATA: " + msg);
+                    switch (msg.command) {
+                        case EXIT:
+                            comms.remove(comm);
+                            break;
+                        case INPUT:
+                            Physical playerPhysics = playerPhysicalComponents.get(comm);
+                            System.out.println("V: " + msg.data);
+                            playerPhysics.setVelocity((Vector2) msg.data);
                     }
                 }
             });
-
             gameData = new GameState(
                     comms.stream()
                             .collect(Collectors.toMap(

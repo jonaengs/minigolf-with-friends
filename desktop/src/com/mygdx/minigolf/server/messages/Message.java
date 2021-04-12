@@ -1,18 +1,27 @@
 package com.mygdx.minigolf.server.messages;
 
-import java.io.Serializable;
+import com.badlogic.gdx.math.Vector2;
 
-public class Message<T> implements Serializable {
+import java.io.Serializable;
+import java.util.HashMap;
+
+public class Message<T extends Enum<T>> implements Serializable {
     public T command;
     public Object data;
 
     public Message(T command) {
-        this.command = command;
+        this(command, null);
     }
 
     public Message(T command, Object data) {
         this.command = command;
         this.data = data;
+        // TODO: Enforce/assert data and its type based on command
+    }
+
+    @Override
+    public String toString() {
+        return "Message{" + command + (data == null ? "" : ", " + data) + '}';
     }
 
     public enum ServerLobbyCommand {
@@ -20,6 +29,7 @@ public class Message<T> implements Serializable {
         LOBBY_ID,
         PLAYER_LIST,
         ENTER_GAME,
+        EXIT
     }
 
     public enum ClientLobbyCommand {
@@ -28,5 +38,34 @@ public class Message<T> implements Serializable {
         EXIT,
         START_GAME,
         GAME_READY,
+    }
+
+    public enum ServerGameCommand {
+        LOAD_LEVEL(String.class),
+        LEVEL_COMPLETE(Void.class),
+        START_GAME(Void.class),
+        PLAYER_EXIT(String.class),
+        GAME_SCORE(HashMap.class), // String playerName -> int score
+        GAME_DATA(GameState.class);
+
+        private final Class<?> clazz;
+
+        ServerGameCommand(Class<?> clazz) {
+            this.clazz = clazz;
+        }
+    }
+
+    public enum ClientGameCommand {
+        INPUT(Vector2.class),
+        LEVEL_LOADED(String.class),
+        EXIT(Void.class)
+        ;
+
+
+        public final Class<?> clazz;
+
+        ClientGameCommand(Class<?> clazz) {
+            this.clazz = clazz;
+        }
     }
 }

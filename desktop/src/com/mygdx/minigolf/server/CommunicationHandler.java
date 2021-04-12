@@ -11,17 +11,23 @@ import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.mygdx.minigolf.server.Utils.readObject;
+
 
 class CommunicationHandler implements Runnable {
     public final ConcurrentLinkedQueue<Message<ServerLobbyCommand>> sendBuffer = new ConcurrentLinkedQueue<>();
     public final ConcurrentLinkedQueue<Message<ClientLobbyCommand>> recvBuffer = new ConcurrentLinkedQueue<>();
+    private final ObjectInputStream objIn;
+    private final ObjectOutputStream objOut;
     String name;
     final Socket socket;
     public AtomicBoolean running = new AtomicBoolean(true);
+    public Thread runningThread;
 
-    public CommunicationHandler(Socket socket, String name) {
+    public CommunicationHandler(Socket socket, ObjectInputStream objIn) throws IOException {
         this.socket = socket;
-        this.name = name;
+        this.objIn = objIn;
+        objOut = new ObjectOutputStream(socket.getOutputStream());
     }
 
     public void close() {
@@ -35,21 +41,24 @@ class CommunicationHandler implements Runnable {
 
     @Override
     public void run() {
+        Thread.currentThread().setName(this.getClass().getName());
+        runningThread = Thread.currentThread();
         Message<ServerLobbyCommand> sendMsg;
         try {
-            ObjectOutputStream objSender = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream objRecv = new ObjectInputStream(socket.getInputStream());
             while (running.get()) {
                 while (!sendBuffer.isEmpty()) {
                     sendMsg = sendBuffer.poll();
-                    objSender.writeObject(sendMsg);
+                    objOut.writeObject(sendMsg);
                 }
-                while (objRecv.available() > 0) {
-                    recvBuffer.add((Message<ClientLobbyCommand>) objRecv.readObject());
+                Message<ClientLobbyCommand> msg = (Message<ClientLobbyCommand>) readObject(socket, objIn);
+                if (msg != null) {
+                    System.out.println("CH recv: " + msg);
+                    recvBuffer.add(msg);
                 }
             }
         } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
+            running.set(false);
         } finally {
             System.out.println(name + "CH Terminating");
         }
