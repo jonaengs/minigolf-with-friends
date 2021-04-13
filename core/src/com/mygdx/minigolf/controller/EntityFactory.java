@@ -5,7 +5,6 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -15,7 +14,6 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
-import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.controller.systems.PowerUpSystem;
 import com.mygdx.minigolf.model.Effect;
 import com.mygdx.minigolf.model.components.Graphical;
@@ -73,7 +71,7 @@ public class EntityFactory {
 
     public Entity createControllablePlayer(float x, float y, OrthographicCamera cam) {
         Entity player = createPlayer(x, y);
-        Gdx.input.setInputProcessor(new InputHandler(cam, PhysicalMapper.get(player).getBody()));
+        Gdx.input.setInputProcessor(new InputHandler(cam, player));
         return player;
     }
 
@@ -92,12 +90,11 @@ public class EntityFactory {
         );
     }
 
-    public Entity createPowerup(float x, float y, PolygonShape shape, Effect effect) {
+    private Entity createPowerup(float x, float y, CircleShape shape) {
+
         Entity entity = createEntity();
 
         PowerUpGiver powerUpGiver = new PowerUpGiver();
-        powerUpGiver.setPowerup(effect);
-
         Graphical graphical = new Graphical(Sprite.Powerup, 1);
 
         entity.add(powerUpGiver);
@@ -119,6 +116,20 @@ public class EntityFactory {
         entity.add(physical);
 
         return entity;
+    }
+
+    public Entity createExplodingPowerup(float x, float  y, CircleShape shape){
+        Entity powerup = createPowerup(x, y,shape);
+        Effect.ExplodingEffect explodingEffect = new Effect.ExplodingEffect();
+        powerup.getComponent(PowerUpGiver.class).setPowerup(explodingEffect);
+        return powerup;
+    }
+
+    public Entity createNoCollisionPowerUp(float x, float y, CircleShape shape){
+        Entity powerup = createPowerup(x, y,shape);
+        Effect.NoCollisionEffect noCollisionEffect = new Effect.NoCollisionEffect();
+        powerup.getComponent(PowerUpGiver.class).setPowerup(noCollisionEffect);
+        return powerup;
     }
 
     public Entity createSpawn(float x, float y) {

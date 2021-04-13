@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.minigolf.controller.EntityFactory;
 import com.mygdx.minigolf.controller.systems.Physics;
+import com.mygdx.minigolf.controller.systems.PowerUpSystem;
 import com.mygdx.minigolf.model.levels.LevelLoader;
 
 // See link below for example of use
@@ -22,6 +23,7 @@ public class HeadlessGame implements ApplicationListener {
         world = new World(new Vector2(0, 0), true);
         engine = new Engine();
 
+        engine.addSystem(new PowerUpSystem(engine, factory));
         engine.addSystem(new Physics(world, engine));
 
         factory = new EntityFactory(engine, world);

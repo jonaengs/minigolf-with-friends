@@ -38,23 +38,11 @@ public class Player implements Component {
     public List<Effect> getEffects() { return this.effects; }
 
     public void removeEffects(){
-        this.effects = effects.stream().filter(effect -> effect.getConstraintAmount() > 0).collect(Collectors.toList());
+        this.effects = effects.stream().filter(effect -> effect.getConstraint().powerExhausted(this.strokes)).collect(Collectors.toList());
     }
 
     public void removeEffect(Effect effect){
         this.effects.remove(effects.indexOf(effect));
-    }
-
-    public void setEffectConstraintAmount(Effect effect, int amount){
-        effects.get(effects.indexOf(effect)).setConstraintAmount(amount);
-    }
-
-    public void decrementConstraint(Effect effect){
-        effects.get(effects.indexOf(effect)).decrementConstraintAmount();
-    }
-
-    public int getEffectConstraintAmount(Effect effect){
-        return effects.get(effects.indexOf(effect)).getConstraintAmount();
     }
 
 }

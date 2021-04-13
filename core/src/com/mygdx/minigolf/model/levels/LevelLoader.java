@@ -69,8 +69,10 @@ public class LevelLoader {
                 return factory.createSpawn(elem.x, elem.y);
             case OBSTACLE:
                 return factory.createObstacle(elem.x, elem.y, (PolygonShape) getShape(elem));
-            case POWERUP:
-                return factory.createPowerup(elem.x, elem.y, (CircleShape) getShape(elem));
+            case EXPLODING_POWERUP:
+                return factory.createExplodingPowerup(elem.x, elem.y, (CircleShape) getShape(elem));
+            case NO_COLLISION_POWERUP:
+                return factory.createNoCollisionPowerUp(elem.x, elem.y, (CircleShape) getShape(elem));
             case COURSE:
                 return factory.createCourse(elem.x, elem.y, (PolygonShape) getShape(elem));
             case WALL:

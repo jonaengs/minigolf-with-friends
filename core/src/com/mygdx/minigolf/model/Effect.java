@@ -1,38 +1,26 @@
 package com.mygdx.minigolf.model;
 
-public class Effect {
+public abstract class Effect {
 
-    private final Power power;
-    private final Constraint constraint;
+    protected final Constraint constraint;
 
-    public Effect(Power power, Constraint constraint){
-        this.power = power;
+    protected Effect(Constraint constraint){
         this.constraint = constraint;
     }
 
-    public Power getPower(){
-        return this.power;
+    public Constraint getConstraint(){
+        return this.constraint;
     }
 
-    public void setConstraintAmount(int i){
-        this.constraint.setAmount(i);
+    public static class ExplodingEffect extends Effect{
+        public ExplodingEffect() {
+            super(new UseConstraint(1));
+        }
     }
 
-    public void decrementConstraintAmount(){
-        this.constraint.decrementAmount();
+    public static class NoCollisionEffect extends Effect{
+        public NoCollisionEffect(){
+            super(new StrokeConstraint(3));
+        }
     }
-
-    public int getConstraintAmount(){
-        return this.constraint.getAmount();
-    }
-
-    public void setConstraintStart(int start){
-        this.constraint.setStart(start);
-    }
-
-    public int getConstraintStart(){
-        return this.constraint.getStart();
-    }
-
-
 }

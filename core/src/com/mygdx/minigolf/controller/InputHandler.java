@@ -1,5 +1,6 @@
 package com.mygdx.minigolf.controller;
 
+import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector3;
@@ -11,14 +12,16 @@ import com.badlogic.gdx.physics.box2d.Body;
 public class InputHandler extends InputAdapter {
 
     private final OrthographicCamera cam;
+    private final Entity player;
     private final Body ballBody;
 
     private final Vector3 dragStartPos = new Vector3();
     private final Vector3 draggingPos = new Vector3(); // Use this to draw the crosshair (when ball is not moving)
 
-    public InputHandler(OrthographicCamera cam, Body ballBody) {
+    public InputHandler(OrthographicCamera cam, Entity player) {
         this.cam = cam;
-        this.ballBody = ballBody;
+        this.player = player;
+        this.ballBody = ComponentMappers.PhysicalMapper.get(player).getBody();
     }
 
     @Override
@@ -49,6 +52,9 @@ public class InputHandler extends InputAdapter {
 
             // Apply force
             ballBody.applyLinearImpulse(force.x, force.y, dragEndPos.x, dragEndPos.y, true);
+
+            //update stroke count for player
+            ComponentMappers.PlayerMapper.get(this.player).incrementStrokes();
         }
 
         return true;
