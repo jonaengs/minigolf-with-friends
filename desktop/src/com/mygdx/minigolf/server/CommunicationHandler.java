@@ -17,8 +17,8 @@ import static com.mygdx.minigolf.server.Utils.readObject;
 class CommunicationHandler implements Runnable {
     public final ConcurrentLinkedQueue<Message<ServerLobbyCommand>> sendBuffer = new ConcurrentLinkedQueue<>();
     public final ConcurrentLinkedQueue<Message<ClientLobbyCommand>> recvBuffer = new ConcurrentLinkedQueue<>();
-    private final ObjectInputStream objIn;
-    private final ObjectOutputStream objOut;
+    final ObjectInputStream objIn;
+    final ObjectOutputStream objOut;
     String name;
     final Socket socket;
     public AtomicBoolean running = new AtomicBoolean(true);

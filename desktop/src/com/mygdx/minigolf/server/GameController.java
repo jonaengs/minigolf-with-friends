@@ -8,17 +8,20 @@ import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.server.messages.GameState;
 import com.mygdx.minigolf.server.messages.Message;
+import com.mygdx.minigolf.server.messages.Message.ServerGameCommand;
 import com.mygdx.minigolf.view.GameView;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class GameController implements Runnable {
     private GameState gameData;
     private static final int REFRESH_RATE = 1_000 / 30; // in milliseconds
     private final List<GameCommunicationHandler> comms;
+    public final AtomicInteger stateID = new AtomicInteger(0);
 
     HeadlessGame game;
     boolean showGame = false;
@@ -53,11 +56,11 @@ public class GameController implements Runnable {
             }
         });
         this.comms = comms.stream()
-                .map(comm -> new GameCommunicationHandler(comm.socket, comm.name, this))
+                .map(comm -> new GameCommunicationHandler(comm, this))
                 .collect(Collectors.toList());
         this.comms.forEach(comm -> {
             try {
-                comm.socket.getOutputStream().write("START GAME\n".getBytes());
+                comm.objOut.writeObject(new Message<>(ServerGameCommand.START_GAME));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -110,6 +113,7 @@ public class GameController implements Runnable {
                                     }
                             ))
             );
+            stateID.incrementAndGet();
 
             long delta = System.currentTimeMillis() - t0;
             try {

@@ -12,7 +12,7 @@ public class Utils {
 
     // Read object stream. Returns null if timeout is reached.
     public static Object readObject(Socket socket, ObjectInputStream objIn) throws IOException, ClassNotFoundException {
-        socket.setSoTimeout(100);
+        socket.setSoTimeout(10);
         try {
             return objIn.readObject();
         } catch (SocketTimeoutException e) {

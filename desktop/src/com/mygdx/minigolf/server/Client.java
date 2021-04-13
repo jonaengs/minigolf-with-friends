@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +49,7 @@ class Client {
         socket = new Socket(url, port);
         socket.setTcpNoDelay(true);
         objOut = new ObjectOutputStream(socket.getOutputStream());
+        objIn = new ObjectInputStream(socket.getInputStream()); // Must be instantiated after objOut
     }
 
     public Integer createLobby() throws IOException, ClassNotFoundException {
@@ -73,12 +73,8 @@ class Client {
     }
 
     private Message recv() throws IOException, ClassNotFoundException {
-        if (objIn == null) {
-            // objIn must be instantiated late due to blocking until sender opens corresponding outputstream
-            objIn = new ObjectInputStream(socket.getInputStream());
-        }
-        Message msg = (Message) objIn.readObject();
-        System.out.println(name + " recvs:\t" + msg);
+        Message msg = (Message) Utils.readObject(socket, objIn);
+        if (msg != null) System.out.println(name + " recvs:\t" + msg);
         return msg;
     }
 
@@ -94,28 +90,32 @@ class Client {
             List<String> playerList = null;
             Thread.currentThread().setName(this.getClass().getName() + "-" + name);
 
-            Map<String, Entity> players;
             Entity self;
+            Map<String, Entity> players = new HashMap<>();
             Map<String, Physical> playerPhysicalComponents = new HashMap<>();
 
             while (true) {
                 try {
                     Message<ServerLobbyCommand> lm;
                     Message<ServerGameCommand> gm;
+                    Message msg = recv();
                     switch (state) {
                         // TODO: Consider combining cases into two: LobbyMessage & GameMessage (using fallthrough)
                         case IN_LOBBY:
-                            lm = recv();
-                            switch (lm.command) {
-                                case NAME:
-                                    name = (String) lm.data;
-                                    break;
-                                case ENTER_GAME:
-                                    state = State.LOADING_GAME;
-                                    break;
-                                case PLAYER_LIST:
-                                    playerList = (List<String>) lm.data;
-                                    break;
+                            if (msg != null) {
+                                lm = msg;
+
+                                switch (lm.command) {
+                                    case NAME:
+                                        name = (String) lm.data;
+                                        break;
+                                    case ENTER_GAME:
+                                        state = State.LOADING_GAME;
+                                        break;
+                                    case PLAYER_LIST:
+                                        playerList = (List<String>) lm.data;
+                                        break;
+                                }
                             }
                             break;
                         case LOADING_GAME:
@@ -131,10 +131,9 @@ class Client {
                                 config.height = 720;
                                 new LwjglApplication(game, config);
                             }
-                            Thread.sleep(2_000); // Sleep to allow create method to run
+                            Thread.sleep(500); // Sleep to allow create method to run
                             HeadlessGame finalGame = game;
 
-                            System.out.println("PLAYER LIST: " + playerList);
                             players = playerList.stream()
                                     .collect(Collectors.toMap(
                                             player -> player,
@@ -152,59 +151,68 @@ class Client {
                                 Gdx.input.setInputProcessor(new InputHandler(cam, PhysicalMapper.get(self).getBody()));
                             }
                             send(new Message<>(ClientLobbyCommand.GAME_READY));
-                            // state = State.WAITING_FOR_LEVEL_INFO;
-
-                            Random r = new Random();
-                            send(new Message<>(ClientGameCommand.INPUT, new Vector2(5 * (float) r.nextGaussian(), 5 * r.nextFloat())));
+                            state = State.WAITING_FOR_START;
                             // Assume names are unique. TODO: set names server-side and send them to clients when they join a lobby
                             break;
                         case WAITING_FOR_LEVEL_INFO:
-                            gm = recv();
-                            switch (gm.command) {
-                                case LOAD_LEVEL:
-                                    state = State.WAITING_FOR_START;
-                                    // TODO: Load level
-                                    break;
+                            if (msg != null) {
+                                gm = msg;
+                                switch (gm.command) {
+                                    case LOAD_LEVEL:
+                                        state = State.WAITING_FOR_START;
+                                        // TODO: Load level
+                                        break;
+                                }
                             }
                         case WAITING_FOR_START:
-                            gm = recv();
-                            switch (gm.command) {
-                                case START_GAME:
-                                    state = State.IN_GAME;
-                                    break;
+                            if (msg != null) {
+                                gm = msg;
+                                switch (gm.command) {
+                                    case START_GAME:
+                                        state = State.IN_GAME;
+                                        Random r = new Random();
+                                        send(new Message<>(ClientGameCommand.INPUT, new Vector2(5 * (float) r.nextGaussian(), 5 * r.nextFloat())));
+                                        break;
+                                }
                             }
                             break;
                         case IN_GAME:
-                            gm = recv();
-                            switch (gm.command) {
-                                case GAME_DATA:
-                                    synchronized (InputHandler.input) {
-                                        if (!Float.isNaN(InputHandler.input.x) && !Float.isNaN(InputHandler.input.y) && !InputHandler.input.isZero()) {
-                                            System.out.println("PLAYER INPUT: " + InputHandler.input);
-                                            send(new Message<>(ClientGameCommand.INPUT, InputHandler.input));
-                                            InputHandler.input.setZero();
+                            if (msg != null) {
+                                gm = msg;
+                                switch (gm.command) {
+                                    case GAME_DATA:
+                                        synchronized (InputHandler.input) {
+                                            if (!Float.isNaN(InputHandler.input.x) && !Float.isNaN(InputHandler.input.y) && !InputHandler.input.isZero()) {
+                                                System.out.println("PLAYER INPUT: " + InputHandler.input);
+                                                send(new Message<>(ClientGameCommand.INPUT, InputHandler.input));
+                                                InputHandler.input.setZero();
+                                            }
                                         }
-                                    }
-                                    GameState gameState = (GameState) gm.data;
-                                    if (!headless) {
-                                        System.out.println("RECEIVED STATE: " + gameState + "");
-                                    }
-                                    if (gameState != null) {
-                                        Map<String, Physical> finalPlayerPhysicalComponents = playerPhysicalComponents;
-                                        gameState.data.entrySet().forEach(entry -> {
-                                            Physical phys = finalPlayerPhysicalComponents.get(entry.getKey());
-                                            phys.setVelocity(entry.getValue().velocity);
-                                            phys.setPosition(entry.getValue().position);
-                                        });
-                                    }
-                                    break;
-                                case PLAYER_EXIT:
-                                    // TODO: Remove player from player list and destroy entity
-                                    break;
-                                case LEVEL_COMPLETE:
-                                    // TODO: Set score
-                                    state = State.SCORE_SCREEN;
-                                    break;
+                                        GameState gameState = (GameState) gm.data;
+                                        if (!headless) {
+                                            System.out.println("RECEIVED STATE: " + gameState + "");
+                                        }
+                                        if (gameState != null) {
+                                            Map<String, Physical> finalPlayerPhysicalComponents = playerPhysicalComponents;
+                                            gameState.data.entrySet().forEach(entry -> {
+                                                Physical phys = finalPlayerPhysicalComponents.get(entry.getKey());
+                                                phys.setVelocity(entry.getValue().velocity);
+                                                phys.setPosition(entry.getValue().position);
+                                            });
+                                        }
+                                        break;
+                                    case PLAYER_EXIT:
+                                        String exitingPlayer = (String) gm.data;
+                                        playerList.remove(exitingPlayer);
+                                        players.remove(exitingPlayer).removeAll();
+                                        playerPhysicalComponents.remove(exitingPlayer);
+                                        // TODO: Remove player from player list and destroy entity
+                                        break;
+                                    case LEVEL_COMPLETE:
+                                        // TODO: Set score
+                                        state = State.SCORE_SCREEN;
+                                        break;
+                                }
                             }
                             break;
                         case EXITING:
@@ -216,7 +224,7 @@ class Client {
                     break;
                 }
             }
-            System.out.println(name + "Exiting...");
+            System.out.println(name + " Exiting...");
         }).start();
     }
 

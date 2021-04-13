@@ -36,7 +36,7 @@ public class TestRoutine {
 
         System.out.println(Thread.activeCount());
         Thread.sleep(2_000);
-        leader.exit();
+        leader.startGame();
         Thread.sleep(2_000);
         System.out.println(Thread.activeCount()); // should equal first value printed
         // System.out.println("\nACTIVE THREADS:");

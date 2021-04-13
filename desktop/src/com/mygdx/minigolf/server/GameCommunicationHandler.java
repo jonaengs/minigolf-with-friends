@@ -17,25 +17,30 @@ class GameCommunicationHandler implements Runnable {
     final String name;
     final Socket socket;
     final GameController gameController;
+    final ObjectInputStream objIn;
+    final ObjectOutputStream objOut;
 
-    public GameCommunicationHandler(Socket socket, String name, GameController gameController) {
+    public GameCommunicationHandler(CommunicationHandler comm, GameController gameController) {
         this.gameController = gameController;
-        this.socket = socket;
-        this.name = name;
+        this.socket = comm.socket;
+        this.name = comm.name;
+        this.objIn = comm.objIn;
+        this.objOut = comm.objOut;
     }
 
     @Override
     public void run() {
         Thread.currentThread().setName(this.getClass().getName());
         GameState sendState;
+        int stateID = -1;
         Message<ClientGameCommand> msg;
         try {
-            ObjectOutputStream objOut = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream objIn = new ObjectInputStream(socket.getInputStream());
             while (socket.isConnected()) {
                 // TODO: Change how data is sent. Current solution may send duplicate data. Maybe send from GameController instead
-                sendState = gameController.getGameData();
-                objOut.writeObject(sendState);
+                if (stateID < gameController.stateID.getAndSet(stateID)) {
+                    sendState = gameController.getGameData();
+                    objOut.writeObject(new Message<>(ServerGameCommand.GAME_DATA, sendState));
+                }
 
                 while (objIn.available() > 0) {
                     msg = (Message<ClientGameCommand>) objIn.readObject();

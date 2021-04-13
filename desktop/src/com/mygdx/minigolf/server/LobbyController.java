@@ -67,12 +67,6 @@ class LobbyController implements Runnable {
         }
     }
 
-    private void receiveFromAll() {
-        synchronized (comms) {
-
-        }
-    }
-
     @Override
     public void run() {
         state = State.NORMAL;
@@ -125,6 +119,7 @@ class LobbyController implements Runnable {
                                 data = comm.recvBuffer.poll();
                             } while (data != null && data.command != GAME_READY);
                         }
+                        System.out.println("RECEIVED ALL READIES");
                         gameController = new GameController(comms);
                     }
                     new Thread(gameController).start();

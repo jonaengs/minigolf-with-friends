@@ -17,7 +17,6 @@ public class GameView extends HeadlessGame implements Screen {
 
     @Override
     public void create() {
-        System.out.println("CREATE");
         super.create();
 
         graphicsSystem = new GraphicsSystem();
