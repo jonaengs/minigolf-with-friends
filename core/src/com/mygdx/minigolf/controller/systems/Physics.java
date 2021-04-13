@@ -1,11 +1,11 @@
 package com.mygdx.minigolf.controller.systems;
 
-import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntityListener;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -16,7 +16,10 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.joints.FrictionJoint;
 import com.badlogic.gdx.physics.box2d.joints.FrictionJointDef;
+import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
+import com.mygdx.minigolf.controller.ComponentMappers.TransformMapper;
 import com.mygdx.minigolf.model.components.Physical;
+import com.mygdx.minigolf.model.components.Transform;
 
 import java.util.AbstractMap;
 import java.util.HashMap;
@@ -31,15 +34,13 @@ public class Physics extends IteratingSystem implements ContactListener, EntityL
 
     private final World world;
     private final Engine engine;
-    private final ComponentMapper<Physical> mapper = ComponentMapper.getFor(Physical.class);
     private final Map<Body, Entity> cache = new HashMap<>();
 
     // A common friction body to be used by all bodies that want friction
     public final Body frictionBody;
 
-    @SuppressWarnings("unchecked")
     public Physics(World world, Engine engine) {
-        super(Family.all(Physical.class).get());
+        super(Family.all(Physical.class, Transform.class).get());
         this.world = world;
         this.engine = engine;
         world.setContactListener(this);
@@ -60,7 +61,12 @@ public class Physics extends IteratingSystem implements ContactListener, EntityL
 
     @Override
     protected void processEntity(Entity entity, float deltaTime) {
-        Physical physical = mapper.get(entity);
+        Transform transform = TransformMapper.get(entity);
+        Physical physical = PhysicalMapper.get(entity);
+
+        // Update transform component with Box2D values
+        transform.setPosition(physical.getBody().getPosition());
+        transform.setRotation(physical.getBody().getAngle() * MathUtils.radiansToDegrees);
 
         // Check if a new friction value has been set
         if (physical != null && physical.getFriction() != physical.getBodyFriction()) {
@@ -101,15 +107,15 @@ public class Physics extends IteratingSystem implements ContactListener, EntityL
     @SuppressWarnings("unchecked")
     private void callListeners(Contact contact, Consumer<Map.Entry<Physical.ContactListener, Entity>> func) {
         Entity entityA = getEntity(contact.getFixtureA().getBody());
-        mapper.get(entityA).getContactListeners().forEach(listener -> func.accept(new AbstractMap.SimpleEntry(listener, entityA)));
+        PhysicalMapper.get(entityA).getContactListeners().forEach(listener -> func.accept(new AbstractMap.SimpleEntry(listener, entityA)));
         Entity entityB = getEntity(contact.getFixtureB().getBody());
-        mapper.get(entityB).getContactListeners().forEach(listener -> func.accept(new AbstractMap.SimpleEntry(listener, entityB)));
+        PhysicalMapper.get(entityB).getContactListeners().forEach(listener -> func.accept(new AbstractMap.SimpleEntry(listener, entityB)));
     }
 
     public Entity getEntity(Body body) {
         return cache.computeIfAbsent(body, b -> StreamSupport
                 .stream(engine.getEntitiesFor(this.getFamily()).spliterator(), true)
-                .filter(e -> mapper.get(e).getBody().equals(body))
+                .filter(e -> PhysicalMapper.get(e).getBody().equals(body))
                 .findFirst().get());
     }
 
@@ -119,6 +125,6 @@ public class Physics extends IteratingSystem implements ContactListener, EntityL
 
     @Override
     public void entityRemoved(Entity entity) {
-        world.destroyBody(mapper.get(entity).getBody());
+        world.destroyBody(PhysicalMapper.get(entity).getBody());
     }
 }

@@ -20,7 +20,7 @@ public class Physical implements Component {
     private Body body;
     private float friction;
     private FrictionJoint frictionJoint = null;
-    private List<ContactListener> contactListeners = new ArrayList<>();
+    private final List<ContactListener> contactListeners = new ArrayList<>();
 
     public Physical(Body body) {
         this.body = body;
@@ -65,14 +65,6 @@ public class Physical implements Component {
 
     public void setVelocity(Vector2 velocity) {
         this.body.setLinearVelocity(velocity);
-    }
-
-    public Vector2 getPosition() {
-        return this.body.getPosition();
-    }
-
-    public void setPosition(Vector2 position) {
-        this.body.getPosition().set(position.x, position.y);
     }
 
     public Shape getShape() {

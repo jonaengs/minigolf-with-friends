@@ -12,8 +12,9 @@ import com.mygdx.minigolf.controller.EntityFactory;
 public class Graphical implements Component {
 
     public static boolean enabled = true; // Allows headless games to run. TODO: Find better solution
-    public PolygonRegion polygonRegion;
-    public Color color;
+
+    private PolygonRegion polygonRegion;
+    private Color color;
     private int layer;
 
     public Graphical(Color color, int layer) {
@@ -40,6 +41,22 @@ public class Graphical implements Component {
 
     public Graphical(EntityFactory.Sprite sprite, int layer) {
         this(sprite.color, layer);
+    }
+
+    public PolygonRegion getPolygonRegion() {
+        return polygonRegion;
+    }
+
+    public void setPolygonRegion(PolygonRegion polygonRegion) {
+        this.polygonRegion = polygonRegion;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
     }
 
     public int getLayer() {

@@ -6,14 +6,18 @@ import com.badlogic.ashley.systems.SortedIteratingSystem;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.utils.Array;
+import com.mygdx.minigolf.controller.ComponentMappers.TransformMapper;
 import com.mygdx.minigolf.controller.ComponentMappers.GraphicalMapper;
 import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.controller.LayerComparator;
 import com.mygdx.minigolf.model.components.Graphical;
 import com.mygdx.minigolf.model.components.Physical;
+import com.mygdx.minigolf.model.components.Transform;
 
 import java.util.Comparator;
 
@@ -36,7 +40,7 @@ public class GraphicsSystem extends SortedIteratingSystem {
     private final PolygonSpriteBatch polygonSpriteBatch = new PolygonSpriteBatch();
 
     public GraphicsSystem() {
-        super(Family.all(Physical.class, Graphical.class).get(), new LayerComparator());
+        super(Family.all(Graphical.class, Transform.class).get(), new LayerComparator());
 
         cam.position.set(FRUSTUM_WIDTH / 2f, FRUSTUM_HEIGHT / 2f, 0);
     }
@@ -54,22 +58,45 @@ public class GraphicsSystem extends SortedIteratingSystem {
         shapeRenderer.setProjectionMatrix(cam.combined);
         shapeRenderer.setAutoShapeType(true);
         shapeRenderer.begin();
+        shapeRenderer.set(ShapeType.Filled);
         polygonSpriteBatch.setProjectionMatrix(cam.combined);
         polygonSpriteBatch.begin();
 
         for (Entity entity : renderQueue) {
+            Transform transform = TransformMapper.get(entity);
+
+            if (!transform.isVisible()) {
+                continue;
+            }
+
+            Graphical graphical = GraphicalMapper.get(entity);
+
+            if (graphical.getPolygonRegion() != null) {
+                // Use graphical polygon region if it is set
+                TextureRegion region = graphical.getPolygonRegion().getRegion();
+                polygonSpriteBatch.draw(
+                        graphical.getPolygonRegion(),
+                        transform.getPosition().x, transform.getPosition().y,
+                        region.getRegionWidth() / 2f, region.getRegionHeight() / 2f,
+                        region.getRegionWidth(), region.getRegionHeight(),
+                        transform.getScale().x, transform.getScale().y,
+                        transform.getRotation()
+                );
+
+                continue;
+            }
+
             Physical physical = PhysicalMapper.get(entity);
-            shapeRenderer.setColor(GraphicalMapper.get(entity).color);
-            switch (physical.getShape().getType()) {
-                case Circle:
-                    shapeRenderer.set(ShapeType.Filled);
-                    shapeRenderer.circle(physical.getPosition().x, physical.getPosition().y, physical.getShape().getRadius(), 50);
-                    break;
-                case Polygon:
-                    polygonSpriteBatch.draw(GraphicalMapper.get(entity).polygonRegion, physical.getPosition().x, physical.getPosition().y);
+
+            // As fallback: Use body shape (circle) if entity has physical component
+            if (physical != null) {
+                if (physical.getShape().getType() == Shape.Type.Circle) {
+                    shapeRenderer.setColor(graphical.getColor());
+                    shapeRenderer.circle(transform.getPosition().x, transform.getPosition().y, physical.getShape().getRadius(), 50);
+                }
             }
         }
-        
+
         polygonSpriteBatch.end();
         shapeRenderer.end();
         renderQueue.clear();

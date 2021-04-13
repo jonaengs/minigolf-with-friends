@@ -6,8 +6,15 @@ import com.mygdx.minigolf.model.components.Graphical;
 import com.mygdx.minigolf.model.components.Objective;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.components.Player;
+import com.mygdx.minigolf.model.components.Transform;
 
 public class ComponentMappers {
+    public static class TransformMapper {
+        public static final ComponentMapper<Transform> mapper = ComponentMapper.getFor(Transform.class);
+        public static Transform get(Entity entity) {
+            return mapper.get(entity);
+        }
+    }
     public static class PhysicalMapper {
         public static final ComponentMapper<Physical> mapper = ComponentMapper.getFor(Physical.class);
         public static Physical get(Entity entity) {

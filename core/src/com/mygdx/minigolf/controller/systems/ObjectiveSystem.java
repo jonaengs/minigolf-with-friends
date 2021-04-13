@@ -7,7 +7,7 @@ import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.controller.ComponentMappers.ObjectiveMapper;
-import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
+import com.mygdx.minigolf.controller.ComponentMappers.TransformMapper;
 import com.mygdx.minigolf.controller.ComponentMappers.PlayerMapper;
 import com.mygdx.minigolf.model.components.Objective;
 import com.mygdx.minigolf.model.components.Player;
@@ -26,7 +26,7 @@ public class ObjectiveSystem extends EntitySystem {
         for (Entity objectiveEntity : objectives) {
             Objective objective = ObjectiveMapper.get(objectiveEntity);
             for (Entity playerEntity : players) {
-                Vector2 playerPosition = PhysicalMapper.get(playerEntity).getPosition();
+                Vector2 playerPosition = TransformMapper.get(playerEntity).getPosition();
                 Player player = PlayerMapper.get(playerEntity);
                 if (objective.contains(playerPosition) && !player.isCompleted()) {
                     player.complete();

@@ -20,6 +20,7 @@ import com.mygdx.minigolf.model.components.Objective;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.components.Player;
 import com.mygdx.minigolf.model.components.PowerUpTaker;
+import com.mygdx.minigolf.model.components.Transform;
 
 import java.util.Arrays;
 
@@ -34,8 +35,8 @@ public class EntityFactory {
         Vector2 v = new Vector2();
         for (int i = 0; i < nVertices; i++) {
             shape.getVertex(i, v);
-            vertices[2*i] = v.x;
-            vertices[2*i + 1] = v.y;
+            vertices[2 * i] = v.x;
+            vertices[2 * i + 1] = v.y;
         }
         return vertices;
     }
@@ -64,6 +65,7 @@ public class EntityFactory {
 
         return createEntity(
                 physical,
+                new Transform(x, y),
                 new Graphical(Sprite.Player, 1),
                 new Player(),
                 new PowerUpTaker()
@@ -79,6 +81,7 @@ public class EntityFactory {
     public Entity createHole(float x, float y, CircleShape shape) {
         return createEntity(
                 createPhysical(x + shape.getRadius(), y + shape.getRadius(), shape, BodyDef.BodyType.StaticBody),
+                new Transform(x, y),
                 new Graphical(Sprite.Hole, 0),
                 new Objective()
         );
@@ -87,6 +90,7 @@ public class EntityFactory {
     public Entity createObstacle(float x, float y, PolygonShape shape) {
         return createEntity(
                 createPhysical(x, y, shape, BodyDef.BodyType.StaticBody),
+                new Transform(x, y),
                 new Graphical(Sprite.Obstacle.color, 1, getVertices(shape))
         );
     }
@@ -94,6 +98,7 @@ public class EntityFactory {
     public Entity createPowerup(float x, float y, CircleShape shape) {
         return createEntity(
                 createPhysical(x + shape.getRadius(), y + shape.getRadius(), shape, BodyDef.BodyType.StaticBody),
+                new Transform(x, y),
                 new Graphical(Sprite.Powerup, 1)
         );
     }
@@ -101,7 +106,10 @@ public class EntityFactory {
     public Entity createSpawn(float x, float y) {
         CircleShape shape = new CircleShape();
         shape.setRadius(0.1f);
-        return createEntity(createPhysical(x, y, shape, BodyDef.BodyType.StaticBody));
+        return createEntity(
+                createPhysical(x, y, shape, BodyDef.BodyType.StaticBody),
+                new Transform(x, y)
+        );
     }
 
     public Entity createSurface(float x, float y, Sprite sprite, PolygonShape shape) {
@@ -111,6 +119,7 @@ public class EntityFactory {
     public Entity createWall(float x, float y, PolygonShape shape) {
         return createEntity(
                 createPhysical(x, y, shape, BodyDef.BodyType.StaticBody),
+                new Transform(x, y),
                 new Graphical(Sprite.SurfaceB.color, 1, getVertices(shape))
         );
     }
@@ -118,6 +127,7 @@ public class EntityFactory {
     public Entity createSurface(float x, float y, Sprite sprite, PolygonShape shape, int layer) {
         return createEntity(
                 createPhysical(x, y, shape, BodyDef.BodyType.StaticBody),
+                new Transform(x, y),
                 new Graphical(sprite.color, layer, getVertices(shape))
         );
     }
