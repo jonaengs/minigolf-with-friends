@@ -26,14 +26,6 @@ public class GameView extends HeadlessGame implements Screen {
         graphicsSystem = new GraphicsSystem();
 
         engine.addSystem(graphicsSystem);
-        // engine.addSystem(new PhysicsDebugSystem(world, graphicsSystem.getCam()));
-
-        factory = new EntityFactory(engine, world);
-
-        // --- Start dummy demo code ---
-        // Test code. Loads a level
-        LevelLoader levelLoader = new LevelLoader(factory);
-        List<Entity> levelContents = levelLoader.loadLevel(CourseLoader.getCourses().get(1));
     }
 
     @Override

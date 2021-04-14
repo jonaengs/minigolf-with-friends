@@ -11,18 +11,22 @@ import com.mygdx.minigolf.controller.ComponentMappers;
 import com.mygdx.minigolf.controller.EntityFactory;
 import com.mygdx.minigolf.controller.InputHandler;
 import com.mygdx.minigolf.controller.systems.Physics;
+import com.mygdx.minigolf.model.levels.CourseLoader;
 import com.mygdx.minigolf.model.levels.LevelLoader;
 import com.mygdx.minigolf.view.GameView;
+
+import java.util.List;
 
 // See link below for example of use
 // https://github.com/TomGrill/gdx-testing/blob/master/tests/src/de/tomgrill/gdxtesting/GdxTestRunner.java
 public class HeadlessGame implements ApplicationListener {
-    // Implement game logic here. Extend with Game. Implement Headless-less things there.
     public Engine engine;
     public World world;
     public EntityFactory factory;
     public LevelLoader levelLoader;
-    private long t0, t1;
+    private List<Entity> level;
+
+    private long t0;
 
     @Override
     public void create() {
@@ -33,34 +37,43 @@ public class HeadlessGame implements ApplicationListener {
 
         factory = new EntityFactory(engine, world);
         levelLoader = new LevelLoader(factory);
+        level = levelLoader.loadLevel(CourseLoader.getCourses().get(1));
+
         t0 = System.currentTimeMillis();
     }
 
     @Override
     public void resize(int width, int height) {
-
     }
 
     @Override
     public void render() {
-        t1 = System.currentTimeMillis();
+        long t1 = System.currentTimeMillis();
         engine.update((t1 - t0) / 1000f);
         t0 = t1;
     }
 
     @Override
     public void pause() {
-
     }
 
     @Override
     public void resume() {
-
     }
 
     @Override
     public void dispose() {
+    }
 
+    public void loadLevel(List<Entity> level) {
+        if (this.level != null) {
+            level.forEach(Entity::removeAll);
+        }
+        this.level = level;
+    }
+
+    public void loadLevel(String levelName) {
+        loadLevel(levelLoader.loadLevel(levelName));
     }
 
     public Engine getEngine() {

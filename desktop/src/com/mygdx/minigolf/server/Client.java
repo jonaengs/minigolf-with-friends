@@ -136,9 +136,8 @@ class Client {
                             gm = msg == null ? waitRecv() : msg;
                             if (gm.command == ServerGameCommand.LOAD_LEVEL) {
                                 state = State.WAITING_FOR_START;
-                                // TODO: Load level
-                            } else
-                                new RuntimeException("Expected level info. Got " + gm).printStackTrace();
+                                game.loadLevel((String) gm.data);
+                            } else new RuntimeException("Expected level info. Got " + gm).printStackTrace();
                             break;
                         case WAITING_FOR_START:
                             gm = msg == null ? waitRecv() : msg;
@@ -193,7 +192,7 @@ class Client {
                             System.out.println(name + "Exiting...");
                             return;
                     }
-                } catch (IOException | InterruptedException | ClassNotFoundException e) {
+                } catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();
                     break;
                 }

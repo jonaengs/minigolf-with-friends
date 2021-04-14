@@ -44,9 +44,13 @@ public class Utils {
         new LwjglApplication(game, config);
     }
 
-    public static void initGame(HeadlessGame game) throws InterruptedException {
+    public static void initGame(HeadlessGame game) {
         if (game instanceof GameView) initGameView((GameView) game);
         else initHeadlessGame(game);
-        Thread.sleep(1_000); // Sleep to allow create method to run
+        try {
+            Thread.sleep(1_000); // Sleep to allow create method to run
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

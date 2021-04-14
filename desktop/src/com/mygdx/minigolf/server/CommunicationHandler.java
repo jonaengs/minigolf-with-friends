@@ -52,7 +52,6 @@ class CommunicationHandler implements Runnable {
                 }
                 Message<ClientLobbyCommand> msg = (Message<ClientLobbyCommand>) readObject(socket, objIn);
                 if (msg != null) {
-                    System.out.println("CH recv: " + msg);
                     recvBuffer.add(msg);
                 }
             }

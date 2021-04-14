@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.mygdx.minigolf.server.messages.Message.*;
+import static com.mygdx.minigolf.server.messages.Message.ClientGameCommand;
+import static com.mygdx.minigolf.server.messages.Message.ServerGameCommand;
 
 
 class GameCommunicationHandler implements Runnable {
@@ -18,6 +20,7 @@ class GameCommunicationHandler implements Runnable {
     final GameController gameController;
     final ObjectInputStream objIn;
     final ObjectOutputStream objOut;
+    public final AtomicBoolean running = new AtomicBoolean(true);
 
     public GameCommunicationHandler(CommunicationHandler comm, GameController gameController) {
         this.gameController = gameController;
@@ -34,7 +37,7 @@ class GameCommunicationHandler implements Runnable {
         int lastStateSent = 0;
         Message<ClientGameCommand> msg;
         try {
-            while (socket.isConnected()) {
+            while (running.get()) {
                 // TODO: Change how data is sent. Current solution may send duplicate data. Maybe send from GameController instead
                 if (lastStateSent < gameController.stateSeq.get()) {
                     lastStateSent = gameController.stateSeq.get();
@@ -60,9 +63,11 @@ class GameCommunicationHandler implements Runnable {
 
     public static class Container<T> {
         private T data;
+
         public void set(T data) {
             this.data = data;
         }
+
         public T get() {
             T temp = data;
             this.data = null;
