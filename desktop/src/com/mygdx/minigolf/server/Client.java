@@ -7,6 +7,7 @@ import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.controller.InputHandler;
@@ -86,7 +87,7 @@ class Client {
 
     public void runAsThread() {
         new Thread(() -> {
-            HeadlessGame game;
+            final HeadlessGame game = headless ? new HeadlessGame() : new GameView();
             List<String> playerList = new ArrayList<>();
             Thread.currentThread().setName(this.getClass().getName() + "-" + name);
 
@@ -119,24 +120,13 @@ class Client {
                             }
                             break;
                         case LOADING_GAME:
-                            if (headless) {
-                                game = new HeadlessGame();
-                                new HeadlessApplication(game);
-                            } else {
-                                game = new GameView();
-                                LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-                                config.x = 100;
-                                config.y = 100;
-                                config.width = 1280;
-                                config.height = 720;
-                                new LwjglApplication(game, config);
-                            }
+                            if (headless) Utils.initHeadlessGame(game);
+                            else Utils.initGameView((GameView) game);
                             Thread.sleep(500); // Sleep to allow create method to run
-                            HeadlessGame finalGame = game;
 
                             playerList.forEach(player -> players.put(
                                     player,
-                                    finalGame.getFactory().createPlayer(5, 5)
+                                    game.getFactory().createPlayer(5, 5)
                             ));
                             players.entrySet().forEach(entry -> playerPhysicalComponents.put(
                                     entry.getKey(),
@@ -177,7 +167,9 @@ class Client {
                             synchronized (InputHandler.input) {
                                 if (!Float.isNaN(InputHandler.input.x) && !Float.isNaN(InputHandler.input.y) && !InputHandler.input.isZero()) {
                                     System.out.println("PLAYER INPUT: " + InputHandler.input);
-                                    send(new Message<>(ClientGameCommand.INPUT, InputHandler.input));
+                                    // Must sent new vector for input each time or call objOut.reset() for each input,
+                                    // otherwise objOut will cache input values and always send duplicates of those
+                                    send(new Message<>(ClientGameCommand.INPUT, new Vector2(InputHandler.input)));
                                     InputHandler.input.setZero();
                                 }
                             }
@@ -189,8 +181,8 @@ class Client {
                                         if (gameState != null) {
                                             gameState.stateMap.entrySet().forEach(entry -> {
                                                 Physical phys = playerPhysicalComponents.get(entry.getKey());
-                                                phys.getBody().setLinearVelocity(entry.getValue().velocity[0], entry.getValue().velocity[1]);
-                                                phys.getBody().getPosition().set(entry.getValue().position[0], entry.getValue().position[1]);
+                                                phys.setVelocity(entry.getValue().velocity);
+                                                phys.setPosition(entry.getValue().position);
                                             });
                                         }
                                         break;

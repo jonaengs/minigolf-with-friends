@@ -5,7 +5,6 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.minigolf.controller.EntityFactory;
-import com.mygdx.minigolf.controller.systems.ObjectiveSystem;
 import com.mygdx.minigolf.controller.systems.Physics;
 import com.mygdx.minigolf.model.levels.LevelLoader;
 

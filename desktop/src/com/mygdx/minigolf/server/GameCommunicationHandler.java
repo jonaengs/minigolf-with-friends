@@ -31,7 +31,7 @@ class GameCommunicationHandler implements Runnable {
     public void run() {
         Thread.currentThread().setName(this.getClass().getName());
         GameState sendState;
-        int lastStateSent = -1;
+        int lastStateSent = 0;
         Message<ClientGameCommand> msg;
         try {
             while (socket.isConnected()) {
@@ -39,7 +39,6 @@ class GameCommunicationHandler implements Runnable {
                 if (lastStateSent < gameController.stateSeq.get()) {
                     lastStateSent = gameController.stateSeq.get();
                     sendState = gameController.getGameData();
-                    System.out.println("Sending game data: " + sendState);
                     objOut.writeObject(new Message<>(ServerGameCommand.GAME_DATA, sendState));
                 }
 

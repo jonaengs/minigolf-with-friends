@@ -3,7 +3,6 @@ package com.mygdx.minigolf.server.messages;
 import com.badlogic.gdx.math.Vector2;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Map;
 
 public class GameState implements Serializable {
@@ -14,19 +13,19 @@ public class GameState implements Serializable {
     }
 
     public static class PlayerState implements Serializable {
-        public float[] position;
-        public float[] velocity;
+        public Vector2 position;
+        public Vector2 velocity;
 
         public PlayerState(Vector2 pos, Vector2 vel) {
-            position = new float[]{pos.x, pos.y};
-            velocity = new float[]{vel.x, vel.y};
+            position = new Vector2(pos);
+            velocity = new Vector2(vel);
         }
 
         @Override
         public String toString() {
             return "{" +
-                    "pos=" + Arrays.toString(position) +
-                    ", vel=" + Arrays.toString(velocity) +
+                    "pos=" + position +
+                    ", vel=" + velocity +
                     '}';
         }
     }
