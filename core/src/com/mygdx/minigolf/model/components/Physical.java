@@ -73,6 +73,12 @@ public class Physical implements Component {
 
     public void setPosition(Vector2 position) {
         this.body.getPosition().set(position.x, position.y);
+        // this.body.setTransform(position, 0);
+    }
+
+    public void moveTowards(Vector2 position) {
+        Vector2 diff = position.sub(body.getPosition());
+        body.setLinearVelocity(body.getLinearVelocity().add(diff.scl(5)));
     }
 
     public Shape getShape() {

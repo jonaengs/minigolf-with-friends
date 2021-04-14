@@ -23,14 +23,14 @@ public class TestRoutine {
         leader.runAsThread();
 
         Client follower1 = new Client("follow1");
-        // follower1.joinLobby(lobbyID);
-        // follower1.runAsThread();
+        follower1.joinLobby(lobbyID);
+        follower1.runAsThread();
 
         Client follower2 = new Client("follow2");
-        // follower2.joinLobby(lobbyID);
-        // follower2.runAsThread();
+        follower2.joinLobby(lobbyID);
+        follower2.runAsThread();
 
-        Client follower3 = new Client("follow3");
+        // Client follower3 = new Client("follow3");
         // follower3.joinLobby(lobbyID);
         // follower3.runAsThread();
 

@@ -2,14 +2,8 @@ package com.mygdx.minigolf.server;
 
 
 import com.badlogic.ashley.core.Entity;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.headless.HeadlessApplication;
-import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
-import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.HeadlessGame;
-import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.controller.InputHandler;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.server.messages.GameState;
@@ -29,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 class Client {
     Socket socket;
@@ -55,7 +48,7 @@ class Client {
 
     public Integer createLobby() throws IOException, ClassNotFoundException {
         send(new Message<>(ClientLobbyCommand.CREATE));
-        Message<ServerLobbyCommand> msg = (Message<ServerLobbyCommand>) recv();
+        Message<ServerLobbyCommand> msg = (Message<ServerLobbyCommand>) waitRecv();
         return (Integer) msg.data;
     }
 
@@ -73,10 +66,16 @@ class Client {
         objOut.flush();
     }
 
-    private Message recv() throws IOException, ClassNotFoundException {
-        Message msg = (Message) Utils.readObject(socket, objIn);
+    private Message waitRecv() throws IOException, ClassNotFoundException {
+        Message msg = (Message) objIn.readObject();
         if (msg != null) System.out.println(name + " recvs:\t" + msg);
         return msg;
+    }
+
+    private Message recv() throws IOException, ClassNotFoundException {
+        Object o = Utils.readObject(socket, objIn);
+        if (o != null) System.out.println(name + " recvs:\t" + o);
+        return (Message) o;
     }
 
     public void exit() throws IOException {
@@ -91,7 +90,6 @@ class Client {
             List<String> playerList = new ArrayList<>();
             Thread.currentThread().setName(this.getClass().getName() + "-" + name);
 
-            Entity self;
             final Map<String, Entity> players = new HashMap<>();
             final Map<String, Physical> playerPhysicalComponents = new HashMap<>();
 
@@ -120,10 +118,7 @@ class Client {
                             }
                             break;
                         case LOADING_GAME:
-                            if (headless) Utils.initHeadlessGame(game);
-                            else Utils.initGameView((GameView) game);
-                            Thread.sleep(500); // Sleep to allow create method to run
-
+                            Utils.initGame(game);
                             playerList.forEach(player -> players.put(
                                     player,
                                     game.getFactory().createPlayer(5, 5)
@@ -132,72 +127,66 @@ class Client {
                                     entry.getKey(),
                                     entry.getValue().getComponent(Physical.class)
                             ));
-                            self = players.get(name);
-                            if (!headless && self != null) {
-                                OrthographicCamera cam = ((GameView) game).getGraphicsSystem().getCam();
-                                Gdx.input.setInputProcessor(new InputHandler(cam, PhysicalMapper.get(self).getBody()));
-                            }
+                            if (game instanceof GameView)
+                                ((GameView) game).setInput(players.get(name));
                             send(new Message<>(ClientLobbyCommand.GAME_READY));
                             state = State.WAITING_FOR_START;
-                            // Assume names are unique. TODO: set names server-side and send them to clients when they join a lobby
                             break;
                         case WAITING_FOR_LEVEL_INFO:
-                            if (msg != null) {
-                                gm = msg;
-                                switch (gm.command) {
-                                    case LOAD_LEVEL:
-                                        state = State.WAITING_FOR_START;
-                                        // TODO: Load level
-                                        break;
-                                }
-                            }
+                            gm = msg == null ? waitRecv() : msg;
+                            if (gm.command == ServerGameCommand.LOAD_LEVEL) {
+                                state = State.WAITING_FOR_START;
+                                // TODO: Load level
+                            } else
+                                new RuntimeException("Expected level info. Got " + gm).printStackTrace();
+                            break;
                         case WAITING_FOR_START:
-                            if (msg != null) {
-                                gm = msg;
-                                switch (gm.command) {
-                                    case START_GAME:
-                                        state = State.IN_GAME;
-                                        Random r = new Random();
-                                        // send(new Message<>(ClientGameCommand.INPUT, new Vector2(5 * (float) r.nextGaussian(), 5 * r.nextFloat())));
-                                        break;
-                                }
-                            }
+                            gm = msg == null ? waitRecv() : msg;
+                            if (gm.command == ServerGameCommand.START_GAME) {
+                                state = State.IN_GAME;
+                                //if (headless) {
+                                Random r = new Random();
+                                // send(new Message<>(ClientGameCommand.INPUT, new Vector2(5 * (float) r.nextGaussian(), 5 * r.nextFloat())));
+                                //}
+                            } else
+                                new RuntimeException("Expected level info. Got " + gm).printStackTrace();
                             break;
                         case IN_GAME:
-                            synchronized (InputHandler.input) {
-                                if (!Float.isNaN(InputHandler.input.x) && !Float.isNaN(InputHandler.input.y) && !InputHandler.input.isZero()) {
-                                    System.out.println("PLAYER INPUT: " + InputHandler.input);
-                                    // Must sent new vector for input each time or call objOut.reset() for each input,
-                                    // otherwise objOut will cache input values and always send duplicates of those
-                                    send(new Message<>(ClientGameCommand.INPUT, new Vector2(InputHandler.input)));
-                                    InputHandler.input.setZero();
+                            if (game instanceof GameView) {
+                                synchronized (InputHandler.input) {
+                                    if (!Float.isNaN(InputHandler.input.x) && !Float.isNaN(InputHandler.input.y) && !InputHandler.input.isZero()) {
+                                        System.out.println("PLAYER INPUT: " + InputHandler.input);
+                                        // Must sent new vector for input each time or call objOut.reset() for each input,
+                                        // otherwise objOut will cache input values and always send duplicates of those
+                                        send(new Message<>(ClientGameCommand.INPUT, new Vector2(InputHandler.input)));
+                                        InputHandler.input.setZero();
+                                    }
                                 }
                             }
-                            if (msg != null) {
-                                gm = msg;
-                                switch (gm.command) {
-                                    case GAME_DATA:
-                                        GameState gameState = (GameState) gm.data;
-                                        if (gameState != null) {
-                                            gameState.stateMap.entrySet().forEach(entry -> {
-                                                Physical phys = playerPhysicalComponents.get(entry.getKey());
-                                                phys.setVelocity(entry.getValue().velocity);
-                                                phys.setPosition(entry.getValue().position);
-                                            });
-                                        }
-                                        break;
-                                    case PLAYER_EXIT:
-                                        String exitingPlayer = (String) gm.data;
-                                        playerList.remove(exitingPlayer);
-                                        players.remove(exitingPlayer).removeAll();
-                                        playerPhysicalComponents.remove(exitingPlayer);
-                                        // TODO: Remove player from player list and destroy entity
-                                        break;
-                                    case LEVEL_COMPLETE:
-                                        // TODO: Set score
-                                        state = State.SCORE_SCREEN;
-                                        break;
-                                }
+                            gm = msg == null ? waitRecv() : msg;
+                            switch (gm.command) {
+                                case GAME_DATA:
+                                    GameState gameState = (GameState) gm.data;
+                                    if (gameState != null) {
+                                        gameState.stateMap.entrySet().forEach(entry -> {
+                                            Physical phys = playerPhysicalComponents.get(entry.getKey());
+                                            phys.setVelocity(entry.getValue().velocity);
+                                            phys.setPosition(entry.getValue().position);
+                                            // phys.moveTowards(entry.getValue().position);
+                                        });
+                                    }
+                                    break;
+                                case PLAYER_EXIT:
+                                    String exitingPlayer = (String) gm.data;
+                                    playerList.remove(exitingPlayer);
+                                    players.remove(exitingPlayer).removeAll();
+                                    playerPhysicalComponents.remove(exitingPlayer);
+                                    // TODO: Remove player from player list and destroy entity
+                                    break;
+                                case LEVEL_COMPLETE:
+                                    // TODO: Set score
+                                    state = State.SCORE_SCREEN;
+                                    break;
                             }
                             break;
                         case EXITING:
@@ -209,7 +198,6 @@ class Client {
                     break;
                 }
             }
-            System.out.println(name + " Exiting...");
         }).start();
     }
 

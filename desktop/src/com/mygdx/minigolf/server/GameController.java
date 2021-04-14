@@ -1,7 +1,6 @@
 package com.mygdx.minigolf.server;
 
 import com.badlogic.ashley.core.Entity;
-import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.model.components.Physical;
@@ -18,7 +17,7 @@ import java.util.stream.Collectors;
 
 public class GameController implements Runnable {
     private GameState gameData;
-    private static final int REFRESH_RATE = 1_000 / 30; // in milliseconds
+    private static final int REFRESH_RATE = 1_000 / 15; // in milliseconds
     private final List<GameCommunicationHandler> comms;
     public final AtomicInteger stateSeq = new AtomicInteger(0);
 
@@ -27,9 +26,8 @@ public class GameController implements Runnable {
     // Receive LobbyComms. Shut them down and transfer sockets to GameComms
     GameController(List<CommunicationHandler> comms) {
         game = new HeadlessGame();
-        new HeadlessApplication(game);
         try {
-            Thread.sleep(1000); // wait for create() method to be called so engine/factory gets setup
+            Utils.initGame(game);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -69,7 +67,7 @@ public class GameController implements Runnable {
                         comm -> comm,
                         comm -> players.get(comm).getComponent(Physical.class)
                 ));
-        long delta = 0;
+        long delta;
         while (true) {
             long t0 = System.currentTimeMillis();
 
@@ -98,7 +96,6 @@ public class GameController implements Runnable {
                     )));
             stateSeq.incrementAndGet();
 
-            game.engine.update(Math.max(REFRESH_RATE, delta)); // TODO: Is this correct?
             delta = System.currentTimeMillis() - t0;
             try {
                 Thread.sleep(Math.max(0, REFRESH_RATE - delta));

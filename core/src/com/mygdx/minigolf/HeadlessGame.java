@@ -1,12 +1,18 @@
 package com.mygdx.minigolf;
 
 import com.badlogic.ashley.core.Engine;
+import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.ApplicationListener;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
+import com.mygdx.minigolf.controller.ComponentMappers;
 import com.mygdx.minigolf.controller.EntityFactory;
+import com.mygdx.minigolf.controller.InputHandler;
 import com.mygdx.minigolf.controller.systems.Physics;
 import com.mygdx.minigolf.model.levels.LevelLoader;
+import com.mygdx.minigolf.view.GameView;
 
 // See link below for example of use
 // https://github.com/TomGrill/gdx-testing/blob/master/tests/src/de/tomgrill/gdxtesting/GdxTestRunner.java
@@ -16,6 +22,7 @@ public class HeadlessGame implements ApplicationListener {
     public World world;
     public EntityFactory factory;
     public LevelLoader levelLoader;
+    private long t0, t1;
 
     @Override
     public void create() {
@@ -26,6 +33,7 @@ public class HeadlessGame implements ApplicationListener {
 
         factory = new EntityFactory(engine, world);
         levelLoader = new LevelLoader(factory);
+        t0 = System.currentTimeMillis();
     }
 
     @Override
@@ -35,7 +43,9 @@ public class HeadlessGame implements ApplicationListener {
 
     @Override
     public void render() {
-
+        t1 = System.currentTimeMillis();
+        engine.update((t1 - t0) / 1000f);
+        t0 = t1;
     }
 
     @Override

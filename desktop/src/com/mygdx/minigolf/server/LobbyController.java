@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import static com.mygdx.minigolf.server.messages.Message.ClientLobbyCommand.GAME_READY;
 
 class LobbyController implements Runnable {
-    private static final String[] names = {"Leader", "Hannah", "Yatzy", "Katie", "Katie", "Cuthbert", "Phineas", "Sirius", "Amelia", "Susan", "Terry", "Lavender", "Millicent", "Charity", "Frank", "Alecto", "Amycus", "Reginald", "Mary", "Cho", "Penelope", "Michael", "Vincent", "Vincent", "Colin", "Dennis", "Dirk", "Bartemius", "Bartemius", "Roger", "Dawlish", "Fleur", "Gabrielle", "Dedalus", "Amos", "Cedric", "Elphias", "Antonin", "Aberforth", "Albus", "Dudley", "Marjorie", "Petunia", "Vernon", "Marietta", "Arabella", "Argus", "Justin", "Seamus", "Marcus", "Mundungus", "Filius", "Florean", "Cornelius", "Marvolo", "Merope", "Morfin", "Anthony", "Goyle", "Gregory", "Hermione", "Astoria", "Gregorovitch", "Fenrir", "Gellert", "Wilhelmina", "Godric", "Rubeus", "Madam", "Mafalda", "Helga", "Lee", "Bertha", "Igor", "Viktor", "Bellatrix", "Rabastan", "Rodolphus", "Gilderoy", "Alice", "Augusta", "Frank", "Neville", "Luna", "Xenophilius", "Remus", "Edward", "Walden", "Draco", "Lucius", "Narcissa", "Scorpius", "Madam", "Griselda", "Madam", "Olympe", "Ernie", "Minerva", "Cormac", "Graham", "Alastor", "Auntie", "Theodore", "Bob", "Garrick", "Pansy", "Padma", "Parvati", "Peter", "Antioch", "Cadmus", "Ignotus", "Irma", "Sturgis", "Poppy", "Harry", "James", "Lily", "Quirinus", "Helena", "Rowena", "Tom", "Demelza", "Augustus", "Albert", "Newt", "Rufus", "Kingsley", "Stanley", "Aurora", "Rita", "Horace", "Salazar", "Hepzibah", "Zacharias", "Severus", "Alicia", "Pomona", "Pius", "Dean", "Andromeda", "Nymphadora", "Ted", "Travers", "Sybill", "Wilky", "Dolores", "Emmeline", "Romilda", "Septima", "Lord", "Angelina", "Myrtle", "Arthur", "Bill", "Charlie", "Fred", "George", "Ginny", "Hugo", "Molly", "Percy", "Ron", "Rose", "Oliver", "Yaxley", "Blaise"};
+    private static final String[] names = {"Leader", "Yatzy", "Chess", "Bridge", "Poker", "Jacket", "Shirt", "Pants"};
     private final AtomicInteger nameIndex = new AtomicInteger(0);
 
     private final List<CommunicationHandler> comms;
@@ -83,7 +83,6 @@ class LobbyController implements Runnable {
                     for (CommunicationHandler comm : copyComms()) {
                         Message<ClientLobbyCommand> clientMsg = comm.recvBuffer.poll();
                         if (clientMsg != null) {
-                            System.out.println("LC recv: " + clientMsg);
                             switch (clientMsg.command) {
                                 case EXIT:
                                     synchronized (comms) {
@@ -99,7 +98,6 @@ class LobbyController implements Runnable {
                     }
                     break;
                 case CLOSING:
-                    System.out.println("CLOSING");
                     synchronized (comms) {
                         for (CommunicationHandler comm : comms) {
                             comm.close();
@@ -117,7 +115,7 @@ class LobbyController implements Runnable {
                             // TODO: Change to not do spin waiting
                             do {
                                 data = comm.recvBuffer.poll();
-                            } while (data != null && data.command != GAME_READY);
+                            } while (data == null || data.command != GAME_READY);
                         }
                         System.out.println("RECEIVED ALL READIES");
                         gameController = new GameController(comms);

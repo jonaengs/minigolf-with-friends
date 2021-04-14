@@ -1,10 +1,14 @@
 package com.mygdx.minigolf.server;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.backends.headless.HeadlessApplicationConfiguration;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.mygdx.minigolf.HeadlessGame;
+import com.mygdx.minigolf.controller.ComponentMappers;
+import com.mygdx.minigolf.controller.InputHandler;
 import com.mygdx.minigolf.view.GameView;
 
 import java.io.IOException;
@@ -16,7 +20,7 @@ public class Utils {
 
     // Read object stream. Returns null if timeout is reached.
     public static Object readObject(Socket socket, ObjectInputStream objIn) throws IOException, ClassNotFoundException {
-        socket.setSoTimeout(100);
+        socket.setSoTimeout(10);
         try {
             return objIn.readObject();
         } catch (SocketTimeoutException e) {
@@ -38,5 +42,11 @@ public class Utils {
         config.width = 1280; config.height = 720;
         config.useHDPI = true;
         new LwjglApplication(game, config);
+    }
+
+    public static void initGame(HeadlessGame game) throws InterruptedException {
+        if (game instanceof GameView) initGameView((GameView) game);
+        else initHeadlessGame(game);
+        Thread.sleep(1_000); // Sleep to allow create method to run
     }
 }
