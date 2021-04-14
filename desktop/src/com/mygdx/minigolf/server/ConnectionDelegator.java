@@ -1,7 +1,7 @@
 package com.mygdx.minigolf.server;
 
-import com.mygdx.minigolf.server.messages.Message;
-import com.mygdx.minigolf.server.messages.Message.ClientLobbyCommand;
+import com.mygdx.minigolf.network.messages.Message;
+import com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

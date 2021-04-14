@@ -1,8 +1,8 @@
 package com.mygdx.minigolf.server;
 
-import com.mygdx.minigolf.server.messages.Message;
-import com.mygdx.minigolf.server.messages.Message.ClientLobbyCommand;
-import com.mygdx.minigolf.server.messages.Message.ServerLobbyCommand;
+import com.mygdx.minigolf.network.messages.Message;
+import com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand;
+import com.mygdx.minigolf.network.messages.Message.ServerLobbyCommand;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -11,8 +11,7 @@ import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.mygdx.minigolf.server.Utils.readObject;
-
+import static com.mygdx.minigolf.network.Utils.readObject;
 
 class CommunicationHandler implements Runnable {
     public final ConcurrentLinkedQueue<Message<ServerLobbyCommand>> sendBuffer = new ConcurrentLinkedQueue<>();

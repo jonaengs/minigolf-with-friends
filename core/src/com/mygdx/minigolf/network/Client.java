@@ -1,13 +1,12 @@
-package com.mygdx.minigolf.server;
+package com.mygdx.minigolf.network;
 
 
 import com.badlogic.ashley.core.Entity;
-import com.badlogic.gdx.Application;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
-import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.controller.InputHandler;
+import com.mygdx.minigolf.controller.screenControllers.ScreenController;
 import com.mygdx.minigolf.model.components.Physical;
-import com.mygdx.minigolf.network.Utils;
 import com.mygdx.minigolf.network.messages.GameState;
 import com.mygdx.minigolf.network.messages.Message;
 import com.mygdx.minigolf.network.messages.Message.ClientGameCommand;
@@ -24,25 +23,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
-class Client {
+public class Client {
     Socket socket;
     ObjectInputStream objIn;
     ObjectOutputStream objOut;
     String name;
 
     State state = State.IN_LOBBY;
+    public List<String> playerList = new ArrayList<>();
 
-    boolean headless = true;
-
-    public Client(String name) throws IOException {
-        this("localhost", 8888);
-        this.name = name;
-    }
-
-    private Client(String url, int port) throws IOException {
-        socket = new Socket(url, port);
+    public Client() throws IOException {
+        socket = new Socket("localhost", 8888);
         socket.setTcpNoDelay(true);
         objOut = new ObjectOutputStream(socket.getOutputStream());
         objIn = new ObjectInputStream(socket.getInputStream()); // Must be instantiated after objOut
@@ -88,9 +80,7 @@ class Client {
 
     public void runAsThread() {
         new Thread(() -> {
-            final HeadlessGame game = headless ? new HeadlessGame() : new GameView();
-            Application app = null;
-            List<String> playerList = new ArrayList<>();
+            final GameView game = ScreenController.gameView;
             Thread.currentThread().setName(this.getClass().getName() + "-" + name);
 
             final Map<String, Entity> players = new HashMap<>();
@@ -123,8 +113,6 @@ class Client {
                             }
                             break;
                         case LOADING_GAME:
-                            app = ServerUtils.initGame(game);
-
                             playerList.forEach(player -> players.put(
                                     player,
                                     game.getFactory().createPlayer(5, 5)
@@ -133,10 +121,7 @@ class Client {
                                     entry.getKey(),
                                     entry.getValue().getComponent(Physical.class)
                             ));
-
-                            if (game instanceof GameView)
-                                ((GameView) game).setInput(players.get(name));
-
+                            game.setInput(players.get(name));
                             send(new Message<>(ClientLobbyCommand.GAME_READY));
                             state = State.WAITING_FOR_LEVEL_INFO;
                             break;
@@ -144,32 +129,27 @@ class Client {
                             gm = msg == null ? waitRecv() : msg;
                             if (gm.command == ServerGameCommand.LOAD_LEVEL) {
                                 String levelName = (String) gm.data;
-                                game.loadLevel(levelName, app);
+                                game.loadLevel(levelName, Gdx.app);
                                 send(new Message<>(ClientGameCommand.LEVEL_LOADED, levelName));
                                 state = State.WAITING_FOR_START;
-                            } else new RuntimeException("Expected level info. Got " + gm).printStackTrace();
+                            } else
+                                new RuntimeException("Expected level info. Got " + gm).printStackTrace();
                             break;
                         case WAITING_FOR_START:
                             gm = msg == null ? waitRecv() : msg;
                             if (gm.command == ServerGameCommand.START_GAME) {
                                 state = State.IN_GAME;
-                                //if (headless) {
-                                Random r = new Random();
-                                // send(new Message<>(ClientGameCommand.INPUT, new Vector2(5 * (float) r.nextGaussian(), 5 * r.nextFloat())));
-                                //}
                             } else
                                 new RuntimeException("Expected level info. Got " + gm).printStackTrace();
                             break;
                         case IN_GAME:
-                            if (game instanceof GameView) {
-                                synchronized (InputHandler.input) {
-                                    if (!Float.isNaN(InputHandler.input.x) && !Float.isNaN(InputHandler.input.y) && !InputHandler.input.isZero()) {
-                                        System.out.println("PLAYER INPUT: " + InputHandler.input);
-                                        // Must sent new vector for input each time or call objOut.reset() for each input,
-                                        // otherwise objOut will cache input values and always send duplicates of those
-                                        send(new Message<>(ClientGameCommand.INPUT, new Vector2(InputHandler.input)));
-                                        InputHandler.input.setZero();
-                                    }
+                            synchronized (InputHandler.input) {
+                                if (!Float.isNaN(InputHandler.input.x) && !Float.isNaN(InputHandler.input.y) && !InputHandler.input.isZero()) {
+                                    System.out.println("PLAYER INPUT: " + InputHandler.input);
+                                    // Must sent new vector for input each time or call objOut.reset() for each input,
+                                    // otherwise objOut will cache input values and always send duplicates of those
+                                    send(new Message<>(ClientGameCommand.INPUT, new Vector2(InputHandler.input)));
+                                    InputHandler.input.setZero();
                                 }
                             }
                             gm = msg == null ? waitRecv() : msg;

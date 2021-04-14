@@ -14,6 +14,7 @@ public class JoinGameView extends View {
         super();
         Label label = new Label("Multiplayer", skin);
         TextField code = new TextField("", skin);
+        code.setMaxLength(6);
         TextButton join = new TextButton("Join", skin);
 
         label.setFontScale(3f);

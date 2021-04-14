@@ -6,51 +6,67 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.mygdx.minigolf.controller.screenControllers.ScreenController;
+import com.mygdx.minigolf.network.Client;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class NewGameView extends View {
 
+    public static final int MAX_NUM_PLAYERS = 4;
     private List<Label> players = new ArrayList<>();
+    Label lobbyID;
+    Client client;
 
 
     public NewGameView() {
         super();
 
         // Creating actors
-        Label label = new Label("New Game", skin);
-        Label players_label = new Label("Players", skin);
+        Label title = new Label("New Game", skin);
+        lobbyID = new Label("LOBBY ID", skin);
+        Label players = new Label("Players", skin);
         TextButton start = new TextButton("Start", skin);
 
         // Transform actors
-        label.setFontScale(3f);
-        label.setOrigin(Align.center);
-        players_label.setFontScale(2f);
-        players_label.setOrigin(Align.center);
+        title.setFontScale(3f);
+        title.setOrigin(Align.center);
+        lobbyID.setFontScale(2f);
+        lobbyID.setOrigin(Align.center);
+        players.setFontScale(2f);
+        players.setOrigin(Align.center);
         start.setTransform(true);
         start.scaleBy(1f);
         start.setOrigin(Align.center);
 
         // Add actors to table
-        table.add(label).expandX();
-        table.row().pad(100f, 0, 40f, 0);
-        table.add(players_label).expandX();
+        table.add(title).expandX();
+        table.row().pad(20f, 0, 40f, 0);
+        table.add(lobbyID).expandX();
+        table.row().pad(10f, 0, 40f, 0);
+        table.add(players).expandX();
 
         // For testing purposes
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < MAX_NUM_PLAYERS; i++) {
             Label player = new Label("Player [empty]", skin);
             table.row().pad(10f, 0, 10f, 0);
             table.add(player).expandX();
-            players.add(player);
+            this.players.add(player);
         }
 
-        table.row().pad(100f, 0, 0, 0);
+        table.row().pad(50f, 0, 0, 0);
         table.add(start).expandX();
 
         start.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
+                try {
+                    ScreenController.gameView.create();
+                    client.startGame();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 //TODO: Go to game actual game
             }
         });
@@ -60,7 +76,23 @@ public class NewGameView extends View {
     @Override
     public void show() {
         super.show();
+        try {
+            client = new Client();
+            lobbyID.setText(client.createLobby().toString());
+            client.runAsThread();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         // TODO: some code to update player status, either here or #render
-        players.forEach(p -> p.setText("Player " + (Math.random() > 0.5 ? "[joined]" : "[empty]")));
+    }
+
+    @Override
+    public void render(float delta) {
+        super.render(delta);
+        if (client != null) {
+            for (int i = 0; i < client.playerList.size(); i++) {
+                players.get(i).setText(client.playerList.get(i));
+            }
+        }
     }
 }

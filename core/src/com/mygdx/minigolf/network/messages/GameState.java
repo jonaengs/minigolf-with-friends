@@ -1,4 +1,4 @@
-package com.mygdx.minigolf.server.messages;
+package com.mygdx.minigolf.network.messages;
 
 import com.badlogic.gdx.math.Vector2;
 

@@ -1,17 +1,16 @@
 package com.mygdx.minigolf.server;
 
-import com.mygdx.minigolf.server.messages.Message;
+import com.mygdx.minigolf.network.messages.Message;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.mygdx.minigolf.server.messages.Message.ClientGameCommand;
-import static com.mygdx.minigolf.server.messages.Message.ServerGameCommand;
+import static com.mygdx.minigolf.network.messages.Message.ClientGameCommand;
+import static com.mygdx.minigolf.network.messages.Message.ServerGameCommand;
 
 // TODO: Generalize and extract logic into a superclass for CommunicationHandler and this class
 class GameCommunicationHandler implements Runnable {

@@ -1,8 +1,8 @@
 package com.mygdx.minigolf.server;
 
-import com.mygdx.minigolf.server.messages.Message;
-import com.mygdx.minigolf.server.messages.Message.ClientLobbyCommand;
-import com.mygdx.minigolf.server.messages.Message.ServerLobbyCommand;
+import com.mygdx.minigolf.network.messages.Message;
+import com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand;
+import com.mygdx.minigolf.network.messages.Message.ServerLobbyCommand;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static com.mygdx.minigolf.server.messages.Message.ClientLobbyCommand.GAME_READY;
+import static com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand.GAME_READY;
 
 class LobbyController implements Runnable {
     private static final String[] names = {"Leader", "Yatzy", "Chess", "Bridge", "Poker", "Jacket", "Shirt", "Pants"};

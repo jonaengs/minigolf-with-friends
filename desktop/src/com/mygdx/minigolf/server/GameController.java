@@ -6,11 +6,11 @@ import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.levels.CourseLoader;
-import com.mygdx.minigolf.server.messages.GameState;
-import com.mygdx.minigolf.server.messages.GameState.PlayerState;
-import com.mygdx.minigolf.server.messages.Message;
-import com.mygdx.minigolf.server.messages.Message.ClientGameCommand;
-import com.mygdx.minigolf.server.messages.Message.ServerGameCommand;
+import com.mygdx.minigolf.network.messages.GameState;
+import com.mygdx.minigolf.network.messages.GameState.PlayerState;
+import com.mygdx.minigolf.network.messages.Message;
+import com.mygdx.minigolf.network.messages.Message.ClientGameCommand;
+import com.mygdx.minigolf.network.messages.Message.ServerGameCommand;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -30,7 +30,7 @@ public class GameController implements Runnable {
     // Receive LobbyComms. Shut them down and transfer sockets to GameComms
     GameController(List<CommunicationHandler> comms) {
         game = new HeadlessGame();
-        app = Utils.initGame(game);
+        app = ServerUtils.initGame(game);
 
         // Stop lobby communication handlers
         comms.forEach(comm -> {
@@ -65,7 +65,6 @@ public class GameController implements Runnable {
             do { // TODO: Change to not do spin waiting
                 msg = comm.recvBuffer.poll();
             } while (msg == null || msg.command != recv.command);
-            System.out.println("got msg: " + msg);
         }
     }
 
