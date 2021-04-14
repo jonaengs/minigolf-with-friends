@@ -49,11 +49,13 @@ public class InputHandler extends InputAdapter {
 
             // Convert dragging distance to amount of force to apply to the ball
             Vector3 force = dragStartPos.sub(dragEndPos);
-            System.out.println("FORCE: " + force);
-            input.set(force.x, force.y);
+            synchronized (input) {
+                input.set(force.x, force.y);
+            }
 
             // Apply force
-            ballBody.applyLinearImpulse(force.x, force.y, dragEndPos.x, dragEndPos.y, true);
+            ballBody.setLinearVelocity(input);
+            // ballBody.applyLinearImpulse(force.x, force.y, dragEndPos.x, dragEndPos.y, true);
         }
 
         return true;

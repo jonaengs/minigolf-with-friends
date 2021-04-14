@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.server.messages.GameState;
+import com.mygdx.minigolf.server.messages.GameState.PlayerState;
 import com.mygdx.minigolf.server.messages.Message;
 import com.mygdx.minigolf.server.messages.Message.ServerGameCommand;
 import com.mygdx.minigolf.view.GameView;
@@ -21,7 +22,7 @@ public class GameController implements Runnable {
     private GameState gameData;
     private static final int REFRESH_RATE = 1_000 / 30; // in milliseconds
     private final List<GameCommunicationHandler> comms;
-    public final AtomicInteger stateID = new AtomicInteger(0);
+    public final AtomicInteger stateSeq = new AtomicInteger(0);
 
     HeadlessGame game;
     boolean showGame = false;
@@ -97,24 +98,18 @@ public class GameController implements Runnable {
                             comms.remove(comm);
                             break;
                         case INPUT:
-                            Physical playerPhysics = playerPhysicalComponents.get(comm);
                             System.out.println("V: " + msg.data);
-                            playerPhysics.setVelocity((Vector2) msg.data);
+                            playerPhysicalComponents.get(comm).setVelocity((Vector2) msg.data);
+                            System.out.println("Set velocity to: " + playerPhysicalComponents.get(comm).getVelocity());
                     }
                 }
             });
             gameData = new GameState(
-                    comms.stream()
-                            .collect(Collectors.toMap(
-                                    comm -> comm.name,
-                                    comm -> {
-                                        Physical phys = playerPhysicalComponents.get(comm);
-                                        return new GameState.PlayerState(phys.getPosition(), phys.getVelocity());
-                                    }
-                            ))
-            );
-            stateID.incrementAndGet();
-
+                    playerPhysicalComponents.entrySet().stream().collect(Collectors.toMap(
+                            entry -> entry.getKey().name,
+                            entry -> new PlayerState(entry.getValue().getPosition(), entry.getValue().getVelocity())
+                    )));
+            stateSeq.incrementAndGet();
             long delta = System.currentTimeMillis() - t0;
             try {
                 Thread.sleep(Math.max(0, REFRESH_RATE - delta));

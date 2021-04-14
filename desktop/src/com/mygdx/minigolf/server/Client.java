@@ -7,7 +7,6 @@ import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.controller.InputHandler;
@@ -24,6 +23,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,12 +87,12 @@ class Client {
     public void runAsThread() {
         new Thread(() -> {
             HeadlessGame game;
-            List<String> playerList = null;
+            List<String> playerList = new ArrayList<>();
             Thread.currentThread().setName(this.getClass().getName() + "-" + name);
 
             Entity self;
-            Map<String, Entity> players = new HashMap<>();
-            Map<String, Physical> playerPhysicalComponents = new HashMap<>();
+            final Map<String, Entity> players = new HashMap<>();
+            final Map<String, Physical> playerPhysicalComponents = new HashMap<>();
 
             while (true) {
                 try {
@@ -134,18 +134,15 @@ class Client {
                             Thread.sleep(500); // Sleep to allow create method to run
                             HeadlessGame finalGame = game;
 
-                            players = playerList.stream()
-                                    .collect(Collectors.toMap(
-                                            player -> player,
-                                            player -> finalGame.getFactory().createPlayer(10, 10)
-                                    ));
+                            playerList.forEach(player -> players.put(
+                                    player,
+                                    finalGame.getFactory().createPlayer(5, 5)
+                            ));
+                            players.entrySet().forEach(entry -> playerPhysicalComponents.put(
+                                    entry.getKey(),
+                                    entry.getValue().getComponent(Physical.class)
+                            ));
                             self = players.get(name);
-                            Map<String, Entity> finalPlayers = players;
-                            playerPhysicalComponents = players.keySet().stream()
-                                    .collect(Collectors.toMap(
-                                            comm -> comm,
-                                            comm -> finalPlayers.get(comm).getComponent(Physical.class)
-                                    ));
                             if (!headless && self != null) {
                                 OrthographicCamera cam = ((GameView) game).getGraphicsSystem().getCam();
                                 Gdx.input.setInputProcessor(new InputHandler(cam, PhysicalMapper.get(self).getBody()));
@@ -171,33 +168,29 @@ class Client {
                                     case START_GAME:
                                         state = State.IN_GAME;
                                         Random r = new Random();
-                                        send(new Message<>(ClientGameCommand.INPUT, new Vector2(5 * (float) r.nextGaussian(), 5 * r.nextFloat())));
+                                        // send(new Message<>(ClientGameCommand.INPUT, new Vector2(5 * (float) r.nextGaussian(), 5 * r.nextFloat())));
                                         break;
                                 }
                             }
                             break;
                         case IN_GAME:
+                            synchronized (InputHandler.input) {
+                                if (!Float.isNaN(InputHandler.input.x) && !Float.isNaN(InputHandler.input.y) && !InputHandler.input.isZero()) {
+                                    System.out.println("PLAYER INPUT: " + InputHandler.input);
+                                    send(new Message<>(ClientGameCommand.INPUT, InputHandler.input));
+                                    InputHandler.input.setZero();
+                                }
+                            }
                             if (msg != null) {
                                 gm = msg;
                                 switch (gm.command) {
                                     case GAME_DATA:
-                                        synchronized (InputHandler.input) {
-                                            if (!Float.isNaN(InputHandler.input.x) && !Float.isNaN(InputHandler.input.y) && !InputHandler.input.isZero()) {
-                                                System.out.println("PLAYER INPUT: " + InputHandler.input);
-                                                send(new Message<>(ClientGameCommand.INPUT, InputHandler.input));
-                                                InputHandler.input.setZero();
-                                            }
-                                        }
                                         GameState gameState = (GameState) gm.data;
-                                        if (!headless) {
-                                            System.out.println("RECEIVED STATE: " + gameState + "");
-                                        }
                                         if (gameState != null) {
-                                            Map<String, Physical> finalPlayerPhysicalComponents = playerPhysicalComponents;
-                                            gameState.data.entrySet().forEach(entry -> {
-                                                Physical phys = finalPlayerPhysicalComponents.get(entry.getKey());
-                                                phys.setVelocity(entry.getValue().velocity);
-                                                phys.setPosition(entry.getValue().position);
+                                            gameState.stateMap.entrySet().forEach(entry -> {
+                                                Physical phys = playerPhysicalComponents.get(entry.getKey());
+                                                phys.getBody().setLinearVelocity(entry.getValue().velocity[0], entry.getValue().velocity[1]);
+                                                phys.getBody().getPosition().set(entry.getValue().position[0], entry.getValue().position[1]);
                                             });
                                         }
                                         break;

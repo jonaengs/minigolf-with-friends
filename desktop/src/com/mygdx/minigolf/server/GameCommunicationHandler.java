@@ -6,7 +6,6 @@ import com.mygdx.minigolf.server.messages.Message;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PushbackInputStream;
 import java.net.Socket;
 
 import static com.mygdx.minigolf.server.messages.Message.*;
@@ -32,13 +31,15 @@ class GameCommunicationHandler implements Runnable {
     public void run() {
         Thread.currentThread().setName(this.getClass().getName());
         GameState sendState;
-        int stateID = -1;
+        int lastStateSent = -1;
         Message<ClientGameCommand> msg;
         try {
             while (socket.isConnected()) {
                 // TODO: Change how data is sent. Current solution may send duplicate data. Maybe send from GameController instead
-                if (stateID < gameController.stateID.getAndSet(stateID)) {
+                if (lastStateSent < gameController.stateSeq.get()) {
+                    lastStateSent = gameController.stateSeq.get();
                     sendState = gameController.getGameData();
+                    System.out.println("Sending game data: " + sendState);
                     objOut.writeObject(new Message<>(ServerGameCommand.GAME_DATA, sendState));
                 }
 
