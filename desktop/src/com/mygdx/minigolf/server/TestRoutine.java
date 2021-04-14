@@ -34,8 +34,8 @@ public class TestRoutine {
         // follower3.joinLobby(lobbyID);
         // follower3.runAsThread();
 
+        Thread.sleep(2_000);
         leader.startGame();
-        // Thread.sleep(2_000);
         // System.out.println(Thread.activeCount()); // should equal first value printed
         // System.out.println("\nACTIVE THREADS:");
         // System.out.println(Thread.getAllStackTraces().keySet().stream().map(Thread::toString).collect(Collectors.joining("\n\t")));

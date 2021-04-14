@@ -2,6 +2,7 @@ package com.mygdx.minigolf;
 
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -24,7 +25,7 @@ public class HeadlessGame implements ApplicationListener {
     public World world;
     public EntityFactory factory;
     public LevelLoader levelLoader;
-    private List<Entity> level;
+    private List<Entity> level = null;
 
     private long t0;
 
@@ -65,15 +66,18 @@ public class HeadlessGame implements ApplicationListener {
     public void dispose() {
     }
 
-    public void loadLevel(List<Entity> level) {
-        if (this.level != null) {
-            level.forEach(Entity::removeAll);
-        }
-        this.level = level;
-    }
-
-    public void loadLevel(String levelName) {
-        loadLevel(levelLoader.loadLevel(levelName));
+    public void loadLevel(String levelName, Application app) {
+        // Tasks game thread (through game application) with loading level.
+        // https://github.com/libgdx/libgdx/wiki/Threading
+        app.postRunnable(() -> {
+                if (level != null) {
+                    // dispose of the previous level before loading the new one
+                    // TODO: Find out how to properly delete an entity
+                    level.forEach(entity -> engine.removeEntity(entity));
+                }
+                levelLoader.loadLevel(levelName);
+            }
+        );
     }
 
     public Engine getEngine() {

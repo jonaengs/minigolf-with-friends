@@ -34,7 +34,6 @@ public class LevelLoaderTest extends TestFileLoader {
         // config.renderInterval = 1/30f;
         new HeadlessApplication(game, config);
         // Game runs in separate thread. Must wait for it to start. Better solution needed.
-        Graphical.enabled = false;
         Thread.sleep(1000);
     }
 

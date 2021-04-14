@@ -2,6 +2,7 @@ package com.mygdx.minigolf.server;
 
 
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.controller.InputHandler;
@@ -87,12 +88,15 @@ class Client {
     public void runAsThread() {
         new Thread(() -> {
             final HeadlessGame game = headless ? new HeadlessGame() : new GameView();
+            Application app = null;
             List<String> playerList = new ArrayList<>();
             Thread.currentThread().setName(this.getClass().getName() + "-" + name);
 
             final Map<String, Entity> players = new HashMap<>();
             final Map<String, Physical> playerPhysicalComponents = new HashMap<>();
 
+            // TODO: Handle GAME_COMPLETE. Handle score screen.
+            // TODO: Connect to game interface / screens.
             while (true) {
                 try {
                     Message<ServerLobbyCommand> lm;
@@ -118,7 +122,8 @@ class Client {
                             }
                             break;
                         case LOADING_GAME:
-                            Utils.initGame(game);
+                            app = Utils.initGame(game);
+
                             playerList.forEach(player -> players.put(
                                     player,
                                     game.getFactory().createPlayer(5, 5)
@@ -127,16 +132,20 @@ class Client {
                                     entry.getKey(),
                                     entry.getValue().getComponent(Physical.class)
                             ));
+
                             if (game instanceof GameView)
                                 ((GameView) game).setInput(players.get(name));
+
                             send(new Message<>(ClientLobbyCommand.GAME_READY));
-                            state = State.WAITING_FOR_START;
+                            state = State.WAITING_FOR_LEVEL_INFO;
                             break;
                         case WAITING_FOR_LEVEL_INFO:
                             gm = msg == null ? waitRecv() : msg;
                             if (gm.command == ServerGameCommand.LOAD_LEVEL) {
+                                String levelName = (String) gm.data;
+                                game.loadLevel(levelName, app);
+                                send(new Message<>(ClientGameCommand.LEVEL_LOADED, levelName));
                                 state = State.WAITING_FOR_START;
-                                game.loadLevel((String) gm.data);
                             } else new RuntimeException("Expected level info. Got " + gm).printStackTrace();
                             break;
                         case WAITING_FOR_START:
@@ -180,7 +189,7 @@ class Client {
                                     playerList.remove(exitingPlayer);
                                     players.remove(exitingPlayer).removeAll();
                                     playerPhysicalComponents.remove(exitingPlayer);
-                                    // TODO: Remove player from player list and destroy entity
+                                    // TODO: Notify player of the removal of exitingPlayer
                                     break;
                                 case LEVEL_COMPLETE:
                                     // TODO: Set score
@@ -201,6 +210,6 @@ class Client {
     }
 
     private enum State {
-        IN_LOBBY, LOADING_GAME, WAITING_FOR_LEVEL_INFO, WAITING_FOR_START, IN_GAME, SCORE_SCREEN, LOADING_LEVEL, EXITING;
+        IN_LOBBY, LOADING_GAME, WAITING_FOR_LEVEL_INFO, WAITING_FOR_START, IN_GAME, SCORE_SCREEN, EXITING;
     }
 }

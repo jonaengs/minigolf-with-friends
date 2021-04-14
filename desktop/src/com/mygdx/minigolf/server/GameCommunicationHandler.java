@@ -1,20 +1,21 @@
 package com.mygdx.minigolf.server;
 
-import com.mygdx.minigolf.server.messages.GameState;
 import com.mygdx.minigolf.server.messages.Message;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.mygdx.minigolf.server.messages.Message.ClientGameCommand;
 import static com.mygdx.minigolf.server.messages.Message.ServerGameCommand;
 
-
+// TODO: Generalize and extract logic into a superclass for CommunicationHandler and this class
 class GameCommunicationHandler implements Runnable {
-    final public Container<Message<ClientGameCommand>> recvBuffer = new Container<>();
+    public final ConcurrentLinkedQueue<Message<ClientGameCommand>> recvBuffer = new ConcurrentLinkedQueue<>();
     final String name;
     final Socket socket;
     final GameController gameController;
@@ -30,48 +31,22 @@ class GameCommunicationHandler implements Runnable {
         this.objOut = comm.objOut;
     }
 
+    public void send(Message<ServerGameCommand> msg) throws IOException {
+        objOut.writeObject(msg);
+        // Reset cache because gameState object gets cached, so first state is always sent.
+        objOut.reset();
+    }
+
     @Override
     public void run() {
         Thread.currentThread().setName(this.getClass().getName());
-        GameState sendState;
-        int lastStateSent = 0;
-        Message<ClientGameCommand> msg;
         try {
             while (running.get()) {
-                // TODO: Change how data is sent. Current solution may send duplicate data. Maybe send from GameController instead
-                if (lastStateSent < gameController.stateSeq.get()) {
-                    lastStateSent = gameController.stateSeq.get();
-                    sendState = gameController.getGameData();
-                    objOut.writeObject(new Message<>(ServerGameCommand.GAME_DATA, sendState));
-                }
-
-                while (objIn.available() > 0) {
-                    msg = (Message<ClientGameCommand>) objIn.readObject();
-                    synchronized (recvBuffer) {
-                        recvBuffer.set(msg);
-                    }
-                }
+                recvBuffer.add((Message<ClientGameCommand>) objIn.readObject());
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
-        } finally {
-            synchronized (recvBuffer) {
-                recvBuffer.set(new Message<>(ClientGameCommand.EXIT));
-            }
-        }
-    }
-
-    public static class Container<T> {
-        private T data;
-
-        public void set(T data) {
-            this.data = data;
-        }
-
-        public T get() {
-            T temp = data;
-            this.data = null;
-            return temp;
+            recvBuffer.add(new Message<>(ClientGameCommand.EXIT));
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.mygdx.minigolf.server;
 
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.model.components.Physical;
@@ -17,21 +18,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class GameController implements Runnable {
-    private GameState gameData;
     private static final int REFRESH_RATE = 1_000 / 15; // in milliseconds
     private final List<GameCommunicationHandler> comms;
-    public final AtomicInteger stateSeq = new AtomicInteger(0);
     private State state = State.INITIALIZING;
     HeadlessGame game;
+    Application app;
 
     // Receive LobbyComms. Shut them down and transfer sockets to GameComms
     GameController(List<CommunicationHandler> comms) {
         game = new HeadlessGame();
-        Utils.initGame(game);
+        app = Utils.initGame(game);
 
         // Stop lobby communication handlers
         comms.forEach(comm -> {
@@ -49,9 +48,44 @@ public class GameController implements Runnable {
                 .collect(Collectors.toList());
     }
 
+    // TODO: Handle IOException by removing comm (and player) that it resulted from.
+    private void broadcast(Message<ServerGameCommand> msg) {
+        for (GameCommunicationHandler comm : comms) {
+            try {
+                comm.send(msg);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void waitForRecv(Message<ClientGameCommand> recv) {
+        for (GameCommunicationHandler comm : comms) {
+            Message<ClientGameCommand> msg;
+            do { // TODO: Change to not do spin waiting
+                msg = comm.recvBuffer.poll();
+            } while (msg == null || msg.command != recv.command);
+            System.out.println("got msg: " + msg);
+        }
+    }
+
+    private void synchronize(Message<ServerGameCommand> send, Message<ClientGameCommand> recv) {
+        broadcast(send);
+        waitForRecv(recv);
+    }
+
+    // TODO: Improve parameter or make players an object attribute
+    private Map<String, Integer> getScores(Map<GameCommunicationHandler, Entity> players) {
+        return players.entrySet().stream().collect(Collectors.toMap(
+                entry -> entry.getKey().name,
+                entry -> 0
+        ));
+    }
+
     @Override
     public void run() {
         Thread.currentThread().setName(this.getClass().getName());
+        // TODO: Consider changing these into attributes
         Map<GameCommunicationHandler, Entity> players = comms.stream()
                 .collect(Collectors.toMap(
                         comm -> comm,
@@ -62,35 +96,39 @@ public class GameController implements Runnable {
                         comm -> comm,
                         comm -> players.get(comm).getComponent(Physical.class)
                 ));
+        GameState gameState = new GameState(comms.stream().collect(Collectors.toMap(
+                comm -> comm.name,
+                comm -> new GameState.PlayerState(new Vector2(0, 0), new Vector2(0, 0))
+        )));
+
         Iterator<String> levelsIterator = Arrays.asList(CourseLoader.getFileNames()).iterator();
         String currentLevel = null;
-        Message<ServerGameCommand> msg;
         while (true) {
             switch (state) {
                 case INITIALIZING:
+                    state = State.SELECTING_LEVEL;
                     break;
                 case SELECTING_LEVEL:
                     try {
                         currentLevel = levelsIterator.next();
-                        msg = new Message<>(ServerGameCommand.LOAD_LEVEL, currentLevel);
-                        for (GameCommunicationHandler comm : comms) {
-                            Message<ClientGameCommand> data;
-                            do { // TODO: Change to not do spin waiting
-                                data = comm.recvBuffer.get();
-                            } while (data == null || data.command != ClientGameCommand.LEVEL_LOADED);
-                        }
+                        synchronize(
+                                new Message<>(ServerGameCommand.LOAD_LEVEL, currentLevel),
+                                new Message<>(ClientGameCommand.LEVEL_LOADED, currentLevel)
+                        );
                         state = State.LOADING_LEVEL;
                     } catch (NoSuchElementException e) {
-                        // all levels complete. Broadcast final scores and exit
+                        // All levels complete. Broadcast final scores and exit
+                        broadcast(new Message<>(ServerGameCommand.GAME_COMPLETE));
+                        broadcast(new Message<>(ServerGameCommand.GAME_SCORE, getScores(players)));
                         state = State.EXITING;
                     }
                     break;
                 case LOADING_LEVEL:
-                    game.loadLevel(currentLevel);
+                    game.loadLevel(currentLevel, app);
                     playerPhysicalComponents.values().forEach(
                             p -> p.setPosition(2, 2) // TODO: Set position to be somewhere inside level spawn
                     );
-                    msg = new Message<>(ServerGameCommand.START_GAME); // TODO: msg can be overwritten before being sent. Change how this is handled
+                    broadcast(new Message<>(ServerGameCommand.START_GAME));
                     state = State.IN_GAME;
                     break;
                 case IN_GAME:
@@ -108,7 +146,7 @@ public class GameController implements Runnable {
                         comms.forEach(comm -> {
                             Message<ClientGameCommand> clientMsg;
                             synchronized (comm.recvBuffer) {
-                                clientMsg = comm.recvBuffer.get();
+                                clientMsg = comm.recvBuffer.poll();
                             }
                             if (clientMsg != null) {
                                 System.out.println("DATA: " + clientMsg);
@@ -125,12 +163,18 @@ public class GameController implements Runnable {
                                 }
                             }
                         });
-                        gameData = new GameState(
-                                playerPhysicalComponents.entrySet().stream().collect(Collectors.toMap(
-                                        entry -> entry.getKey().name,
-                                        entry -> new PlayerState(entry.getValue().getPosition(), entry.getValue().getVelocity())
-                                )));
-                        stateSeq.incrementAndGet();
+                        // update gameState and broadcast it
+                        playerPhysicalComponents.entrySet().forEach(
+                                entry -> {
+                                    PlayerState playerState = gameState.stateMap.get(entry.getKey().name);
+                                    playerState.position = entry.getValue().getPosition();
+                                    playerState.velocity = entry.getValue().getVelocity();
+                                }
+                        );
+                        broadcast(new Message<>(
+                                ServerGameCommand.GAME_DATA,
+                                gameState
+                        ));
 
                         delta = System.currentTimeMillis() - t0;
                         try {
@@ -141,10 +185,11 @@ public class GameController implements Runnable {
                     }
                     break;
                 case LEVEL_COMPLETE:
-                    msg = new Message<>(ServerGameCommand.LEVEL_COMPLETE);
-                    msg = new Message<>(ServerGameCommand.GAME_SCORE);
+                    broadcast(new Message<>(ServerGameCommand.LEVEL_COMPLETE));
                     state = State.SCORE_SCREEN;
-                    // msg = new Message<>(ServerGameCommand.GAME_SCORE, gameScore);
+                    break;
+                case SCORE_SCREEN:
+                    broadcast(new Message<>(ServerGameCommand.GAME_SCORE, getScores(players)));
                     try {
                         Thread.sleep(5_000);
                     } catch (InterruptedException e) {
@@ -157,10 +202,6 @@ public class GameController implements Runnable {
                     return;
             }
         }
-    }
-
-    public GameState getGameData() {
-        return gameData;
     }
 
     private enum State {

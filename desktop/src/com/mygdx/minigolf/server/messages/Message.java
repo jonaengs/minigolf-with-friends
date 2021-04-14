@@ -45,8 +45,9 @@ public class Message<T extends Enum<T>> implements Serializable {
         LEVEL_COMPLETE(Void.class),
         START_GAME(Void.class),
         PLAYER_EXIT(String.class),
+        GAME_DATA(GameState.class),
         GAME_SCORE(HashMap.class), // String playerName -> int score
-        GAME_DATA(GameState.class);
+        GAME_COMPLETE(Void.class);
 
         private final Class<?> clazz;
 
@@ -58,9 +59,7 @@ public class Message<T extends Enum<T>> implements Serializable {
     public enum ClientGameCommand {
         INPUT(Vector2.class),
         LEVEL_LOADED(String.class),
-        EXIT(Void.class)
-        ;
-
+        EXIT(Void.class);
 
         public final Class<?> clazz;
 
