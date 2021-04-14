@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 import javax.xml.bind.util.ValidationEventCollector;
 
-
+// TODO: Create level class with methods to easily find spawn, hole, etc., delete entities and load new entities
 public class LevelLoader {
     EntityFactory factory;
 

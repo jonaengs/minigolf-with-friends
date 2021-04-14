@@ -1,14 +1,10 @@
 package com.mygdx.minigolf.server;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.backends.headless.HeadlessApplicationConfiguration;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.mygdx.minigolf.HeadlessGame;
-import com.mygdx.minigolf.controller.ComponentMappers;
-import com.mygdx.minigolf.controller.InputHandler;
 import com.mygdx.minigolf.view.GameView;
 
 import java.io.IOException;

@@ -35,7 +35,7 @@ public class HeadlessGame implements ApplicationListener {
 
         engine.addSystem(new Physics(world, engine));
 
-        factory = new EntityFactory(engine, world);
+        factory = new EntityFactory(engine, world, false);
         levelLoader = new LevelLoader(factory);
         level = levelLoader.loadLevel(CourseLoader.getCourses().get(1));
 

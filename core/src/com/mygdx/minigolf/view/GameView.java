@@ -23,6 +23,7 @@ public class GameView extends HeadlessGame implements Screen {
     public void create() {
         super.create();
 
+        factory.showGraphics = true;
         graphicsSystem = new GraphicsSystem();
 
         engine.addSystem(graphicsSystem);
