@@ -35,8 +35,8 @@ public class GameView extends HeadlessGame implements Screen {
     @Override
     public void show() {
         // --- Scenario 1: Exploding power up ---
-        factory.createPlayer(9, 12);
-        factory.createControllablePlayer(9,5, graphicsSystem.getCam());
+        factory.createPlayer(19, 15);
+        factory.createControllablePlayer(19,9, graphicsSystem.getCam());
 
         // --- Scenario 2: No collision power-up ----
         //factory.createControllablePlayer(12,5, graphicsSystem.getCam());

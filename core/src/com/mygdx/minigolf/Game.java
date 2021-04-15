@@ -14,7 +14,7 @@ import javax.swing.text.html.parser.Entity;
 public class Game extends com.badlogic.gdx.Game {
     private static Game instance;
     public Music music;
-    public static Vector2 spawnPosition = new Vector2(0,0);
+    public static Vector2 spawnPosition = new Vector2(15,14);
 
     @Override
     public void create() {
