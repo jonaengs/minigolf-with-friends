@@ -90,11 +90,13 @@ public class EntityFactory {
         );
     }
 
-    private Entity createPowerup(float x, float y, CircleShape shape) {
+    private Entity createPowerup(float x, float y, CircleShape shape, Effect effect) {
 
         Entity entity = createEntity();
 
         PowerUpGiver powerUpGiver = new PowerUpGiver();
+        powerUpGiver.setPowerup(effect);
+
         Graphical graphical = new Graphical(Sprite.Powerup, 1);
 
         entity.add(powerUpGiver);
@@ -119,17 +121,13 @@ public class EntityFactory {
     }
 
     public Entity createExplodingPowerup(float x, float  y, CircleShape shape){
-        Entity powerup = createPowerup(x, y,shape);
         Effect.ExplodingEffect explodingEffect = new Effect.ExplodingEffect();
-        powerup.getComponent(PowerUpGiver.class).setPowerup(explodingEffect);
-        return powerup;
+        return createPowerup(x, y, shape, explodingEffect);
     }
 
     public Entity createNoCollisionPowerUp(float x, float y, CircleShape shape){
-        Entity powerup = createPowerup(x, y,shape);
         Effect.NoCollisionEffect noCollisionEffect = new Effect.NoCollisionEffect();
-        powerup.getComponent(PowerUpGiver.class).setPowerup(noCollisionEffect);
-        return powerup;
+        return createPowerup(x, y, shape, noCollisionEffect);
     }
 
     public Entity createSpawn(float x, float y) {
