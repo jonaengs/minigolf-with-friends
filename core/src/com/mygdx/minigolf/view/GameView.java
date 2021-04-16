@@ -4,17 +4,10 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.mygdx.minigolf.HeadlessGame;
-import com.mygdx.minigolf.controller.ComponentMappers;
 import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
-import com.mygdx.minigolf.controller.EntityFactory;
 import com.mygdx.minigolf.controller.InputHandler;
 import com.mygdx.minigolf.controller.systems.GraphicsSystem;
-import com.mygdx.minigolf.model.levels.CourseLoader;
-import com.mygdx.minigolf.model.levels.LevelLoader;
-
-import java.util.List;
 
 public class GameView extends HeadlessGame implements Screen {
     GraphicsSystem graphicsSystem;
@@ -31,7 +24,7 @@ public class GameView extends HeadlessGame implements Screen {
 
     @Override
     public void show() {
-        factory.createControllablePlayer(9,12, graphicsSystem.getCam());
+        factory.createControllablePlayer(9, 12, graphicsSystem.getCam());
     }
 
     @Override

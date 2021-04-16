@@ -25,7 +25,7 @@ public class HeadlessGame implements ApplicationListener {
     public World world;
     public EntityFactory factory;
     public LevelLoader levelLoader;
-    private List<Entity> level = null;
+    private List<Entity> level;
 
     private long t0;
 
@@ -33,12 +33,9 @@ public class HeadlessGame implements ApplicationListener {
     public void create() {
         world = new World(new Vector2(0, 0), true);
         engine = new Engine();
-
         engine.addSystem(new Physics(world, engine));
-
         factory = new EntityFactory(engine, world, false);
         levelLoader = new LevelLoader(factory);
-        level = levelLoader.loadLevel(CourseLoader.getCourses().get(1));
 
         t0 = System.currentTimeMillis();
     }
@@ -75,7 +72,7 @@ public class HeadlessGame implements ApplicationListener {
                     // TODO: Find out how to properly delete an entity
                     level.forEach(entity -> engine.removeEntity(entity));
                 }
-                levelLoader.loadLevel(levelName);
+                level = levelLoader.loadLevel(levelName);
             }
         );
     }
