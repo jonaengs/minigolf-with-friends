@@ -118,10 +118,14 @@ class LobbyController implements Runnable {
                             } while (data == null || data.command != GAME_READY);
                         }
                         System.out.println("RECEIVED ALL READIES");
-                        gameController = new GameController(comms);
+                        try {
+                            gameController = new GameController(comms);
+                            new Thread(gameController).start();
+                            return;
+                        } catch (InterruptedException e) {
+                            state = State.CLOSING;
+                        }
                     }
-                    new Thread(gameController).start();
-                    return;
             }
         }
     }

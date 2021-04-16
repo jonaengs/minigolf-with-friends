@@ -4,6 +4,7 @@ package com.mygdx.minigolf.server;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.math.Vector2;
+import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.controller.InputHandler;
 import com.mygdx.minigolf.model.components.Physical;
@@ -24,7 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 class Client {
     Socket socket;
@@ -88,6 +88,7 @@ class Client {
 
     public void runAsThread() {
         new Thread(() -> {
+            boolean running = true;
             final HeadlessGame game = headless ? new HeadlessGame() : new GameView();
             Application app = null;
             List<String> playerList = new ArrayList<>();
@@ -98,8 +99,9 @@ class Client {
 
             // TODO: Handle GAME_COMPLETE. Handle score screen.
             // TODO: Connect to game interface / screens.
-            while (true) {
-                try {
+            // TODO: Use a communication handler (or at least a buffer) during gameplay to avoid applying outdated data
+            try {
+                while (running) {
                     Message<ServerLobbyCommand> lm;
                     Message<ServerGameCommand> gm;
                     Message msg = recv();
@@ -153,12 +155,7 @@ class Client {
                             gm = msg == null ? waitRecv() : msg;
                             if (gm.command == ServerGameCommand.START_GAME) {
                                 state = State.IN_GAME;
-                                //if (headless) {
-                                Random r = new Random();
-                                // send(new Message<>(ClientGameCommand.INPUT, new Vector2(5 * (float) r.nextGaussian(), 5 * r.nextFloat())));
-                                //}
-                            } else
-                                new RuntimeException("Expected level info. Got " + gm).printStackTrace();
+                            } else new RuntimeException("Expected level info. Got " + gm).printStackTrace();
                             break;
                         case IN_GAME:
                             if (game instanceof GameView) {
@@ -180,8 +177,8 @@ class Client {
                                         gameState.stateMap.entrySet().forEach(entry -> {
                                             Physical phys = playerPhysicalComponents.get(entry.getKey());
                                             phys.setVelocity(entry.getValue().velocity);
-                                            phys.setPosition(entry.getValue().position);
-                                            // phys.moveTowards(entry.getValue().position);
+                                            // phys.setPosition(entry.getValue().position);
+                                            phys.moveTowards(entry.getValue().position);
                                         });
                                     }
                                     break;
@@ -200,13 +197,14 @@ class Client {
                             break;
                         case EXITING:
                             System.out.println(name + "Exiting...");
-                            return;
+                            running = false;
+                            break;
                     }
-                } catch (IOException | ClassNotFoundException e) {
-                    e.printStackTrace();
-                    break;
                 }
+            } catch (IOException | ClassNotFoundException | InterruptedException e) {
+                e.printStackTrace();
             }
+            Game.getInstance().client = null;
         }).start();
     }
 

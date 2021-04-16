@@ -83,7 +83,8 @@ public class Physical implements Component {
 
     public void moveTowards(Vector2 position) {
         Vector2 diff = position.sub(body.getPosition());
-        body.setLinearVelocity(body.getLinearVelocity().add(diff.scl(5)));
+        diff.scl(5);
+        body.setLinearVelocity(body.getLinearVelocity().add(diff));
     }
 
     public Shape getShape() {

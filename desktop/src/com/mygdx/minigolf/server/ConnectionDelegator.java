@@ -93,6 +93,7 @@ public class ConnectionDelegator {
                         } catch (NullPointerException e) {
                             e.printStackTrace();
                             objOut.writeObject(new Message<>(ServerLobbyCommand.LOBBY_NOT_FOUND));
+                            return;
                         }
                         break;
                 }

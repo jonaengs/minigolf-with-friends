@@ -29,8 +29,8 @@ public class GameController implements Runnable {
     Application app;
 
     // Receive LobbyComms. Shut them down and transfer sockets to GameComms
-    GameController(List<CommunicationHandler> comms) {
-        game = new HeadlessGame();
+    GameController(List<CommunicationHandler> comms) throws InterruptedException {
+        game = new GameView();
         app = ServerUtils.initGame(game);
 
         // Stop lobby communication handlers
@@ -152,7 +152,7 @@ public class GameController implements Runnable {
                                 System.out.println("DATA: " + clientMsg);
                                 switch (clientMsg.command) {
                                     case EXIT:
-                                        comms.remove(comm);
+                                        comms.remove(comm); // TODO: Don't remove inside loop. Causes ConcurrentModificationException (?)
                                         if (comms.isEmpty()) state = State.EXITING;
                                         break;
                                     case INPUT:

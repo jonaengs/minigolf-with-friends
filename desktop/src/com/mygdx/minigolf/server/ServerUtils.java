@@ -16,12 +16,16 @@ public class ServerUtils {
         return new LwjglApplication(game, config);
     }
 
-    public static Application initGame(HeadlessGame game) {
+    public static Application initGame(HeadlessGame game) throws InterruptedException {
         Application app = game instanceof GameView ? initGameView((GameView) game) : Utils.initHeadlessGame(game);
-        try {
-            Thread.sleep(1_000); // Sleep to allow create method to run
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        final Object lock = new Object();
+        synchronized (lock) {
+            app.postRunnable(() -> {
+                synchronized (lock) {
+                    lock.notify();
+                }
+            });
+            lock.wait();
         }
         return app;
     }

@@ -75,14 +75,14 @@ public class LobbyView extends View {
 
     public void enterGame() throws InterruptedException {
         final Object lock = new Object();
-        Gdx.app.postRunnable(() -> {
-            ScreenController.gameView.create();
-            ScreenController.changeScreen(ScreenController.gameView);
-            synchronized (lock) {
-                lock.notify();
-            }
-        });
         synchronized (lock) {
+            Gdx.app.postRunnable(() -> {
+                ScreenController.gameView.create();
+                ScreenController.changeScreen(ScreenController.gameView);
+                synchronized (lock) {
+                    lock.notify();
+                }
+            });
             lock.wait();
         }
     }
