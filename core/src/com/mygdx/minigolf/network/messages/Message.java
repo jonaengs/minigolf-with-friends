@@ -29,7 +29,7 @@ public class Message<T extends Enum<T>> implements Serializable {
         LOBBY_ID,
         PLAYER_LIST,
         ENTER_GAME,
-        EXIT
+        LOBBY_NOT_FOUND
     }
 
     public enum ClientLobbyCommand {

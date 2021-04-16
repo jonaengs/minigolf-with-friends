@@ -11,6 +11,7 @@ import com.mygdx.minigolf.network.messages.GameState.PlayerState;
 import com.mygdx.minigolf.network.messages.Message;
 import com.mygdx.minigolf.network.messages.Message.ClientGameCommand;
 import com.mygdx.minigolf.network.messages.Message.ServerGameCommand;
+import com.mygdx.minigolf.view.GameView;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -88,7 +89,7 @@ public class GameController implements Runnable {
         Map<GameCommunicationHandler, Entity> players = comms.stream()
                 .collect(Collectors.toMap(
                         comm -> comm,
-                        comm -> game.getFactory().createPlayer(-1, -1)
+                        comm -> game.getFactory().createPlayer(5, 5)
                 ));
         Map<GameCommunicationHandler, Physical> playerPhysicalComponents = players.keySet().stream()
                 .collect(Collectors.toMap(

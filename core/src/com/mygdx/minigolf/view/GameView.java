@@ -24,12 +24,14 @@ public class GameView extends HeadlessGame implements Screen {
 
     @Override
     public void show() {
-        factory.createControllablePlayer(9, 12, graphicsSystem.getCam());
     }
 
     @Override
     public void render(float delta) {
-        render();
+        Gdx.gl.glClearColor(0.5f, 0.5f, 0.7f, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        engine.update(delta);
     }
 
     @Override

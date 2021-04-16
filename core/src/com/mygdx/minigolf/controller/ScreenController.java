@@ -1,4 +1,4 @@
-package com.mygdx.minigolf.controller.screenControllers;
+package com.mygdx.minigolf.controller;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -9,7 +9,7 @@ import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.view.GameView;
 import com.mygdx.minigolf.view.JoinGameView;
 import com.mygdx.minigolf.view.MainMenuView;
-import com.mygdx.minigolf.view.NewGameView;
+import com.mygdx.minigolf.view.LobbyView;
 import com.mygdx.minigolf.view.SettingsView;
 import com.mygdx.minigolf.view.TutorialView;
 
@@ -18,7 +18,7 @@ public class ScreenController {
     public static final GameView gameView = new GameView();
     public static final TutorialView TUTORIAL_VIEW = new TutorialView();
     public static final SettingsView SETTINGS_VIEW = new SettingsView();
-    public static final NewGameView NEW_GAME_VIEW = new NewGameView();
+    public static final LobbyView LOBBY_VIEW = new LobbyView();
     public static final JoinGameView JOIN_GAME_VIEW = new JoinGameView();
     public static final MainMenuView MAIN_MENU_VIEW = new MainMenuView();
 

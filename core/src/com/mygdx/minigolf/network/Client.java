@@ -5,7 +5,7 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.controller.InputHandler;
-import com.mygdx.minigolf.controller.screenControllers.ScreenController;
+import com.mygdx.minigolf.controller.ScreenController;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.network.messages.GameState;
 import com.mygdx.minigolf.network.messages.Message;
@@ -14,6 +14,7 @@ import com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand;
 import com.mygdx.minigolf.network.messages.Message.ServerGameCommand;
 import com.mygdx.minigolf.network.messages.Message.ServerLobbyCommand;
 import com.mygdx.minigolf.view.GameView;
+import com.mygdx.minigolf.view.LobbyView;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -46,8 +47,12 @@ public class Client {
         return (Integer) msg.data;
     }
 
-    public void joinLobby(Integer lobbyID) throws IOException {
+    public void joinLobby(Integer lobbyID) throws IOException, ClassNotFoundException, IllegalArgumentException {
         send(new Message<>(ClientLobbyCommand.JOIN, lobbyID));
+        Message<ServerLobbyCommand> msg = (Message<ServerLobbyCommand>) waitRecv();
+        if (msg.command == ServerLobbyCommand.LOBBY_NOT_FOUND) {
+            throw new IllegalArgumentException("Lobby not found");
+        }
     }
 
     public void startGame() throws IOException {
@@ -88,13 +93,16 @@ public class Client {
 
             // TODO: Handle GAME_COMPLETE. Handle score screen.
             // TODO: Connect to game interface / screens.
+            State prevState = state;
             while (true) {
                 try {
                     Message<ServerLobbyCommand> lm;
                     Message<ServerGameCommand> gm;
                     Message msg = recv();
+                    if (prevState != state) System.out.println(state);
+                    prevState = state;
+                    // TODO: Handle unexpected messages (invalid state & msg.cmd combinations)
                     switch (state) {
-                        // TODO: Consider combining cases into two: LobbyMessage & GameMessage (using fallthrough)
                         case IN_LOBBY:
                             if (msg != null) {
                                 lm = msg;
@@ -113,6 +121,7 @@ public class Client {
                             }
                             break;
                         case LOADING_GAME:
+                            ScreenController.LOBBY_VIEW.enterGame();
                             playerList.forEach(player -> players.put(
                                     player,
                                     game.getFactory().createPlayer(5, 5)
@@ -185,6 +194,8 @@ public class Client {
                 } catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();
                     break;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }).start();

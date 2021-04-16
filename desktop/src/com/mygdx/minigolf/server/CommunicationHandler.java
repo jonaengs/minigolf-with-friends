@@ -23,10 +23,10 @@ class CommunicationHandler implements Runnable {
     public AtomicBoolean running = new AtomicBoolean(true);
     public Thread runningThread;
 
-    public CommunicationHandler(Socket socket, ObjectInputStream objIn) throws IOException {
+    public CommunicationHandler(Socket socket, ObjectInputStream objIn, ObjectOutputStream objOut) throws IOException {
         this.socket = socket;
         this.objIn = objIn;
-        objOut = new ObjectOutputStream(socket.getOutputStream());
+        this.objOut = objOut;
     }
 
     public void close() {

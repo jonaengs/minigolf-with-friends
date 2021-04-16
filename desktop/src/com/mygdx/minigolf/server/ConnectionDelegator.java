@@ -2,9 +2,11 @@ package com.mygdx.minigolf.server;
 
 import com.mygdx.minigolf.network.messages.Message;
 import com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand;
+import com.mygdx.minigolf.network.messages.Message.ServerLobbyCommand;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
@@ -72,7 +74,8 @@ public class ConnectionDelegator {
             Thread.currentThread().setName(this.getClass().getName());
             try {
                 ObjectInputStream objIn = new ObjectInputStream(socket.getInputStream());
-                CommunicationHandler comm = new CommunicationHandler(socket, objIn);
+                ObjectOutputStream objOut = new ObjectOutputStream(socket.getOutputStream());
+                CommunicationHandler comm = new CommunicationHandler(socket, objIn, objOut);
 
                 Message<ClientLobbyCommand> msg = (Message<ClientLobbyCommand>) objIn.readObject();
                 Integer lobbyID;
@@ -85,7 +88,12 @@ public class ConnectionDelegator {
                         break;
                     case JOIN:
                         lobbyID = (Integer) msg.data;
-                        lobbies.get(lobbyID).addPlayer(comm);
+                        try {
+                            lobbies.get(lobbyID).addPlayer(comm);
+                        } catch (NullPointerException e) {
+                            e.printStackTrace();
+                            objOut.writeObject(new Message<>(ServerLobbyCommand.LOBBY_NOT_FOUND));
+                        }
                         break;
                 }
                 new Thread(comm).start();

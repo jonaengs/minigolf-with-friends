@@ -2,12 +2,14 @@ package com.mygdx.minigolf;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
-import com.mygdx.minigolf.controller.screenControllers.ScreenController;
+import com.mygdx.minigolf.controller.ScreenController;
+import com.mygdx.minigolf.network.Client;
 
 
 public class Game extends com.badlogic.gdx.Game {
     private static Game instance;
     public Music music;
+    public Client client;
 
     @Override
     public void create() {
