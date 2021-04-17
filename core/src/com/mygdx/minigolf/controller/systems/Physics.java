@@ -98,15 +98,23 @@ public class Physics extends IteratingSystem implements ContactListener, EntityL
         Entity entA = getEntity(fa.getBody());
         Entity entB = getEntity(fb.getBody());
 
+
+
         //ImmutableArray<Component> componentsA = entA.getComponents();
         //Component comp = componentsA.first();
 
         if(fa.isSensor() && contact.isTouching()) {
             if(fa.getFilterData().categoryBits == Constants.BIT_HOLE) {
                 System.out.println("Hole sensor triggered");
+                // Hole finished
             }
             else if(fa.getFilterData().categoryBits == Constants.BIT_POWERUP) {
                 System.out.println("Powerup sensor triggered");
+                // Add power-up to user
+            }
+            else if(fa.getFilterData().categoryBits == Constants.BIT_SPAWN) {
+                System.out.println("Spawn sensor triggered");
+                // Remove player collision here
             }
         }
     }

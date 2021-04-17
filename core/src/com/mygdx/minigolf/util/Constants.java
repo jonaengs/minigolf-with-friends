@@ -8,5 +8,6 @@ public final class Constants {
     public static final short BIT_COURSE = 4;
     public static final short BIT_HOLE = 8;
     public static final short BIT_POWERUP = 16;
+    public static final short BIT_SPAWN = 32;
 
 }

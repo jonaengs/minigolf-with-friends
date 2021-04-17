@@ -62,7 +62,7 @@ public class EntityFactory {
                 shape,
                 BodyDef.BodyType.DynamicBody,
                 Constants.BIT_PLAYER,
-                (short) (Constants.BIT_WALL | Constants.BIT_HOLE | Constants.BIT_POWERUP | Constants.BIT_PLAYER),
+                (short) (Constants.BIT_WALL | Constants.BIT_HOLE | Constants.BIT_POWERUP | Constants.BIT_PLAYER | Constants.BIT_SPAWN ),
                 false);
 
         /* Set bounce to 0. This way we can more easily control bounce between the player and other objects.
@@ -129,15 +129,15 @@ public class EntityFactory {
 
     public Entity createSpawn(float x, float y) {
         CircleShape shape = new CircleShape();
-        shape.setRadius(0.1f);
+        shape.setRadius(1.1f);
         return createEntity(createPhysical(
                 x,
                 y,
                 shape,
                 BodyDef.BodyType.StaticBody,
-                Constants.BIT_COURSE,
-                Constants.BIT_COURSE,
-                false));
+                Constants.BIT_SPAWN,
+                Constants.BIT_PLAYER,
+                true));
     }
 
     public Entity createSurface(float x, float y, Sprite sprite, PolygonShape shape) {
