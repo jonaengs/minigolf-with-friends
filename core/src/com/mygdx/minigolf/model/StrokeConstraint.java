@@ -7,7 +7,6 @@ public class StrokeConstraint implements Constraint{
 
     public StrokeConstraint(int allowedStrokes){
         setConstrainingInt(allowedStrokes);
-        boolean b = powerExhausted();
     }
 
     public void setPlayerStartStroke(int currentStrokeCount){
@@ -27,5 +26,10 @@ public class StrokeConstraint implements Constraint{
     @Override
     public void setConstrainingInt(int constrainingInt) {
         this.allowedStrokes = constrainingInt;
+    }
+
+    @Override
+    public String toString(){
+        return "StrokeConstraint with " + allowedStrokes + "allowed strokes";
     }
 }

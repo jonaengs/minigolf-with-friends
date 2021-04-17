@@ -113,6 +113,11 @@ public class EntityFactory {
             public void endContact(Entity other, Contact contact) {
                 engine.removeEntity(entity);
             }
+
+            @Override
+            public void ignoreContact(Entity other, Contact contact) {
+                contact.setEnabled(false);
+            }
         });
 
         entity.add(physical);
@@ -121,13 +126,11 @@ public class EntityFactory {
     }
 
     public Entity createExplodingPowerup(float x, float  y, CircleShape shape){
-        Effect.ExplodingEffect explodingEffect = new Effect.ExplodingEffect();
-        return createPowerup(x, y, shape, explodingEffect);
+        return createPowerup(x, y, shape, new Effect.ExplodingEffect());
     }
 
     public Entity createNoCollisionPowerUp(float x, float y, CircleShape shape){
-        Effect.NoCollisionEffect noCollisionEffect = new Effect.NoCollisionEffect();
-        return createPowerup(x, y, shape, noCollisionEffect);
+        return createPowerup(x, y, shape, new Effect.NoCollisionEffect());
     }
 
     public Entity createSpawn(float x, float y) {
@@ -154,13 +157,6 @@ public class EntityFactory {
         );
     }
 
-    public Entity createParticle(float x, float y, PolygonShape shape) {
-        return createEntity(
-                createPhysical(x,y, shape, BodyDef.BodyType.StaticBody),
-                new Graphical(Sprite.Particle, 1)
-        );
-    }
-
     public Entity createCourse(float x, float y, PolygonShape shape) {
         return createSurface(x, y, Sprite.SurfaceA, shape, -1);
     }
@@ -183,8 +179,7 @@ public class EntityFactory {
         Powerup(Color.BLUE),
         SurfaceA(Color.GREEN),
         SurfaceB(Color.FIREBRICK),
-        Obstacle(Color.FIREBRICK),
-        Particle(Color.GOLD);
+        Obstacle(Color.FIREBRICK);
 
         public final Color color;
 

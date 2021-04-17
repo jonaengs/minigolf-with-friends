@@ -21,4 +21,9 @@ public class UseConstraint implements Constraint{
     public void setConstrainingInt(int constrainingInt) {
         this.uses = constrainingInt;
     }
+
+    @Override
+    public String toString(){
+        return "UseConstraint - uses: " + uses;
+    }
 }

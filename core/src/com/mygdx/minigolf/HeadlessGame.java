@@ -22,11 +22,11 @@ public class HeadlessGame implements ApplicationListener {
     public void create() {
         world = new World(new Vector2(0, 0), true);
         engine = new Engine();
+        factory = new EntityFactory(engine, world);
 
-        engine.addSystem(new PowerUpSystem(engine, factory));
+        engine.addSystem(new PowerUpSystem(engine));
         engine.addSystem(new Physics(world, engine));
 
-        factory = new EntityFactory(engine, world);
         levelLoader = new LevelLoader(factory);
     }
 

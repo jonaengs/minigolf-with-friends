@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.mygdx.minigolf.HeadlessGame;
+import com.mygdx.minigolf.controller.ComponentMappers;
 import com.mygdx.minigolf.controller.EntityFactory;
 import com.mygdx.minigolf.controller.systems.GraphicsSystem;
 import com.mygdx.minigolf.controller.systems.Physics;
@@ -34,12 +35,13 @@ public class GameView extends HeadlessGame implements Screen {
 
     @Override
     public void show() {
-        // --- Scenario 1: Exploding power up ---
         factory.createPlayer(19, 15);
+
+        // --- Scenario 1: Exploding power up ---
         factory.createControllablePlayer(19,9, graphicsSystem.getCam());
 
         // --- Scenario 2: No collision power-up ----
-        //factory.createControllablePlayer(12,5, graphicsSystem.getCam());
+        //factory.createControllablePlayer(31,9, graphicsSystem.getCam());
     }
 
     @Override

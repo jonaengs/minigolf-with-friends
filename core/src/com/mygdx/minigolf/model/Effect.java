@@ -16,6 +16,10 @@ public abstract class Effect {
         public ExplodingEffect() {
             super(new UseConstraint(1));
         }
+        @Override
+        public String toString(){
+            return "Exploding effect with " + constraint.toString();
+        }
     }
 
     public static class NoCollisionEffect extends Effect{
