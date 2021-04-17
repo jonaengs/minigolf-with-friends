@@ -26,5 +26,9 @@ public abstract class Effect {
         public NoCollisionEffect(){
             super(new StrokeConstraint(3));
         }
+        @Override
+        public String toString(){
+            return "No_Collision effect with " + constraint.toString();
+        }
     }
 }

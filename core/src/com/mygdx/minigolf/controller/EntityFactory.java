@@ -126,7 +126,14 @@ public class EntityFactory {
         entity.add(powerUpGiver);
         entity.add(graphical);
 
-        Physical physical = createPhysical(x, y, shape, BodyDef.BodyType.StaticBody);
+        Physical physical = createPhysical(
+                x + shape.getRadius(),
+                y + shape.getRadius(),
+                shape,
+                BodyDef.BodyType.StaticBody,
+                Constants.BIT_POWERUP,
+                Constants.BIT_PLAYER,
+                true);
         physical.addContactListener(new Physical.ContactListener(1) {
             @Override
             public void beginContact(Entity other, Contact contact) {
@@ -136,11 +143,6 @@ public class EntityFactory {
             @Override
             public void endContact(Entity other, Contact contact) {
                 engine.removeEntity(entity);
-            }
-
-            @Override
-            public void ignoreContact(Entity other, Contact contact) {
-                contact.setEnabled(false);
             }
         });
 

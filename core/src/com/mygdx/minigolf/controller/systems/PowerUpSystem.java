@@ -45,7 +45,7 @@ public class PowerUpSystem extends EntitySystem {
                     if (other.getComponent(Player.class) != null) {
                         UseConstraint constraint = (UseConstraint) effect.getConstraint();
                         constraint.decrementUse();
-                        ComponentMappers.PlayerMapper.get(player).removeEffect(effect);
+                        removeExhaustedEffects();
                     }
                 }
                 @Override
@@ -65,7 +65,7 @@ public class PowerUpSystem extends EntitySystem {
                 @Override
                 public void ignoreContact(Entity other, Contact contact) {
                     if (effect.getConstraint().powerExhausted(ComponentMappers.PlayerMapper.get(player).getStrokes())) {
-                        ComponentMappers.PlayerMapper.get(player).removeEffect(effect);
+                        removeExhaustedEffects();
                         contact.setEnabled(true);
                     } else {
                         contact.setEnabled(false);
