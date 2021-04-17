@@ -1,50 +1,52 @@
 package com.mygdx.minigolf.view;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Null;
 import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.controller.ScreenController;
-import com.mygdx.minigolf.network.Client;
 
 import java.io.IOException;
 
 public class JoinGameView extends View {
+    Label title;
+    Label status;
+    TextField code;
+    TextButton joinButton;
 
     public JoinGameView() {
         super();
-        Label label = new Label("Multiplayer", skin);
-        Label error = new Label("", skin);
-        TextField code = new TextField("", skin);
+        title = new Label("Multiplayer", skin);
+        status = new Label("", skin);
+        code = new TextField("", skin);
+        joinButton = new TextButton("Join", skin);
+
         code.setMaxLength(6);
-        TextButton join = new TextButton("Join", skin);
-
-        label.setFontScale(3f);
+        title.setFontScale(3f);
         code.setScale(2f);
-        join.setTransform(true);
-        join.scaleBy(1f);
-        join.setOrigin(Align.center);
+        joinButton.setTransform(true);
+        joinButton.scaleBy(1f);
+        joinButton.setOrigin(Align.center);
 
-        table.add(label).expandX();
+        table.add(title).expandX();
         table.row().pad(200f, 0, 0, 0);
-        table.add(error).expandX();
+        table.add(status).expandX();
         table.row().pad(10f, 0, 0, 0);
         table.add(code).expandX();
         table.row().pad(100f, 0, 0, 0);
-        table.add(join).expandX();
+        table.add(joinButton).expandX();
 
-        join.addListener(new InputListener() {
+        joinButton.addListener(new ChangeListener() {
             @Override
-            public void enter (InputEvent event, float x, float y, int pointer, @Null Actor fromActor) {
+            public void changed(ChangeEvent event, Actor actor) {
                 try {
-                    if (Game.getInstance().client == null) {
-                        Thread.sleep(500);
+                    status.setText("Attempting to join lobby " + code.getText());
+                    // TODO: Find better solution
+                    while (Game.getInstance().client == null) {
+                        Thread.sleep(100);
                     }
                     Game.getInstance().client.joinLobby(Integer.parseInt(code.getText()));
                     Game.getInstance().client.runAsThread();
@@ -53,10 +55,16 @@ public class JoinGameView extends View {
                     throw new RuntimeException(e);
                 } catch (IllegalArgumentException e) {
                     System.out.println("INVALID LOBBY ID");
-                    error.setText("Invalid lobby ID: " + code.getText());
+                    status.setText("Invalid lobby ID: " + code.getText());
                 }
             }
         });
+    }
+
+    @Override
+    public void show() {
+        super.show();
+        status.setText("");
     }
 
 }

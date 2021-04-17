@@ -32,7 +32,7 @@ public class InputHandler extends InputAdapter {
     @Override
     public boolean touchDown(int x, int y, int pointer, int button) {
         dragStartPos.set(x, y, 0);
-        // cam.unproject(dragStartPos);
+        // cam.unproject(dragStartPos); // TODO: Check if this hack is still necessary
         cam.unproject(dragStartPos, 0, 0, CourseLoader.SCREEN_WIDTH, CourseLoader.SCREEN_HEIGHT);
 
         return true;
@@ -46,6 +46,7 @@ public class InputHandler extends InputAdapter {
         return true;
     }
 
+    // TODO: Disable before level has loaded. Maybe just add a boolean
     @Override
     public boolean touchUp(int x, int y, int pointer, int button) {
         // Check if ball is moving

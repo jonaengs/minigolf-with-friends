@@ -14,7 +14,6 @@ import com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand;
 import com.mygdx.minigolf.network.messages.Message.ServerGameCommand;
 import com.mygdx.minigolf.network.messages.Message.ServerLobbyCommand;
 import com.mygdx.minigolf.view.GameView;
-import com.mygdx.minigolf.view.LobbyView;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -166,11 +165,13 @@ public class Client {
                                 case GAME_DATA:
                                     GameState gameState = (GameState) gm.data;
                                     if (gameState != null) {
-                                        gameState.stateMap.entrySet().forEach(entry -> {
-                                            Physical phys = playerPhysicalComponents.get(entry.getKey());
-                                            phys.setVelocity(entry.getValue().velocity);
-                                            phys.setPosition(entry.getValue().position);
-                                            // phys.moveTowards(entry.getValue().position);
+                                        Gdx.app.postRunnable(() -> {
+                                            gameState.stateMap.entrySet().forEach(entry -> {
+                                                Physical phys = playerPhysicalComponents.get(entry.getKey());
+                                                phys.setVelocity(entry.getValue().velocity);
+                                                phys.setPosition(entry.getValue().position);
+                                                // phys.moveTowards(entry.getValue().position);
+                                            });
                                         });
                                     }
                                     break;

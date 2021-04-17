@@ -4,6 +4,7 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.HeadlessGame;
+import com.mygdx.minigolf.controller.ComponentMappers;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.levels.CourseLoader;
 import com.mygdx.minigolf.network.messages.GameState;
@@ -175,6 +176,10 @@ public class GameController implements Runnable {
                                 ServerGameCommand.GAME_DATA,
                                 gameState
                         ));
+
+                        if (players.values().stream().allMatch(p -> ComponentMappers.PlayerMapper.get(p).isCompleted())) {
+                            state = State.LEVEL_COMPLETE;
+                        }
 
                         delta = System.currentTimeMillis() - t0;
                         try {

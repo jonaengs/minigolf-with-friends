@@ -72,13 +72,11 @@ public class Physical implements Component {
     }
 
     public void setPosition(float x, float y) {
-        this.body.getPosition().set(x, y);
-        // this.body.setTransform(position, 0);
+        this.body.setTransform(x, y, 0);
     }
 
     public void setPosition(Vector2 position) {
-        this.body.getPosition().set(position.x, position.y);
-        // this.body.setTransform(position, 0);
+        this.body.setTransform(position, 0);
     }
 
     public void moveTowards(Vector2 position) {
