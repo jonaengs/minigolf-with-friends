@@ -20,6 +20,8 @@ import com.mygdx.minigolf.model.components.Graphical;
 import com.mygdx.minigolf.model.components.Objective;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.components.Player;
+
+import com.mygdx.minigolf.util.Constants;
 import com.mygdx.minigolf.model.components.PowerUpGiver;
 
 import java.util.Arrays;
@@ -56,11 +58,19 @@ public class EntityFactory {
     public Entity createPlayer(float x, float y) {
         CircleShape shape = new CircleShape();
         shape.setRadius(0.15f);
-        Physical physical = createPhysical(x, y, shape, BodyDef.BodyType.DynamicBody);
+        Physical physical = createPhysical(
+                x,
+                y,
+                shape,
+                BodyDef.BodyType.DynamicBody,
+                Constants.BIT_PLAYER,
+                (short) (Constants.BIT_WALL | Constants.BIT_HOLE | Constants.BIT_POWERUP | Constants.BIT_PLAYER | Constants.BIT_SPAWN ),
+                false);
 
         /* Set bounce to 0. This way we can more easily control bounce between the player and other objects.
         E.g. if we set another wall to have 0 bounce, then the player will not bounce at all against it.*/
         physical.setBounce(0);
+        physical.setFriction(8f);
 
         return createEntity(
                 physical,
@@ -77,7 +87,14 @@ public class EntityFactory {
 
     public Entity createHole(float x, float y, CircleShape shape) {
         return createEntity(
-                createPhysical(x + shape.getRadius(), y + shape.getRadius(), shape, BodyDef.BodyType.StaticBody),
+                createPhysical(
+                        x + shape.getRadius(),
+                        y + shape.getRadius(),
+                        shape,
+                        BodyDef.BodyType.StaticBody,
+                        Constants.BIT_HOLE,
+                        Constants.BIT_PLAYER,
+                        true),
                 new Graphical(Sprite.Hole, 0),
                 new Objective()
         );
@@ -85,7 +102,14 @@ public class EntityFactory {
 
     public Entity createObstacle(float x, float y, PolygonShape shape) {
         return createEntity(
-                createPhysical(x, y, shape, BodyDef.BodyType.StaticBody),
+                createPhysical(
+                        x,
+                        y,
+                        shape,
+                        BodyDef.BodyType.StaticBody,
+                        Constants.BIT_WALL,
+                        Constants.BIT_PLAYER,
+                        false),
                 new Graphical(Sprite.Obstacle.color, 1, getVertices(shape))
         );
     }
@@ -135,8 +159,15 @@ public class EntityFactory {
 
     public Entity createSpawn(float x, float y) {
         CircleShape shape = new CircleShape();
-        shape.setRadius(0.1f);
-        return createEntity(createPhysical(x, y, shape, BodyDef.BodyType.StaticBody));
+        shape.setRadius(1.1f);
+        return createEntity(createPhysical(
+                x,
+                y,
+                shape,
+                BodyDef.BodyType.StaticBody,
+                Constants.BIT_SPAWN,
+                Constants.BIT_PLAYER,
+                true));
     }
 
     public Entity createSurface(float x, float y, Sprite sprite, PolygonShape shape) {
@@ -145,14 +176,28 @@ public class EntityFactory {
 
     public Entity createWall(float x, float y, PolygonShape shape) {
         return createEntity(
-                createPhysical(x, y, shape, BodyDef.BodyType.StaticBody),
+                createPhysical(
+                        x,
+                        y,
+                        shape,
+                        BodyDef.BodyType.StaticBody,
+                        Constants.BIT_WALL,
+                        Constants.BIT_PLAYER,
+                        false),
                 new Graphical(Sprite.SurfaceB.color, 1, getVertices(shape))
         );
     }
 
     public Entity createSurface(float x, float y, Sprite sprite, PolygonShape shape, int layer) {
         return createEntity(
-                createPhysical(x, y, shape, BodyDef.BodyType.StaticBody),
+                createPhysical(
+                        x,
+                        y,
+                        shape,
+                        BodyDef.BodyType.StaticBody,
+                        Constants.BIT_COURSE,
+                        Constants.BIT_COURSE,
+                        false),
                 new Graphical(sprite.color, layer, getVertices(shape))
         );
     }
@@ -161,12 +206,15 @@ public class EntityFactory {
         return createSurface(x, y, Sprite.SurfaceA, shape, -1);
     }
 
-    private Physical createPhysical(float x, float y, Shape shape, BodyDef.BodyType type) {
+    private Physical createPhysical(float x, float y, Shape shape, BodyDef.BodyType type, short cBits, short mBits, boolean sensor) {
         BodyDef def = new BodyDef();
         def.type = type;
         def.position.set(x, y);
         FixtureDef fix = new FixtureDef();
         fix.shape = shape;
+        fix.filter.categoryBits = cBits;
+        fix.filter.maskBits = mBits;
+        fix.isSensor = sensor;
         fix.restitution = DEFAULT_BOUNCE;
         Body body = world.createBody(def);
         body.createFixture(fix);
