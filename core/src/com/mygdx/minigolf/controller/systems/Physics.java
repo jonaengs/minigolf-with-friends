@@ -1,14 +1,11 @@
 package com.mygdx.minigolf.controller.systems;
 
-import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntityListener;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
-import com.badlogic.ashley.utils.ImmutableArray;
-import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -17,15 +14,10 @@ import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
-import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.joints.FrictionJoint;
 import com.badlogic.gdx.physics.box2d.joints.FrictionJointDef;
-import com.mygdx.minigolf.controller.ComponentMappers;
-import com.mygdx.minigolf.model.components.Graphical;
 import com.mygdx.minigolf.model.components.Physical;
-import com.mygdx.minigolf.model.components.Player;
-import com.mygdx.minigolf.model.levels.CourseElement;
 import com.mygdx.minigolf.util.Constants;
 
 import java.util.AbstractMap;
@@ -94,14 +86,6 @@ public class Physics extends IteratingSystem implements ContactListener, EntityL
         callListeners(contact, e -> e.getKey().beginContact(e.getValue(), contact));
         Fixture fa = contact.getFixtureA();
         Fixture fb = contact.getFixtureB();
-
-        Entity entA = getEntity(fa.getBody());
-        Entity entB = getEntity(fb.getBody());
-
-
-
-        //ImmutableArray<Component> componentsA = entA.getComponents();
-        //Component comp = componentsA.first();
 
         if(fa.isSensor() && contact.isTouching()) {
             if(fa.getFilterData().categoryBits == Constants.BIT_HOLE) {
