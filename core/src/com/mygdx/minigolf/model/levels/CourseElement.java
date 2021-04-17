@@ -5,6 +5,8 @@ import com.mygdx.minigolf.controller.systems.GraphicsSystem;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
+import static com.mygdx.minigolf.util.Constants.SCREEN_HEIGHT;
+
 public class CourseElement {
     public final float x, y, width, height, rotation;
     public final Function function;
@@ -13,7 +15,7 @@ public class CourseElement {
     // Using GraphicsSystem values here is not exactly good decoupling. Consider moving to somewhere else like LevelLoader
     protected CourseElement(float x, float y, float width, float height, float rotation, Shape shape, Function function) {
         this.x = x / GraphicsSystem.PPM;
-        this.y = (CourseLoader.SCREEN_HEIGHT - (y + height)) / GraphicsSystem.PPM;
+        this.y = (SCREEN_HEIGHT - (y + height)) / GraphicsSystem.PPM;
         this.width = width / GraphicsSystem.PPM;
         this.height = height / GraphicsSystem.PPM;
         this.rotation = -rotation;

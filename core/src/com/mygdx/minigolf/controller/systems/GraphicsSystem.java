@@ -14,9 +14,11 @@ import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.controller.LayerComparator;
 import com.mygdx.minigolf.model.components.Graphical;
 import com.mygdx.minigolf.model.components.Physical;
-import com.mygdx.minigolf.model.levels.CourseLoader;
 
 import java.util.Comparator;
+
+import static com.mygdx.minigolf.util.Constants.SCREEN_HEIGHT;
+import static com.mygdx.minigolf.util.Constants.SCREEN_WIDTH;
 
 public class GraphicsSystem extends SortedIteratingSystem {
 
@@ -24,8 +26,8 @@ public class GraphicsSystem extends SortedIteratingSystem {
     public static final float PPM = 32f;
 
     // Height and width of camera frustum, based off width and height of the screen and pixel per meter ratio
-    public static final float FRUSTUM_WIDTH = CourseLoader.SCREEN_WIDTH / PPM;
-    public static final float FRUSTUM_HEIGHT = CourseLoader.SCREEN_HEIGHT / PPM;
+    public static final float FRUSTUM_WIDTH = SCREEN_WIDTH / PPM;
+    public static final float FRUSTUM_HEIGHT = SCREEN_HEIGHT / PPM;
 
     private final OrthographicCamera cam = new OrthographicCamera(FRUSTUM_WIDTH, FRUSTUM_HEIGHT);
     private final FitViewport viewport;

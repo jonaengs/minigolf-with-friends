@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 import static com.mygdx.minigolf.model.levels.CourseElement.Function.COURSE;
 import static com.mygdx.minigolf.model.levels.CourseElement.Function.HOLE;
 import static com.mygdx.minigolf.model.levels.CourseElement.Function.SPAWN;
+import static com.mygdx.minigolf.util.Constants.SCREEN_HEIGHT;
+import static com.mygdx.minigolf.util.Constants.SCREEN_WIDTH;
 
 
 /**
@@ -33,9 +35,6 @@ import static com.mygdx.minigolf.model.levels.CourseElement.Function.SPAWN;
 public class CourseLoader {
     public final static String LEVELS_DIR = "levels/";
     public final static String LEVELS_FILE = "levels_list.txt";
-
-    public static final int SCREEN_WIDTH = 1280;
-    public static final int SCREEN_HEIGHT = 720;
 
     private static final List<CourseElement.Function> requiredFunctions = Arrays.asList(
             SPAWN, HOLE, COURSE
