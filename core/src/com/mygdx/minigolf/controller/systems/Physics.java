@@ -12,11 +12,13 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
+import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.joints.FrictionJoint;
 import com.badlogic.gdx.physics.box2d.joints.FrictionJointDef;
 import com.mygdx.minigolf.model.components.Physical;
+import com.mygdx.minigolf.util.Constants;
 
 import java.util.AbstractMap;
 import java.util.HashMap;
@@ -82,6 +84,23 @@ public class Physics extends IteratingSystem implements ContactListener, EntityL
     @Override
     public void beginContact(Contact contact) {
         callListeners(contact, e -> e.getKey().beginContact(e.getValue(), contact));
+        Fixture fa = contact.getFixtureA();
+        Fixture fb = contact.getFixtureB();
+
+        if(fa.isSensor() && contact.isTouching()) {
+            if(fa.getFilterData().categoryBits == Constants.BIT_HOLE) {
+                System.out.println("Hole sensor triggered");
+                // Hole finished
+            }
+            else if(fa.getFilterData().categoryBits == Constants.BIT_POWERUP) {
+                System.out.println("Powerup sensor triggered");
+                // Add power-up to user
+            }
+            else if(fa.getFilterData().categoryBits == Constants.BIT_SPAWN) {
+                System.out.println("Spawn sensor triggered");
+                // Remove player collision here
+            }
+        }
     }
 
     @Override

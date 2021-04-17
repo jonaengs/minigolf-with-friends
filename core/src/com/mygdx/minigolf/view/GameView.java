@@ -34,7 +34,8 @@ public class GameView extends HeadlessGame implements Screen {
 
     @Override
     public void show() {
-        factory.createControllablePlayer(9,12, graphicsSystem.getCam());
+        factory.createControllablePlayer(12,15, graphicsSystem.getCam());
+        factory.createControllablePlayer(11,13, graphicsSystem.getCam());
     }
 
     @Override
