@@ -75,9 +75,9 @@ public class Physics extends IteratingSystem implements ContactListener, EntityL
     @SuppressWarnings("unchecked")
     private void callListeners(Contact contact, Consumer<Map.Entry<Physical.ContactListener, Entity>> func) {
         Entity entityA = getEntity(contact.getFixtureA().getBody());
-        mapper.get(entityA).getContactListeners().forEach(listener -> func.accept(new AbstractMap.SimpleEntry(listener, entityA)));
         Entity entityB = getEntity(contact.getFixtureB().getBody());
-        mapper.get(entityB).getContactListeners().forEach(listener -> func.accept(new AbstractMap.SimpleEntry(listener, entityB)));
+        mapper.get(entityA).getContactListeners().forEach(listener -> func.accept(new AbstractMap.SimpleEntry(listener, entityB)));
+        mapper.get(entityB).getContactListeners().forEach(listener -> func.accept(new AbstractMap.SimpleEntry(listener, entityA)));
     }
 
     public Entity getEntity(Body body) {
