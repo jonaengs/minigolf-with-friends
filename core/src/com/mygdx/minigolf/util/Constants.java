@@ -13,4 +13,6 @@ public final class Constants {
     public static final short BIT_POWERUP = 16;
     public static final short BIT_SPAWN = 32;
 
+    public static final float MOVING_MARGIN = 0.1f;
+
 }

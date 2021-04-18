@@ -1,22 +1,18 @@
 package com.mygdx.minigolf.model.levels;
 
 import com.badlogic.ashley.core.Entity;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.mygdx.minigolf.controller.EntityFactory;
-import com.mygdx.minigolf.controller.systems.GraphicsSystem;
 
-import java.beans.VetoableChangeListener;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.xml.bind.util.ValidationEventCollector;
-
 
 public class LevelLoader {
+
     EntityFactory factory;
 
     public LevelLoader(EntityFactory factory) {
@@ -32,7 +28,7 @@ public class LevelLoader {
     }
 
     static private Shape getShape(CourseElement elem) {
-        Vector2 middle = new Vector2(elem.width/2, elem.height/2);
+        Vector2 middle = new Vector2(elem.width / 2, elem.height / 2);
         switch (elem.shape) {
             case ELLIPSE:
                 float radius = elem.width / 2;
