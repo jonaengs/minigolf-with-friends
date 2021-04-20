@@ -73,6 +73,7 @@ public class Physical implements Component {
 
     public void setPosition(Vector2 position) {
         this.body.getPosition().set(position.x, position.y);
+        this.body.setTransform(position, 0);
     }
 
     public boolean isActive() {

@@ -1,11 +1,19 @@
 package com.mygdx.minigolf.model.components;
 
 import com.badlogic.ashley.core.Component;
+import com.mygdx.minigolf.model.Effect;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 public class Player implements Component {
     private int strokes = 0;
     private boolean completed = false;
+    private List<Effect> effects = new ArrayList<>();
 
     public boolean isCompleted() {
         return completed;
@@ -21,6 +29,20 @@ public class Player implements Component {
 
     public void incrementStrokes() {
         this.strokes += 1;
+    }
+
+    public void addEffect(Effect effect){
+        effects.add(effect);
+    }
+
+    public List<Effect> getEffects() { return this.effects; }
+
+    public void removeEffects(){
+        this.effects = effects.stream().filter(effect -> effect.getConstraint().powerExhausted(this.strokes)).collect(Collectors.toList());
+    }
+
+    public void removeEffect(Effect effect){
+        this.effects.remove(effects.indexOf(effect));
     }
 
 }

@@ -1,5 +1,4 @@
 package com.mygdx.minigolf.controller;
-
 import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
@@ -11,18 +10,22 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
+import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.mygdx.minigolf.controller.systems.PowerUpSystem;
+import com.mygdx.minigolf.model.Effect;
 import com.badlogic.gdx.utils.ShortArray;
 import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.model.components.Graphical;
 import com.mygdx.minigolf.model.components.Objective;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.components.Player;
-import com.mygdx.minigolf.model.components.PowerUpTaker;
+
 import com.mygdx.minigolf.util.Constants;
+import com.mygdx.minigolf.model.components.PowerUpGiver;
 
 import java.util.Arrays;
 
@@ -81,7 +84,7 @@ public class EntityFactory {
                 shape,
                 BodyDef.BodyType.DynamicBody,
                 Constants.BIT_PLAYER,
-                (short) (Constants.BIT_WALL | Constants.BIT_HOLE | Constants.BIT_POWERUP | Constants.BIT_PLAYER | Constants.BIT_SPAWN),
+                (short) (Constants.BIT_WALL | Constants.BIT_HOLE | Constants.BIT_POWERUP | Constants.BIT_PLAYER | Constants.BIT_OBSTACLE),
                 false,
                 true);
 
@@ -93,21 +96,14 @@ public class EntityFactory {
         return createEntity(
                 physical,
                 new Graphical(Sprite.Player, 1),
-                new Player(),
-                new PowerUpTaker()
+                new Player()
         );
     }
 
     public Entity createControllablePlayer(float x, float y, OrthographicCamera cam) {
         Entity player = createPlayer(x, y);
-        Gdx.input.setInputProcessor(
-                new InputHandler(
-                        cam,
-                        PhysicalMapper.get(player).getBody(),
-                        createInputDirectionIndicator(x, y),
-                        createInputStrengthIndicator(x, y)
-                )
-        );
+        Gdx.input.setInputProcessor(new InputHandler(cam, player,createInputDirectionIndicator(x, y),
+                createInputStrengthIndicator(x, y)));
         return player;
     }
 
@@ -175,7 +171,7 @@ public class EntityFactory {
                         y,
                         shape,
                         BodyDef.BodyType.StaticBody,
-                        Constants.BIT_WALL,
+                        Constants.BIT_OBSTACLE,
                         Constants.BIT_PLAYER,
                         false,
                         true),
@@ -183,19 +179,46 @@ public class EntityFactory {
         );
     }
 
-    public Entity createPowerup(float x, float y, CircleShape shape) {
-        return createEntity(
-                createPhysical(
-                        x + shape.getRadius(),
-                        y + shape.getRadius(),
-                        shape,
-                        BodyDef.BodyType.StaticBody,
-                        Constants.BIT_POWERUP,
-                        Constants.BIT_PLAYER,
-                        true,
-                        true),
-                new Graphical(Sprite.Powerup, 1)
-        );
+    private Entity createPowerup(float x, float y, CircleShape shape, Effect effect) {
+
+        Entity entity = createEntity();
+
+        PowerUpGiver powerUpGiver = new PowerUpGiver();
+        powerUpGiver.setPowerup(effect);
+
+        Graphical graphical = new Graphical(Sprite.Powerup, 1);
+
+        entity.add(powerUpGiver);
+        entity.add(graphical);
+
+        Physical physical = createPhysical(
+                x + shape.getRadius(),
+                y + shape.getRadius(),
+                shape,
+                BodyDef.BodyType.StaticBody,
+                Constants.BIT_POWERUP,
+                Constants.BIT_PLAYER,
+                true,
+                true);
+        physical.addContactListener(new Physical.ContactListener(1) {
+            @Override
+            public void beginContact(Entity other, Contact contact) {
+                engine.getSystem(PowerUpSystem.class).givePowerUp(other, entity.getComponent(PowerUpGiver.class).getPowerup());
+                engine.removeEntity(entity);
+            }
+        });
+
+        entity.add(physical);
+
+        return entity;
+    }
+
+    public Entity createExplodingPowerup(float x, float  y, CircleShape shape){
+        return createPowerup(x, y, shape, new Effect.ExplodingEffect());
+    }
+
+    public Entity createNoCollisionPowerUp(float x, float y, CircleShape shape){
+        return createPowerup(x, y, shape, new Effect.NoCollisionEffect());
     }
 
     public Entity createSpawn(float x, float y) {

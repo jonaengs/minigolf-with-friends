@@ -41,7 +41,7 @@ public class CourseElement {
     }
 
     public enum Function {
-        SPAWN, HOLE, COURSE, POWERUP, OBSTACLE, WALL;
+        SPAWN, HOLE, COURSE, EXPLODING_POWERUP, NO_COLLISION_POWERUP, OBSTACLE, WALL;
 
         static Function strValueOf(String s) throws IllegalArgumentException {
             return Arrays.stream(Function.values())

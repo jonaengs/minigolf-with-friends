@@ -18,6 +18,8 @@ public class InputHandler extends InputAdapter {
     private final OrthographicCamera cam;
     private final Body ball;
 
+    private final Entity player;
+
     private final Body directionIndicatorBody;
     private final Body strengthIndicatorBody;
 
@@ -26,9 +28,10 @@ public class InputHandler extends InputAdapter {
     private final Vector3 dragStartPos = new Vector3();
     private final Vector3 draggingPos = new Vector3();
 
-    public InputHandler(OrthographicCamera cam, Body ball, Entity directionIndicator, Entity strengthIndicator) {
+    public InputHandler(OrthographicCamera cam, Entity player, Entity directionIndicator, Entity strengthIndicator) {
         this.cam = cam;
-        this.ball = ball;
+        this.player = player;
+        this.ball = ComponentMappers.PhysicalMapper.get(player).getBody();
         this.directionIndicatorBody = ComponentMappers.PhysicalMapper.get(directionIndicator).getBody();
         this.strengthIndicatorGraphical = ComponentMappers.GraphicalMapper.get(strengthIndicator);
         this.strengthIndicatorBody = ComponentMappers.PhysicalMapper.get(strengthIndicator).getBody();
@@ -99,6 +102,9 @@ public class InputHandler extends InputAdapter {
 
             // Apply force
             ball.applyLinearImpulse(force.x, force.y, dragEndPos.x, dragEndPos.y, true);
+
+            //update stroke count for player
+            ComponentMappers.PlayerMapper.get(this.player).incrementStrokes();
         }
 
         return true;
