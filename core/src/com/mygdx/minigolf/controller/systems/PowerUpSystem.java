@@ -20,6 +20,7 @@ import com.mygdx.minigolf.model.UseConstraint;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.components.Player;
 import com.mygdx.minigolf.model.components.PowerUpGiver;
+import com.mygdx.minigolf.util.Constants;
 
 import java.util.List;
 
@@ -45,7 +46,7 @@ public class PowerUpSystem extends EntitySystem {
                     if (other.getComponent(Player.class) != null) {
                         UseConstraint constraint = (UseConstraint) effect.getConstraint();
                         constraint.decrementUse();
-                        removeExhaustedEffects();
+                        Gdx.app.postRunnable(()->removeExhaustedEffects(this, player));
                     }
                 }
                 @Override
@@ -65,10 +66,11 @@ public class PowerUpSystem extends EntitySystem {
                 @Override
                 public void ignoreContact(Entity other, Contact contact) {
                     if (effect.getConstraint().powerExhausted(ComponentMappers.PlayerMapper.get(player).getStrokes())) {
-                        removeExhaustedEffects();
-                        contact.setEnabled(true);
+                        Gdx.app.postRunnable(()->removeExhaustedEffects(this, player));
                     } else {
-                        contact.setEnabled(false);
+                        if(other.getComponent(Physical.class).getFixture().getFilterData().categoryBits == Constants.BIT_OBSTACLE){
+                            contact.setEnabled(false);
+                        }
                     }
 
                 }
@@ -87,7 +89,8 @@ public class PowerUpSystem extends EntitySystem {
         }
     }
 
-    private void removeExhaustedEffects(){
+    private void removeExhaustedEffects(Physical.ContactListener listener, Entity p){
+        ComponentMappers.PhysicalMapper.get(p).removeContactListener(listener);
         for(Entity player : players){
             Player playerComponent = ComponentMappers.PlayerMapper.get(player);
             playerComponent.removeEffects();

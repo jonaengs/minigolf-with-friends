@@ -65,7 +65,7 @@ public class EntityFactory {
                 shape,
                 BodyDef.BodyType.DynamicBody,
                 Constants.BIT_PLAYER,
-                (short) (Constants.BIT_WALL | Constants.BIT_HOLE | Constants.BIT_POWERUP | Constants.BIT_PLAYER | Constants.BIT_SPAWN),
+                (short) (Constants.BIT_WALL | Constants.BIT_HOLE | Constants.BIT_POWERUP | Constants.BIT_PLAYER | Constants.BIT_OBSTACLE),
                 false);
 
         /* Set bounce to 0. This way we can more easily control bounce between the player and other objects.
@@ -109,7 +109,7 @@ public class EntityFactory {
                         y,
                         shape,
                         BodyDef.BodyType.StaticBody,
-                        Constants.BIT_WALL,
+                        Constants.BIT_OBSTACLE,
                         Constants.BIT_PLAYER,
                         false),
                 new Graphical(Sprite.Obstacle.color, 1, getVertices(shape))
