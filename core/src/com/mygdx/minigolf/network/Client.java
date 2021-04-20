@@ -123,7 +123,7 @@ public class Client {
                             ScreenController.LOBBY_VIEW.enterGame();
                             playerList.forEach(player -> players.put(
                                     player,
-                                    game.getFactory().createPlayer(5, 5)
+                                    game.getFactory().createPlayer(-1, -1)
                             ));
                             players.entrySet().forEach(entry -> playerPhysicalComponents.put(
                                     entry.getKey(),
@@ -138,6 +138,7 @@ public class Client {
                             if (gm.command == ServerGameCommand.LOAD_LEVEL) {
                                 String levelName = (String) gm.data;
                                 game.loadLevel(levelName, Gdx.app);
+                                playerPhysicalComponents.values().forEach(p -> p.setPosition(game.currentLevel.getSpawnCenter()));
                                 send(new Message<>(ClientGameCommand.LEVEL_LOADED, levelName));
                                 state = State.WAITING_FOR_START;
                             } else

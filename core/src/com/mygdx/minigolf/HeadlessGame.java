@@ -1,22 +1,14 @@
 package com.mygdx.minigolf;
 
 import com.badlogic.ashley.core.Engine;
-import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
-import com.mygdx.minigolf.controller.ComponentMappers;
 import com.mygdx.minigolf.controller.EntityFactory;
-import com.mygdx.minigolf.controller.InputHandler;
 import com.mygdx.minigolf.controller.systems.Physics;
-import com.mygdx.minigolf.model.levels.CourseLoader;
 import com.mygdx.minigolf.model.levels.LevelLoader;
-import com.mygdx.minigolf.view.GameView;
-
-import java.util.List;
+import com.mygdx.minigolf.model.levels.LevelLoader.Level;
 
 // See link below for example of use
 // https://github.com/TomGrill/gdx-testing/blob/master/tests/src/de/tomgrill/gdxtesting/GdxTestRunner.java
@@ -25,7 +17,7 @@ public class HeadlessGame implements ApplicationListener {
     public World world;
     public EntityFactory factory;
     public LevelLoader levelLoader;
-    private List<Entity> level;
+    public Level currentLevel;
 
     private long t0;
 
@@ -66,15 +58,25 @@ public class HeadlessGame implements ApplicationListener {
     public void loadLevel(String levelName, Application app) {
         // Tasks game thread (through game application) with loading level.
         // https://github.com/libgdx/libgdx/wiki/Threading
-        app.postRunnable(() -> {
-                if (level != null) {
-                    // dispose of the previous level before loading the new one
-                    // TODO: Find out how to properly delete an entity
-                    level.forEach(entity -> engine.removeEntity(entity));
-                }
-                level = levelLoader.loadLevel(levelName);
+        Object lock = new Object();
+        synchronized (lock) {
+            app.postRunnable(() -> {
+                        if (currentLevel != null) {
+                            // dispose of the previous level before loading the new one
+                            currentLevel.dispose();
+                        }
+                        currentLevel = levelLoader.loadLevel(levelName);
+                        synchronized (lock) {
+                            lock.notify();
+                        }
+                    }
+            );
+            try {
+                lock.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        );
+        }
     }
 
     public Engine getEngine() {

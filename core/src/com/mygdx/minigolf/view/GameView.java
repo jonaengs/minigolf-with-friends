@@ -44,6 +44,7 @@ public class GameView extends HeadlessGame implements Screen {
 
     @Override
     public void resize(int width, int height) {
+        graphicsSystem.getViewport().update(width, height);
     }
 
     @Override

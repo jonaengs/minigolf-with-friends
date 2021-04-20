@@ -99,7 +99,7 @@ class Client {
 
             // TODO: Handle GAME_COMPLETE. Handle score screen.
             // TODO: Connect to game interface / screens.
-            // TODO: Use a communication handler (or at least a buffer) during gameplay to avoid applying outdated data
+            // TODO: Use a communication handler (or at least a buffer) during gameplay to avoid applying outdated data. Keep sending directly however
             try {
                 while (running) {
                     Message<ServerLobbyCommand> lm;

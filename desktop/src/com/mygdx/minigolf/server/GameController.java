@@ -5,6 +5,7 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.controller.ComponentMappers;
+import com.mygdx.minigolf.controller.ComponentMappers.PlayerMapper;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.levels.CourseLoader;
 import com.mygdx.minigolf.network.messages.GameState;
@@ -83,6 +84,19 @@ public class GameController implements Runnable {
         ));
     }
 
+    // Clears all comm recvBuffers of input data
+    private void clearComms() {
+        comms.forEach(comm -> {
+            synchronized (comm.recvBuffer) {
+                comm.recvBuffer.forEach(msg -> {
+                    if (msg.command == ClientGameCommand.INPUT) {
+                        comm.recvBuffer.remove(msg);
+                    }
+                });
+            }
+        });
+    }
+
     @Override
     public void run() {
         Thread.currentThread().setName(this.getClass().getName());
@@ -90,7 +104,7 @@ public class GameController implements Runnable {
         Map<GameCommunicationHandler, Entity> players = comms.stream()
                 .collect(Collectors.toMap(
                         comm -> comm,
-                        comm -> game.getFactory().createPlayer(5, 5)
+                        comm -> game.getFactory().createPlayer(-1, -1)
                 ));
         Map<GameCommunicationHandler, Physical> playerPhysicalComponents = players.keySet().stream()
                 .collect(Collectors.toMap(
@@ -127,7 +141,7 @@ public class GameController implements Runnable {
                 case LOADING_LEVEL:
                     game.loadLevel(currentLevel, app);
                     playerPhysicalComponents.values().forEach(
-                            p -> p.setPosition(2, 2) // TODO: Set position to be somewhere inside level spawn
+                            p -> p.setPosition(game.currentLevel.getSpawnCenter())
                     );
                     broadcast(new Message<>(ServerGameCommand.START_GAME));
                     state = State.IN_GAME;
@@ -137,9 +151,7 @@ public class GameController implements Runnable {
                     while (true) {
                         long t0 = System.currentTimeMillis();
 
-                        // TODO: Set level complete if all players have reached hole
-                        // if (players.values().stream().allMatch(p -> ComponentMappers.ObjectiveMapper.get(p).isFinished))
-                        if (false) {
+                        if (players.values().stream().allMatch(p -> PlayerMapper.get(p).isCompleted())) {
                             state = State.LEVEL_COMPLETE;
                             break;
                         }
@@ -176,10 +188,6 @@ public class GameController implements Runnable {
                                 ServerGameCommand.GAME_DATA,
                                 gameState
                         ));
-
-                        if (players.values().stream().allMatch(p -> ComponentMappers.PlayerMapper.get(p).isCompleted())) {
-                            state = State.LEVEL_COMPLETE;
-                        }
 
                         delta = System.currentTimeMillis() - t0;
                         try {

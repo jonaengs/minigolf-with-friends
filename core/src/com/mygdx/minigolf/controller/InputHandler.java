@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.mygdx.minigolf.controller.systems.GraphicsSystem;
 import com.mygdx.minigolf.model.levels.CourseLoader;
+import com.mygdx.minigolf.util.Constants;
 
 import java.util.Arrays;
 
@@ -32,8 +33,8 @@ public class InputHandler extends InputAdapter {
     @Override
     public boolean touchDown(int x, int y, int pointer, int button) {
         dragStartPos.set(x, y, 0);
-        // cam.unproject(dragStartPos); // TODO: Check if this hack is still necessary
-        cam.unproject(dragStartPos, 0, 0, CourseLoader.SCREEN_WIDTH, CourseLoader.SCREEN_HEIGHT);
+        cam.unproject(dragStartPos); // TODO: Check if this hack is still necessary
+        // cam.unproject(dragStartPos, 0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
 
         return true;
     }
@@ -52,8 +53,8 @@ public class InputHandler extends InputAdapter {
         // Check if ball is moving
         if (ballBody.getLinearVelocity().isZero(0.01f)) {
             Vector3 dragEndPos = new Vector3(x, y, 0);
-            // cam.unproject(dragEndPos);
-            cam.unproject(dragEndPos, 0, 0, CourseLoader.SCREEN_WIDTH, CourseLoader.SCREEN_HEIGHT);
+            cam.unproject(dragEndPos);
+            // cam.unproject(dragEndPos, 0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
 
             // Convert dragging distance to amount of force to apply to the ball
             Vector3 force = dragStartPos.sub(dragEndPos);

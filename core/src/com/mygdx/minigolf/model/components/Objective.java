@@ -1,22 +1,39 @@
 package com.mygdx.minigolf.model.components;
 
 import com.badlogic.ashley.core.Component;
-import com.badlogic.gdx.math.Circle;
+import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Contact;
+import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
+import com.mygdx.minigolf.controller.ComponentMappers.PlayerMapper;
+import com.mygdx.minigolf.model.components.Physical.ContactListener;
+import com.mygdx.minigolf.util.Constants;
 
-public class Objective implements Component {
+public class Objective extends ContactListener implements Component {
 
-    public Circle area;
+    private Physical physical;
 
-    public Circle getArea() {
-        return area;
+    public Objective(Physical physical) {
+        super(20);
+        this.physical = physical;
+        physical.addContactListener(this);
     }
 
-    public void setArea(Circle area) {
-        this.area = area;
+    @Override
+    public void ignoreContact(Entity other, Contact contact) {
+        contact.setEnabled(false);
+        Player player = PlayerMapper.get(other);
+        Physical physical = PhysicalMapper.get(other);
+        if (player != null && physical != null) {
+            if (!player.isCompleted() &&
+                    physical.getVelocity().isZero(Constants.MOVING_MARGIN) &&
+                    physical.getPosition().sub(this.physical.getPosition()).isZero(Constants.MOVING_MARGIN)) {
+                player.complete();
+            } else {
+                Vector2 force = this.physical.getPosition().sub(physical.getPosition());
+                physical.getBody().applyLinearImpulse(force, physical.getBody().getLocalCenter(), true);
+            }
+        }
     }
 
-    public boolean contains(Vector2 position) {
-        return area.contains(position);
-    }
 }
