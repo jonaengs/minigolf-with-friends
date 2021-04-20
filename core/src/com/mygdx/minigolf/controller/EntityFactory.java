@@ -2,8 +2,8 @@ package com.mygdx.minigolf.controller;
 import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -27,6 +27,7 @@ import com.mygdx.minigolf.model.components.PowerUpGiver;
 import java.util.Arrays;
 
 public class EntityFactory {
+
     public final static float DEFAULT_BOUNCE = 0.7f;
     private final Engine engine;
     private final World world;
@@ -37,8 +38,8 @@ public class EntityFactory {
         Vector2 v = new Vector2();
         for (int i = 0; i < nVertices; i++) {
             shape.getVertex(i, v);
-            vertices[2*i] = v.x;
-            vertices[2*i + 1] = v.y;
+            vertices[2 * i] = v.x;
+            vertices[2 * i + 1] = v.y;
         }
         return vertices;
     }
@@ -64,7 +65,7 @@ public class EntityFactory {
                 shape,
                 BodyDef.BodyType.DynamicBody,
                 Constants.BIT_PLAYER,
-                (short) (Constants.BIT_WALL | Constants.BIT_HOLE | Constants.BIT_POWERUP | Constants.BIT_PLAYER | Constants.BIT_SPAWN ),
+                (short) (Constants.BIT_WALL | Constants.BIT_HOLE | Constants.BIT_POWERUP | Constants.BIT_PLAYER | Constants.BIT_SPAWN),
                 false);
 
         /* Set bounce to 0. This way we can more easily control bounce between the player and other objects.
@@ -86,17 +87,18 @@ public class EntityFactory {
     }
 
     public Entity createHole(float x, float y, CircleShape shape) {
+        Physical physical = createPhysical(
+                x + shape.getRadius(),
+                y + shape.getRadius(),
+                shape,
+                BodyDef.BodyType.StaticBody,
+                Constants.BIT_HOLE,
+                Constants.BIT_PLAYER,
+                false);
         return createEntity(
-                createPhysical(
-                        x + shape.getRadius(),
-                        y + shape.getRadius(),
-                        shape,
-                        BodyDef.BodyType.StaticBody,
-                        Constants.BIT_HOLE,
-                        Constants.BIT_PLAYER,
-                        true),
+                physical,
                 new Graphical(Sprite.Hole, 0),
-                new Objective()
+                new Objective(physical)
         );
     }
 
@@ -237,4 +239,5 @@ public class EntityFactory {
             this.color = color;
         }
     }
+
 }
