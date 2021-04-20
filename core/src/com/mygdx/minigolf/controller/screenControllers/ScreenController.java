@@ -10,6 +10,7 @@ import com.mygdx.minigolf.view.GameView;
 import com.mygdx.minigolf.view.JoinGameView;
 import com.mygdx.minigolf.view.MainMenuView;
 import com.mygdx.minigolf.view.NewGameView;
+import com.mygdx.minigolf.view.ScoreView;
 import com.mygdx.minigolf.view.SettingsView;
 import com.mygdx.minigolf.view.TutorialView;
 
@@ -21,6 +22,7 @@ public class ScreenController {
     public static final NewGameView NEW_GAME_VIEW = new NewGameView();
     public static final JoinGameView JOIN_GAME_VIEW = new JoinGameView();
     public static final MainMenuView MAIN_MENU_VIEW = new MainMenuView();
+    public static final ScoreView SCORE_VIEW = new ScoreView();
 
     public static void changeScreen(Screen screen) {
         Game.getInstance().setScreen(screen);
