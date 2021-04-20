@@ -3,10 +3,12 @@ package com.mygdx.minigolf.controller.systems;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.SortedIteratingSystem;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.mygdx.minigolf.controller.ComponentMappers.GraphicalMapper;
@@ -35,9 +37,7 @@ public class GraphicsSystem extends SortedIteratingSystem {
     private final Array<Entity> renderQueue = new Array<>(); // A sorted array of entities based on level
     private final Comparator<Entity> comparator = new com.mygdx.minigolf.controller.LayerComparator(); // A comparator to sort entities based on their level
 
-    // A shape renderer used for testing purpose (not using textures)
     private final ShapeRenderer shapeRenderer = new ShapeRenderer();
-    private final PolygonSpriteBatch polygonSpriteBatch = new PolygonSpriteBatch();
 
     public GraphicsSystem() {
         super(Family.all(Physical.class, Graphical.class).get(), new LayerComparator());
@@ -56,27 +56,48 @@ public class GraphicsSystem extends SortedIteratingSystem {
         cam.update();
 
         // Render shapes
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
         shapeRenderer.setProjectionMatrix(cam.combined);
         shapeRenderer.setAutoShapeType(true);
         shapeRenderer.begin();
-        polygonSpriteBatch.setProjectionMatrix(cam.combined);
-        polygonSpriteBatch.begin();
+        shapeRenderer.set(ShapeType.Filled);
 
         for (Entity entity : renderQueue) {
             Physical physical = PhysicalMapper.get(entity);
-            shapeRenderer.setColor(GraphicalMapper.get(entity).color);
+
+            if (!physical.isActive()) {
+                continue;
+            }
+
+            Vector2 position = physical.getPosition();
+
+            Graphical graphical = GraphicalMapper.get(entity);
+            shapeRenderer.setColor(graphical.getColor());
+            shapeRenderer.identity();
+
             switch (physical.getShape().getType()) {
                 case Circle:
-                    shapeRenderer.set(ShapeType.Filled);
-                    shapeRenderer.circle(physical.getPosition().x, physical.getPosition().y, physical.getShape().getRadius(), 50);
+                    shapeRenderer.circle(position.x, position.y, physical.getShape().getRadius(), 50);
                     break;
                 case Polygon:
-                    polygonSpriteBatch.draw(GraphicalMapper.get(entity).polygonRegion, physical.getPosition().x, physical.getPosition().y);
+                    float[] triangles = graphical.getTriangles();
+                    shapeRenderer.translate(position.x, position.y, 0);
+                    shapeRenderer.rotate(0, 0, 1, physical.getAngle());
+
+                    if (triangles.length >= 6) {
+                        for (int i = 0; i < triangles.length; i += 6) {
+                            shapeRenderer.triangle(triangles[i], triangles[i+1], triangles[i+2], triangles[i+3], triangles[i+4], triangles[i+5]);
+
+                        }
+                    }
             }
         }
-        
-        polygonSpriteBatch.end();
+
         shapeRenderer.end();
+        Gdx.gl.glDisable(GL20.GL_BLEND);
+
         renderQueue.clear();
     }
 

@@ -76,6 +76,14 @@ public class Physical implements Component {
         this.body.setTransform(position, 0);
     }
 
+    public boolean isActive() {
+        return this.body.isActive();
+    }
+
+    public float getAngle() {
+        return (float) Math.toDegrees(this.body.getAngle());
+    }
+
     public Shape getShape() {
         return this.getFixture().getShape();
     }

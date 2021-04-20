@@ -52,8 +52,10 @@ public class LevelLoaderTest extends TestFileLoader {
                                     }
                                 }
                         )));
+        /*
         List<List<Entity>> levelsContents = courses.stream()
                 .map(game.levelLoader::loadLevel)
                 .collect(Collectors.toList());
+         */
     }
 }

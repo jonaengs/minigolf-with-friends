@@ -1,6 +1,5 @@
 package com.mygdx.minigolf.view;
 
-
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -30,7 +29,7 @@ public class GameView extends HeadlessGame implements Screen {
 
 
         LevelLoader levelLoader = new LevelLoader(factory);
-        List<Entity> levelContents = levelLoader.loadLevel(CourseLoader.getCourses().get(1));
+        LevelLoader.Level level = levelLoader.loadLevel(CourseLoader.getFileNames()[0]);
     }
 
     @Override
