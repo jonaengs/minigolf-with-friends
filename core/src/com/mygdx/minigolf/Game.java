@@ -22,7 +22,7 @@ public class Game extends com.badlogic.gdx.Game {
 
         music = Gdx.audio.newMusic(Gdx.files.internal("music/Maxime Abbey - Operation Stealth - The Ballad of J. & J.ogg"));
         music.setLooping(true);
-        ScreenController.changeScreen(ScreenController.gameView);
+        ScreenController.changeScreen(ScreenController.MAIN_MENU_VIEW);
     }
 
     public static Game getInstance() {

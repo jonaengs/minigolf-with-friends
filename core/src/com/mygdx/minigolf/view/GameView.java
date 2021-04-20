@@ -35,18 +35,14 @@ public class GameView extends HeadlessGame implements Screen {
 
     @Override
     public void show() {
-        factory.createPlayer(19, 15);
 
-        // --- Scenario 1: Exploding power up ---
-        factory.createControllablePlayer(19,9, graphicsSystem.getCam());
+        factory.createControllablePlayer(19, 9, graphicsSystem.getCam());
 
-        // --- Scenario 2: No collision power-up ----
-        //factory.createControllablePlayer(31,9, graphicsSystem.getCam());
     }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(1f, 0f, 1f, 1);
+        Gdx.gl.glClearColor(0f, 0f, 0f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         engine.update(Gdx.graphics.getDeltaTime());
@@ -54,6 +50,7 @@ public class GameView extends HeadlessGame implements Screen {
 
     @Override
     public void resize(int width, int height) {
+        graphicsSystem.getViewport().update(width, height);
     }
 
     @Override
