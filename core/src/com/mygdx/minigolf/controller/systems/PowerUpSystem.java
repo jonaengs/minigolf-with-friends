@@ -1,25 +1,19 @@
 package com.mygdx.minigolf.controller.systems;
 
-import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Contact;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
-import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.controller.ComponentMappers;
-import com.mygdx.minigolf.controller.EntityFactory;
-import com.mygdx.minigolf.model.Effect;
-import com.mygdx.minigolf.model.StrokeConstraint;
-import com.mygdx.minigolf.model.UseConstraint;
+import com.mygdx.minigolf.model.powerup.Effect;
+import com.mygdx.minigolf.model.powerup.StrokeConstraint;
+import com.mygdx.minigolf.model.powerup.UseConstraint;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.components.Player;
-import com.mygdx.minigolf.model.components.PowerUpGiver;
 import com.mygdx.minigolf.util.Constants;
 
 import java.util.List;

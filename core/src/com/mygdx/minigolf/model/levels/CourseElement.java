@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 
 import static com.mygdx.minigolf.util.Constants.SCREEN_HEIGHT;
 
-public class CourseElement {
+class CourseElement {
     public final float x, y, width, height, rotation;
     public final Function function;
     public final Shape shape;
@@ -23,7 +23,7 @@ public class CourseElement {
         this.function = function;
     }
 
-    public void validate() {
+    protected void validate() {
         if (Stream.of(x, y, width, height).anyMatch(i -> i < 0))
             throw new IllegalArgumentException("Element has negative size or position");
     }
@@ -40,7 +40,7 @@ public class CourseElement {
                 '}';
     }
 
-    public enum Function {
+    protected enum Function {
         SPAWN, HOLE, COURSE, EXPLODING_POWERUP, NO_COLLISION_POWERUP, OBSTACLE, WALL;
 
         static Function strValueOf(String s) throws IllegalArgumentException {
@@ -51,7 +51,7 @@ public class CourseElement {
         }
     }
 
-    public enum Shape {
+    protected enum Shape {
         // Use str in case internal representation (enum) diverges from external representation (string in xml)
         RECTANGLE("rectangle"), ELLIPSE("ellipse"), TRIANGLE("triangle");
 
