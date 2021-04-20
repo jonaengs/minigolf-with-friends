@@ -7,27 +7,22 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.mygdx.minigolf.controller.EntityFactory;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 public class LevelLoader {
-
     EntityFactory factory;
 
     public LevelLoader(EntityFactory factory) {
         this.factory = factory;
     }
 
-    public List<Entity> loadLevel(String fileName) {
-        return loadLevel(CourseLoader.load(fileName));
+    public Level loadLevel(String fileName) {
+        return new Level(CourseLoader.load(fileName));
     }
 
-    public List<Entity> loadLevel(List<CourseElement> course) {
-        return course.stream().map(this::createEntity).collect(Collectors.toList());
-    }
-
-    static private Shape getShape(CourseElement elem) {
+    static public Shape getShape(CourseElement elem) {
         Vector2 middle = new Vector2(elem.width / 2, elem.height / 2);
         switch (elem.shape) {
             case ELLIPSE:
@@ -57,7 +52,7 @@ public class LevelLoader {
         }
     }
 
-    private Entity createEntity(CourseElement elem) {
+    public Entity createEntity(CourseElement elem) {
         switch (elem.function) {
             case HOLE:
                 return factory.createHole(elem.x, elem.y, (CircleShape) getShape(elem));
@@ -73,6 +68,35 @@ public class LevelLoader {
                 return factory.createWall(elem.x, elem.y, (PolygonShape) getShape(elem));
             default:
                 throw new IllegalArgumentException("Illegal course element function");
+        }
+    }
+
+    public class Level {
+        public final List<Entity> elements = new ArrayList<>();
+        public final List<Entity> powerups = new ArrayList<>();
+        public final List<Entity> holes = new ArrayList<>();
+        public final List<Entity> spawns = new ArrayList<>();
+
+        protected Level(List<CourseElement> courseElems) {
+            courseElems.forEach(ce -> {
+                Entity e = createEntity(ce);
+                switch (ce.function) {
+                    case POWERUP:
+                        powerups.add(e);
+                        break;
+                    case HOLE:
+                        holes.add(e);
+                        break;
+                    case SPAWN:
+                        spawns.add(e);
+                        break;
+                }
+                elements.add(e);
+            });
+        }
+
+        public void dispose() {
+            elements.forEach(Entity::removeAll);
         }
     }
 
