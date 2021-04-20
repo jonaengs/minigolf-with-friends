@@ -4,8 +4,9 @@ import com.badlogic.ashley.core.Component;
 
 
 public class Player implements Component {
-    private int strokes = 0;
-    private boolean completed = false;
+    private int totalStrokes = 0;
+    private int levelStrokes = 0;
+    public boolean completed = false;
 
     public boolean isCompleted() {
         return completed;
@@ -15,12 +16,14 @@ public class Player implements Component {
         this.completed = true;
     }
 
-    public int getStrokes() {
-        return strokes;
+    public int getLevelStrokes() {
+        return levelStrokes;
     }
 
     public void incrementStrokes() {
-        this.strokes += 1;
+        this.levelStrokes += 1;
     }
+
+    // TODO: public levelComplete()
 
 }

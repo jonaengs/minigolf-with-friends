@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.StreamSupport;
 
-public class Physics extends IteratingSystem implements ContactListener, EntityListener {
+public class PhysicsSystem extends IteratingSystem implements ContactListener, EntityListener {
 
     private static final float MAX_STEP_TIME = 1 / 30f;
     private static float accumulator = 0f;
@@ -38,7 +38,7 @@ public class Physics extends IteratingSystem implements ContactListener, EntityL
     public final Body frictionBody;
 
     @SuppressWarnings("unchecked")
-    public Physics(World world, Engine engine) {
+    public PhysicsSystem(World world, Engine engine) {
         super(Family.all(Physical.class).get());
         this.world = world;
         this.engine = engine;
@@ -119,7 +119,11 @@ public class Physics extends IteratingSystem implements ContactListener, EntityL
 
     @Override
     public void entityRemoved(Entity entity) {
-        world.destroyBody(mapper.get(entity).getBody());
+        try {
+            world.destroyBody(mapper.get(entity).getBody());
+        } catch (NullPointerException e) {
+            System.out.println("bad?");
+        }
     }
 
 }

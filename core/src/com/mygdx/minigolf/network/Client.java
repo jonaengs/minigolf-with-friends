@@ -20,6 +20,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -138,11 +139,16 @@ public class Client {
                             if (gm.command == ServerGameCommand.LOAD_LEVEL) {
                                 String levelName = (String) gm.data;
                                 game.loadLevel(levelName, Gdx.app);
-                                playerPhysicalComponents.values().forEach(p -> p.setPosition(game.currentLevel.getSpawnCenter()));
+                                Gdx.app.postRunnable(() ->
+                                        playerPhysicalComponents.values().forEach(p -> p.setPosition(game.currentLevel.getSpawnCenter()))
+                                );
                                 send(new Message<>(ClientGameCommand.LEVEL_LOADED, levelName));
                                 state = State.WAITING_FOR_START;
+                            } else if (gm.command == ServerGameCommand.GAME_COMPLETE) {
+                                System.out.println("GAME COMPLETE");
+                                state = State.EXITING;
                             } else
-                                new RuntimeException("Expected level info. Got " + gm).printStackTrace();
+                                new RuntimeException("Expected level info (or game complete). Got " + gm).printStackTrace();
                             break;
                         case WAITING_FOR_START:
                             gm = msg == null ? waitRecv() : msg;
@@ -189,7 +195,16 @@ public class Client {
                                     break;
                             }
                             break;
+                        case SCORE_SCREEN:
+                            gm = msg == null ? waitRecv() : msg;
+                            if (gm.command == ServerGameCommand.GAME_SCORE) {
+                                System.out.println(Collections.singletonList(msg.data));
+                                state = State.WAITING_FOR_LEVEL_INFO;
+                            } else
+                                new RuntimeException("Expected level info. Got " + gm).printStackTrace();
+                            break;
                         case EXITING:
+                            Gdx.app.postRunnable(() -> ScreenController.changeScreen(ScreenController.MAIN_MENU_VIEW));
                             System.out.println(name + "Exiting...");
                             return;
                     }

@@ -1,13 +1,16 @@
 package com.mygdx.minigolf.model.levels;
 
+import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
+import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.controller.ComponentMappers;
 import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.controller.EntityFactory;
+import com.mygdx.minigolf.view.GameView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -97,8 +100,9 @@ public class LevelLoader {
         }
 
         // TODO: Find out how to properly delete an entity
-        public void dispose() {
-            elements.forEach(Entity::removeAll);
+        public void dispose(Engine engine) {
+            elements.forEach(engine::removeEntity);
+            // elements.forEach(Entity::removeAll);
         }
 
         public Vector2 getSpawnCenter() {

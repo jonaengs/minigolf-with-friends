@@ -6,7 +6,7 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.minigolf.controller.EntityFactory;
-import com.mygdx.minigolf.controller.systems.Physics;
+import com.mygdx.minigolf.controller.systems.PhysicsSystem;
 import com.mygdx.minigolf.model.levels.LevelLoader;
 import com.mygdx.minigolf.model.levels.LevelLoader.Level;
 
@@ -25,7 +25,7 @@ public class HeadlessGame implements ApplicationListener {
     public void create() {
         world = new World(new Vector2(0, 0), true);
         engine = new Engine();
-        engine.addSystem(new Physics(world, engine));
+        engine.addSystem(new PhysicsSystem(world, engine));
         factory = new EntityFactory(engine, world, false);
         levelLoader = new LevelLoader(factory);
 
@@ -63,7 +63,7 @@ public class HeadlessGame implements ApplicationListener {
             app.postRunnable(() -> {
                         if (currentLevel != null) {
                             // dispose of the previous level before loading the new one
-                            currentLevel.dispose();
+                            currentLevel.dispose(engine);
                         }
                         currentLevel = levelLoader.loadLevel(levelName);
                         synchronized (lock) {

@@ -37,7 +37,7 @@ public class TestRoutine {
         Thread.sleep(2_000);
         leader.startGame();
         // System.out.println(Thread.activeCount()); // should equal first value printed
-        // System.out.println("\nACTIVE THREADS:");
+        // System.out.println("\nACTIVE THREADS: " + Thread.activeCount());
         // System.out.println(Thread.getAllStackTraces().keySet().stream().map(Thread::toString).collect(Collectors.joining("\n\t")));
     }
 

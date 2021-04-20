@@ -15,6 +15,7 @@ public class GameState implements Serializable {
     public static class PlayerState implements Serializable {
         public Vector2 position;
         public Vector2 velocity;
+        public int strokes = 0;
 
         public PlayerState(Vector2 pos, Vector2 vel) {
             position = new Vector2(pos);

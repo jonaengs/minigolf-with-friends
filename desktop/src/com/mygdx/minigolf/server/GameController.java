@@ -2,9 +2,9 @@ package com.mygdx.minigolf.server;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Application;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.HeadlessGame;
-import com.mygdx.minigolf.controller.ComponentMappers;
 import com.mygdx.minigolf.controller.ComponentMappers.PlayerMapper;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.levels.CourseLoader;
@@ -80,7 +80,7 @@ public class GameController implements Runnable {
     private Map<String, Integer> getScores(Map<GameCommunicationHandler, Entity> players) {
         return players.entrySet().stream().collect(Collectors.toMap(
                 entry -> entry.getKey().name,
-                entry -> 0
+                entry -> PlayerMapper.get(players.get(entry.getKey())).getLevelStrokes()
         ));
     }
 
@@ -118,7 +118,12 @@ public class GameController implements Runnable {
 
         Iterator<String> levelsIterator = Arrays.asList(CourseLoader.getFileNames()).iterator();
         String currentLevel = null;
+        State prevState = state;
         while (true) {
+            if (prevState != state)
+                System.out.println(state);
+            prevState = state;
+
             switch (state) {
                 case INITIALIZING:
                     state = State.SELECTING_LEVEL;
@@ -134,15 +139,30 @@ public class GameController implements Runnable {
                     } catch (NoSuchElementException e) {
                         // All levels complete. Broadcast final scores and exit
                         broadcast(new Message<>(ServerGameCommand.GAME_COMPLETE));
-                        broadcast(new Message<>(ServerGameCommand.GAME_SCORE, getScores(players)));
+                        // broadcast(new Message<>(ServerGameCommand.GAME_SCORE, getScores(players)));
                         state = State.EXITING;
                     }
                     break;
                 case LOADING_LEVEL:
                     game.loadLevel(currentLevel, app);
-                    playerPhysicalComponents.values().forEach(
-                            p -> p.setPosition(game.currentLevel.getSpawnCenter())
-                    );
+                    Object lock = new Object();
+                    synchronized (lock) {
+                        Gdx.app.postRunnable(() -> {
+                                    playerPhysicalComponents.values().forEach(
+                                            p -> p.setPosition(game.currentLevel.getSpawnCenter())
+                                    );
+                                    players.values().forEach(p -> PlayerMapper.get(p).completed = false);
+                                    synchronized (lock) {
+                                        lock.notify();
+                                    }
+                                }
+                        );
+                        try {
+                            lock.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
                     broadcast(new Message<>(ServerGameCommand.START_GAME));
                     state = State.IN_GAME;
                     break;
@@ -171,6 +191,7 @@ public class GameController implements Runnable {
                                     case INPUT:
                                         System.out.println("V: " + clientMsg.data);
                                         playerPhysicalComponents.get(comm).setVelocity((Vector2) clientMsg.data);
+                                        PlayerMapper.get(players.get(comm)).incrementStrokes();
                                         System.out.println("Set velocity to: " + playerPhysicalComponents.get(comm).getVelocity());
                                         break;
                                 }
