@@ -83,7 +83,8 @@ public class LevelLoader {
             courseElems.forEach(ce -> {
                 Entity e = createEntity(ce);
                 switch (ce.function) {
-                    case POWERUP:
+                    case NO_COLLISION_POWERUP:
+                    case EXPLODING_POWERUP:
                         powerups.add(e);
                         break;
                     case HOLE:
