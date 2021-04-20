@@ -10,6 +10,9 @@
         <mxCell id="gLRXx7Acbvcz1UeVorjU-3" value="COURSE" style="rounded=0;whiteSpace=wrap;html=1;direction=south;" parent="1" vertex="1">
           <mxGeometry x="490" y="280" width="690" height="190" as="geometry" />
         </mxCell>
+        <mxCell id="gLRXx7Acbvcz1UeVorjU-5" value="" style="triangle;whiteSpace=wrap;html=1;rotation=90;" parent="1" vertex="1">
+          <mxGeometry x="750" y="260" width="80" height="120" as="geometry" />
+        </mxCell>
         <mxCell id="gLRXx7Acbvcz1UeVorjU-6" value="COURSE" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="310" y="100" width="180" height="370" as="geometry" />
         </mxCell>
