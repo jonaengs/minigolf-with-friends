@@ -204,10 +204,6 @@ public class EntityFactory {
             @Override
             public void beginContact(Entity other, Contact contact) {
                 engine.getSystem(PowerUpSystem.class).givePowerUp(other, entity.getComponent(PowerUpGiver.class).getPowerup());
-            }
-
-            @Override
-            public void endContact(Entity other, Contact contact) {
                 engine.removeEntity(entity);
             }
         });

@@ -39,7 +39,7 @@ public class PowerUpSystem extends EntitySystem {
 
     public void givePowerUp(Entity player, Effect effect){
         ComponentMappers.PlayerMapper.get(player).addEffect(effect);
-        if (Effect.ExplodingEffect.class.equals(effect.getClass())) {
+        if (effect instanceof Effect.ExplodingEffect) {
             ComponentMappers.PhysicalMapper.get(player).addContactListener(new Physical.ContactListener(1) {
                 @Override
                 public void endContact(Entity other, Contact contact) {
@@ -59,7 +59,7 @@ public class PowerUpSystem extends EntitySystem {
                     }
                 }
             });
-        } else if (Effect.NoCollisionEffect.class.equals(effect.getClass())) {
+        } else if (effect instanceof Effect.NoCollisionEffect) {
             StrokeConstraint constraint = (StrokeConstraint) effect.getConstraint();
             constraint.setPlayerStartStroke(ComponentMappers.PlayerMapper.get(player).getStrokes());
             ComponentMappers.PhysicalMapper.get(player).addContactListener(new Physical.ContactListener(1) {
