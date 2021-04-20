@@ -35,11 +35,10 @@ public class GameView extends HeadlessGame implements Screen {
     }
 
     @Override
-    public void render() {
+    public void render() { // Only used by server running with graphics (Game uses screen's render method)
         Gdx.gl.glClearColor(0.5f, 0.5f, 0.7f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        engine.update(Gdx.graphics.getDeltaTime());
+        super.render();
     }
 
     @Override

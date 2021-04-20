@@ -32,7 +32,7 @@ public class GameController implements Runnable {
 
     // Receive LobbyComms. Shut them down and transfer sockets to GameComms
     GameController(List<CommunicationHandler> comms) throws InterruptedException {
-        game = new GameView();
+        game = new HeadlessGame();
         app = ServerUtils.initGame(game);
 
         // Stop lobby communication handlers
