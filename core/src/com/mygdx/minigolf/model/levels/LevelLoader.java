@@ -19,7 +19,7 @@ public class LevelLoader {
         this.factory = factory;
     }
 
-    public Level loadLevel(String fileName) {
+    public Level load(String fileName) {
         return new Level(CourseLoader.load(fileName));
     }
 

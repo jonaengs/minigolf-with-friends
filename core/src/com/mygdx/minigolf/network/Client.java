@@ -6,8 +6,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.controller.InputHandler;
 import com.mygdx.minigolf.controller.ScreenController;
+import com.mygdx.minigolf.model.GameState;
 import com.mygdx.minigolf.model.components.Physical;
-import com.mygdx.minigolf.network.messages.GameState;
+import com.mygdx.minigolf.network.messages.NetworkedGameState;
 import com.mygdx.minigolf.network.messages.Message;
 import com.mygdx.minigolf.network.messages.Message.ClientGameCommand;
 import com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand;
@@ -30,6 +31,7 @@ public class Client {
     ObjectInputStream objIn;
     ObjectOutputStream objOut;
     String name;
+    GameState gameState;
 
     State state = State.IN_LOBBY;
     public List<String> playerList = new ArrayList<>();
@@ -109,23 +111,19 @@ public class Client {
 
                                 switch (lm.command) {
                                     case NAME:
-                                        name = (String) lm.data;
+                                        gameState.setLocalPlayerName((String) lm.data);
                                         break;
                                     case ENTER_GAME:
                                         state = State.LOADING_GAME;
                                         break;
                                     case PLAYER_LIST:
-                                        playerList = (List<String>) lm.data;
+                                        GameState.setPlayerNames((List<String>) lm.data);
                                         break;
                                 }
                             }
                             break;
                         case LOADING_GAME:
-                            ScreenController.LOBBY_VIEW.enterGame();
-                            playerList.forEach(player -> players.put(
-                                    player,
-                                    game.getFactory().createPlayer(-1, -1)
-                            ));
+                            gameState.setState(GameState.State.INITIALISING_GAME);
                             players.entrySet().forEach(entry -> playerPhysicalComponents.put(
                                     entry.getKey(),
                                     entry.getValue().getComponent(Physical.class)
@@ -170,10 +168,10 @@ public class Client {
                             gm = msg == null ? waitRecv() : msg;
                             switch (gm.command) {
                                 case GAME_DATA:
-                                    GameState gameState = (GameState) gm.data;
-                                    if (gameState != null) {
+                                    NetworkedGameState networkedGameState = (NetworkedGameState) gm.data;
+                                    if (networkedGameState != null) {
                                         Gdx.app.postRunnable(() -> {
-                                            gameState.stateMap.entrySet().forEach(entry -> {
+                                            networkedGameState.stateMap.entrySet().forEach(entry -> {
                                                 Physical phys = playerPhysicalComponents.get(entry.getKey());
                                                 phys.setVelocity(entry.getValue().velocity);
                                                 phys.setPosition(entry.getValue().position);

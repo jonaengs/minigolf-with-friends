@@ -14,7 +14,6 @@ import java.util.Random;
 import java.util.stream.IntStream;
 
 
-// TODO: Change strings to enums. Serialize and send. Receive and deserialize ("marshall" in Java?).
 public class ConnectionDelegator {
     ServerSocket ss;
     final static int MIN_ID = 100_000;

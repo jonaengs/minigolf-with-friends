@@ -45,7 +45,7 @@ public class Message<T extends Enum<T>> implements Serializable {
         LEVEL_COMPLETE(Void.class),
         START_GAME(Void.class),
         PLAYER_EXIT(String.class),
-        GAME_DATA(GameState.class),
+        GAME_DATA(NetworkedGameState.class),
         GAME_SCORE(HashMap.class), // String playerName -> int score
         GAME_COMPLETE(Void.class);
 

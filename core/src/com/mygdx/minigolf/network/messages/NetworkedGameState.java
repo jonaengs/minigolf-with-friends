@@ -5,10 +5,10 @@ import com.badlogic.gdx.math.Vector2;
 import java.io.Serializable;
 import java.util.Map;
 
-public class GameState implements Serializable {
+public class NetworkedGameState implements Serializable {
     public Map<String, PlayerState> stateMap;
 
-    public GameState(Map<String, PlayerState> states) {
+    public NetworkedGameState(Map<String, PlayerState> states) {
         this.stateMap = states;
     }
 

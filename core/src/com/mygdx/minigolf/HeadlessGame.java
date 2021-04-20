@@ -65,7 +65,7 @@ public class HeadlessGame implements ApplicationListener {
                             // dispose of the previous level before loading the new one
                             currentLevel.dispose(engine);
                         }
-                        currentLevel = levelLoader.loadLevel(levelName);
+                        currentLevel = levelLoader.load(levelName);
                         synchronized (lock) {
                             lock.notify();
                         }

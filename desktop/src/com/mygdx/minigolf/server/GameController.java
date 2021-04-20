@@ -8,12 +8,11 @@ import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.controller.ComponentMappers.PlayerMapper;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.levels.CourseLoader;
-import com.mygdx.minigolf.network.messages.GameState;
-import com.mygdx.minigolf.network.messages.GameState.PlayerState;
+import com.mygdx.minigolf.network.messages.NetworkedGameState;
+import com.mygdx.minigolf.network.messages.NetworkedGameState.PlayerState;
 import com.mygdx.minigolf.network.messages.Message;
 import com.mygdx.minigolf.network.messages.Message.ClientGameCommand;
 import com.mygdx.minigolf.network.messages.Message.ServerGameCommand;
-import com.mygdx.minigolf.view.GameView;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -111,9 +110,9 @@ public class GameController implements Runnable {
                         comm -> comm,
                         comm -> players.get(comm).getComponent(Physical.class)
                 ));
-        GameState gameState = new GameState(comms.stream().collect(Collectors.toMap(
+        NetworkedGameState networkedGameState = new NetworkedGameState(comms.stream().collect(Collectors.toMap(
                 comm -> comm.name,
-                comm -> new GameState.PlayerState(new Vector2(0, 0), new Vector2(0, 0))
+                comm -> new NetworkedGameState.PlayerState(new Vector2(0, 0), new Vector2(0, 0))
         )));
 
         Iterator<String> levelsIterator = Arrays.asList(CourseLoader.getFileNames()).iterator();
@@ -200,14 +199,14 @@ public class GameController implements Runnable {
                         // update gameState and broadcast it
                         playerPhysicalComponents.entrySet().forEach(
                                 entry -> {
-                                    PlayerState playerState = gameState.stateMap.get(entry.getKey().name);
+                                    PlayerState playerState = networkedGameState.stateMap.get(entry.getKey().name);
                                     playerState.position = entry.getValue().getPosition();
                                     playerState.velocity = entry.getValue().getVelocity();
                                 }
                         );
                         broadcast(new Message<>(
                                 ServerGameCommand.GAME_DATA,
-                                gameState
+                                networkedGameState
                         ));
 
                         delta = System.currentTimeMillis() - t0;

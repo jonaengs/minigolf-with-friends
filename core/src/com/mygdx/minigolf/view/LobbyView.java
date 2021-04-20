@@ -8,7 +8,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.controller.ScreenController;
+import com.mygdx.minigolf.model.GameState;
 import com.mygdx.minigolf.network.Client;
+import com.mygdx.minigolf.util.ConcurrencyUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -73,18 +75,22 @@ public class LobbyView extends View {
         });
     }
 
-    public void enterGame() throws InterruptedException {
-        final Object lock = new Object();
-        synchronized (lock) {
-            Gdx.app.postRunnable(() -> {
-                ScreenController.gameView.create();
-                ScreenController.changeScreen(ScreenController.gameView);
-                synchronized (lock) {
-                    lock.notify();
-                }
-            });
-            lock.wait();
-        }
+    @Override
+    public void show() {
+        super.show();
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        // TODO: Dispose of resources used here only. For example, remove itself from GameState observers
+    }
+
+    public void enterGame() {
+        ConcurrencyUtils.waitForPostRunnable(() -> {
+            ScreenController.gameView.create();
+            ScreenController.changeScreen(ScreenController.gameView);
+        });
     }
 
     @Override
