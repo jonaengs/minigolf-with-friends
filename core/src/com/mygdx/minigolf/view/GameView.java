@@ -29,7 +29,7 @@ public class GameView extends HeadlessGame implements Screen {
         // --- Start dummy demo code ---
         // Test code. Loads a level
         LevelLoader levelLoader = new LevelLoader(factory);
-        LevelLoader.Level level = levelLoader.loadLevel(CourseLoader.getFileNames()[1]);
+        LevelLoader.Level level = levelLoader.loadLevel(CourseLoader.getFileNames()[0]);
     }
 
     @Override
