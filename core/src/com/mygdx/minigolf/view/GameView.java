@@ -29,13 +29,13 @@ public class GameView extends HeadlessGame implements Screen {
         // --- Start dummy demo code ---
         // Test code. Loads a level
         LevelLoader levelLoader = new LevelLoader(factory);
-        LevelLoader.Level level = levelLoader.loadLevel(CourseLoader.getFileNames()[1]);
+        LevelLoader.Level level = levelLoader.loadLevel(CourseLoader.getFileNames()[0]);
     }
 
     @Override
     public void show() {
         factory.createControllablePlayer(12,15, graphicsSystem.getCam());
-        factory.createControllablePlayer(11,13, graphicsSystem.getCam());
+        factory.createPlayer(11,13);
     }
 
     @Override
