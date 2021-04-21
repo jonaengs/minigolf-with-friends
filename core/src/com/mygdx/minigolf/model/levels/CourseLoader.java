@@ -80,7 +80,7 @@ public class CourseLoader {
         List<CourseElement.Function> elementFunctions = elements.stream().map(e -> e.function).collect(Collectors.toList());
         if (!elementFunctions.containsAll(requiredFunctions))
             throw new IllegalArgumentException("Course required functions not satisfied");
-        if (elements.stream().peek(System.out::println).anyMatch(ce -> ce.x + ce.width > scaledWidth || ce.y + ce.height > scaledHeight))
+        if (elements.stream().anyMatch(ce -> ce.x + ce.width > scaledWidth || ce.y + ce.height > scaledHeight))
             throw new IllegalArgumentException("Course element outside screen bounds");
         elements.forEach(CourseElement::validate);
     }

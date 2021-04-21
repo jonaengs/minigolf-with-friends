@@ -2,11 +2,15 @@ package com.mygdx.minigolf.model;
 
 import com.badlogic.ashley.core.Entity;
 import com.mygdx.minigolf.model.levels.LevelLoader.Level;
+import com.mygdx.minigolf.util.ConcurrencyUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.mygdx.minigolf.model.GameData.Event.LEVEL_SET;
@@ -19,16 +23,43 @@ import static com.mygdx.minigolf.model.GameData.Event.STATE_SET;
 import static com.mygdx.minigolf.model.GameData.State.IN_MENU;
 
 
+// Singleton
 // TODO: Make thread safe, or make all calls run in app thread
 public class GameData {
-    public final MutableObservable<Map<String, Entity>, String> players = new MutableObservable<>(new HashMap<>(), PLAYERS_SET, PLAYER_REMOVED);
-    public final MutableObservable<List<String>, String> playerNames = new MutableObservable<>(new ArrayList<>(), PLAYER_NAMES_SET, null);
-    public final MutableObservable<Map<String, Integer>, Integer> scores = new MutableObservable<>(new HashMap<>(), SCORES_SET, null);
-    public final Observable<String> levelName = new Observable<>("", Event.LEVEL_NAME_SET);
-    public final Observable<String> localPlayerName = new Observable<>("", Event.LOCAL_PLAYER_NAME_SET);;
-    public final Observable<Level> level = new Observable<>(null, LEVEL_SET);
-    public final Observable<State> state = new Observable<>(IN_MENU, STATE_SET);
-    public final Observable<Integer> lobbyID = new Observable<>(-1, LOBBY_ID_SET);
+    public final MutableObservable<Map<String, Entity>, String> players;
+    public final MutableObservable<List<String>, String> playerNames;
+    public final MutableObservable<Map<String, Integer>, Integer> scores;
+    public final Observable<String> levelName;
+    public final Observable<String> localPlayerName;
+    public final Observable<Level> level;
+    public final Observable<State> state;
+    public final Observable<Integer> lobbyID; // Negative value means lobby could not be joined
+
+    private static GameData instance;
+
+    private GameData() {
+        players = new MutableObservable<>(new HashMap<>(), PLAYERS_SET, PLAYER_REMOVED);
+        playerNames = new MutableObservable<>(new ArrayList<>(), PLAYER_NAMES_SET, null);
+        scores = new MutableObservable<>(new HashMap<>(), SCORES_SET, null);
+        levelName = new Observable<>("", Event.LEVEL_NAME_SET);
+        localPlayerName = new Observable<>("", Event.LOCAL_PLAYER_NAME_SET);;
+        level = new Observable<>(null, LEVEL_SET);
+        state = new Observable<>(IN_MENU, STATE_SET);
+        lobbyID = new Observable<>(0, LOBBY_ID_SET);
+    }
+
+    public static synchronized GameData get() {
+        if (instance == null) {
+            instance = new GameData();
+        }
+        return instance;
+    }
+
+    public static synchronized GameData reset() {
+        // TODO: Remove all references to old object: Drop all subscribers, etc.
+        instance = new GameData();
+        return instance;
+    }
 
     public enum State {
         IN_MENU, IN_LOBBY, INITIALIZING_GAME, IN_GAME, SCORE_SCREEN, LOADING_LEVEL, GAME_OVER
@@ -39,23 +70,36 @@ public class GameData {
         SCORES_SET,
         LEVEL_SET,
         STATE_SET,
-        PLAYER_REMOVED,
         PLAYERS_SET,
         LEVEL_NAME_SET,
         LOCAL_PLAYER_NAME_SET,
-        LOBBY_ID_SET
+        LOBBY_ID_SET,
+
+        PLAYER_REMOVED,
     }
 
-    public interface Observer {
+    public interface Notifiable {
         void notify(Object change, Event changeEvent);
     }
 
-    public void subscribe(Observer observer, Observable... observables) {
-        Stream.of(observables).forEach(o -> o.subscribe(observer));
+    public abstract static class Subscriber implements Notifiable {
+        private final Set<Observable> observables;
+
+        protected Subscriber(Observable... observables) {
+            this.observables = new HashSet<>(Arrays.asList(observables));
+            // setupSubscriptions();
+        }
+
+        public void removeSubscriptions() {
+            observables.forEach(o -> o.cancelSubscription(this));
+        }
+        public void setupSubscriptions() {
+            observables.forEach(o -> o.subscribe(this));
+        }
     }
 
     public static class Observable<T> {
-        List<Observer> observers = new ArrayList<>();
+        Set<Notifiable> notifiables = new HashSet<>();
         T data;
         Event changeEvent;
 
@@ -68,18 +112,23 @@ public class GameData {
             return data;
         }
 
-        // Notify before changing so observer can still access old data if necessary
-        public synchronized void set(T data) {
-            observers.forEach(o -> o.notify(data, changeEvent));
+        public void set(T data) {
+            ConcurrencyUtils.postRunnable(() -> {
+                _set(data);
+            });
+        }
+
+        private synchronized void _set(T data) {
             this.data = data;
+            notifiables.forEach(o -> o.notify(data, changeEvent));
         }
 
-        public synchronized void subscribe(Observer observer) {
-            observers.add(observer);
+        public void subscribe(Notifiable notifiable) {
+            notifiables.add(notifiable);
         }
 
-        public synchronized void cancelSubscription(Observer observer) {
-            observers.remove(observer);
+        public void cancelSubscription(Notifiable notifiable) {
+            notifiables.remove(notifiable);
         }
     }
 
@@ -92,11 +141,13 @@ public class GameData {
         }
 
         public synchronized void remove(U entry) {
-            observers.forEach(o -> o.notify(entry, removeEvent));
-            if (data instanceof List)
-                ((List) data).remove(entry);
-            if (data instanceof Map)
-                ((Map) data).remove(entry);
+            ConcurrencyUtils.postRunnable(() -> {
+                notifiables.forEach(o -> o.notify(entry, removeEvent));
+                if (data instanceof List)
+                    ((List) data).remove(entry);
+                if (data instanceof Map)
+                    ((Map) data).remove(entry);
+            });
         }
     }
 }

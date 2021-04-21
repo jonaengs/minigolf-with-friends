@@ -9,15 +9,17 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.minigolf.controller.ScreenController;
+import com.mygdx.minigolf.model.GameData;
 
-public class View implements Screen {
+public abstract class View extends GameData.Subscriber implements Screen {
 
     protected Stage stage;
     protected Table table;
     protected Skin skin;
     protected Color backgroundColor = new Color(51f / 255f, 153f / 255f, 51f / 255f, 0);
 
-    public View() {
+    public View(GameData.Observable... observables) {
+        super(observables);
         stage = new Stage(new ScreenViewport());
 
         table = new Table();
@@ -29,6 +31,7 @@ public class View implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+        setupSubscriptions();
     }
 
     @Override
@@ -59,6 +62,7 @@ public class View implements Screen {
 
     @Override
     public void hide() {
+        removeSubscriptions();
     }
 
     @Override
@@ -66,4 +70,7 @@ public class View implements Screen {
         stage.dispose();
     }
 
+    @Override
+    public void notify(Object change, GameData.Event changeEvent) {
+    }
 }

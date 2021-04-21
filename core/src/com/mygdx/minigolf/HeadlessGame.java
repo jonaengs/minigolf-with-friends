@@ -21,7 +21,6 @@ public class HeadlessGame implements ApplicationListener {
     public EntityFactory factory;
     public LevelLoader levelLoader;
     public Level currentLevel;
-    public GameController gameController;
 
     private long t0;
 
@@ -32,13 +31,6 @@ public class HeadlessGame implements ApplicationListener {
         engine.addSystem(new PhysicsSystem(world, engine));
         factory = new EntityFactory(engine, world, false);
         levelLoader = new LevelLoader(factory);
-
-        try {
-            gameController = new GameController(this);
-        } catch (IOException e) {
-            // No use continuing without a game controller. Let it crash.
-            throw new RuntimeException(e);
-        }
 
         t0 = System.currentTimeMillis();
     }

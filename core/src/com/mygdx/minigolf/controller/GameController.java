@@ -1,9 +1,8 @@
 package com.mygdx.minigolf.controller;
 
-import com.badlogic.gdx.Gdx;
+import com.badlogic.ashley.core.Entity;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.model.GameData;
-import com.mygdx.minigolf.model.levels.LevelLoader;
 import com.mygdx.minigolf.network.Client;
 import com.mygdx.minigolf.util.ConcurrencyUtils;
 import com.mygdx.minigolf.view.GameView;
@@ -12,66 +11,72 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-// Singleton
-public class GameController implements GameData.Observer {
-    LevelLoader levelLoader;
+public class GameController extends GameData.Subscriber {
     HeadlessGame game;
-    GameData gameData;
     Client client;
-    boolean server = false;
+    boolean clientGame = true;
 
     public GameController(HeadlessGame game) throws IOException {
+        super(GameData.get().levelName, GameData.get().state);
         this.game = game;
-        levelLoader = new LevelLoader(game.factory);
-        gameData = new GameData();
-        client = new Client(gameData);
+        client = new Client();
 
-        gameData.subscribe(this, gameData.levelName, gameData.state);
+        setupSubscriptions();
     }
 
-    public void createLobby() throws IOException, ClassNotFoundException {
+    public void createLobby() throws IOException {
         client.createLobby();
+        new Thread(client).start();
     }
 
-    public void createPlayers() {
-        gameData.players.set(
-                gameData.playerNames.get().stream().collect(Collectors.toMap(
+    public void joinLobby(Integer lobbyID) throws IOException {
+        client.joinLobby(lobbyID);
+        new Thread(client).start();
+    }
+
+    public void startGame() throws IOException {
+        client.startGame();
+    }
+
+    private void reset() {
+        // TODO: new client, ++
+        GameData.reset();
+    }
+
+    private void createPlayers() {
+        GameData.get().players.set(
+                GameData.get().playerNames.get().stream().collect(Collectors.toMap(
                         name -> name,
                         ____ -> game.getFactory().createPlayer(-1, -1)
                 ))
         );
     }
 
-    public void resetPlayers() {
-        Gdx.app.postRunnable(() ->
-                gameData.players.get().values().forEach(p ->
-                        ComponentMappers.PhysicalMapper.get(p).setPosition(gameData.level.get().getSpawnCenter())
-                )
+    private void resetPlayers() {
+        GameData.get().players.get().values().forEach(p ->
+                ComponentMappers.PhysicalMapper.get(p).setPosition(GameData.get().level.get().getSpawnCenter())
         );
     }
 
     // Hide player when they complete e level
-    public void hidePlayer() {
+    private void hidePlayer() {
 
-    }
-
-    private void disposeGameData() {
-        gameData = new GameData();
     }
 
     private void loadLevel(String levelName) {
         ConcurrencyUtils.waitForPostRunnable(() -> {
-                    if (gameData.level.get() != null) {
+                    if (GameData.get().level.get() != null) {
                         // dispose of the previous level before loading the new one
-                        gameData.level.get().dispose(game.engine);
+                        GameData.get().level.get().dispose(game.engine);
                     }
-                    gameData.level.set(levelLoader.load(levelName));
+                    GameData.get().level.set(game.levelLoader.load(levelName));
                 }
         );
     }
 
     @Override
     public void notify(Object change, GameData.Event event) {
+        GameData gameData = GameData.get();
         switch (event) {
             case LEVEL_NAME_SET:
                 loadLevel((String) change);
@@ -80,9 +85,11 @@ public class GameController implements GameData.Observer {
             case STATE_SET:
                 switch ((GameData.State) change) {
                     case INITIALIZING_GAME:
+                        game.create();
                         createPlayers();
-                        if (!server) {
-                            ((GameView) game).setInput(gameData.players.get().get(gameData.localPlayerName.get()));
+                        if (clientGame) {
+                            Entity localPlayer = gameData.players.get().get(gameData.localPlayerName.get());
+                            ((GameView) game).setInput(localPlayer);
                             ScreenController.LOBBY_VIEW.enterGame();
                         }
                         break;
@@ -91,9 +98,11 @@ public class GameController implements GameData.Observer {
                         // ScreenController.changeScreen(SCORE_SCREEN);
                         break;
                 }
+                break;
             case PLAYER_REMOVED:
                 String playerName = (String) change;
                 game.engine.removeEntity(gameData.players.get().get(playerName));
+
                 break;
         }
     }

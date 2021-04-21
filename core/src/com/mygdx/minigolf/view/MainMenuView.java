@@ -6,7 +6,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.controller.ScreenController;
-import com.mygdx.minigolf.network.Client;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -48,12 +47,17 @@ public class MainMenuView extends View {
         newGame.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                try {
-                    // TODO: Find or create a better way to access the game controller
-                    ScreenController.gameView.gameController.createLobby();
-                } catch (IOException | ClassNotFoundException e) {
+                try { // TODO: Find or create a better way to access the game controller
+                    Game.getInstance().gameController.createLobby();
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+        });
+        joinGame.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                ScreenController.changeScreen(ScreenController.JOIN_GAME_VIEW);
             }
         });
     }

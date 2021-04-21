@@ -122,7 +122,7 @@ public class PhysicsSystem extends IteratingSystem implements ContactListener, E
         try {
             world.destroyBody(mapper.get(entity).getBody());
         } catch (NullPointerException e) {
-            System.out.println("bad?");
+            e.printStackTrace();
         }
     }
 

@@ -8,11 +8,18 @@ public class Server {
         try {
             Thread.currentThread().setName(ConnectionDelegator.class.getName());
             new Thread(() -> {
+                String pastThreads = "", nowThreads = "";
                 while (true) {
-                    System.out.println("\nACTIVE THREADS: " + Thread.activeCount());
-                    System.out.println(Thread.getAllStackTraces().keySet().stream().map(Thread::toString).collect(Collectors.joining("\n\t")));
+                    nowThreads = "\t" + Thread.getAllStackTraces().keySet().stream()
+                            .map(Thread::toString)
+                            .collect(Collectors.joining("\n\t"));
+                    if (!nowThreads.contentEquals(pastThreads)) {
+                        System.out.println("\nACTIVE THREADS: " + Thread.activeCount());
+                        System.out.println(nowThreads);
+                        pastThreads = nowThreads;
+                    }
                     try {
-                        Thread.sleep(60_000);
+                        Thread.sleep(10_000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

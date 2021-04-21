@@ -7,7 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.mygdx.minigolf.Game;
-import com.mygdx.minigolf.controller.ScreenController;
+import com.mygdx.minigolf.model.GameData;
 
 import java.io.IOException;
 
@@ -17,8 +17,8 @@ public class JoinGameView extends View {
     TextField code;
     TextButton joinButton;
 
-    public JoinGameView() {
-        super();
+    public JoinGameView(GameData.Observable... observables) {
+        super(observables);
         title = new Label("Multiplayer", skin);
         status = new Label("", skin);
         code = new TextField("", skin);
@@ -42,20 +42,12 @@ public class JoinGameView extends View {
         joinButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                try {
-                    status.setText("Attempting to join lobby " + code.getText());
-                    // TODO: Find better solution
-                    while (Game.getInstance().client == null) {
-                        Thread.sleep(100);
-                    }
-                    Game.getInstance().client.joinLobby(Integer.parseInt(code.getText()));
-                    Game.getInstance().client.runAsThread();
-                    ScreenController.changeScreen(ScreenController.LOBBY_VIEW);
-                } catch (IOException | ClassNotFoundException | InterruptedException e) {
-                    throw new RuntimeException(e);
-                } catch (IllegalArgumentException e) {
-                    System.out.println("INVALID LOBBY ID");
-                    status.setText("Invalid lobby ID: " + code.getText());
+                status.setText("Attempting to join lobby " + code.getText());
+                try { // TODO: Better way to access game controller
+                    Integer lobbyID = Integer.parseInt(code.getText());
+                    Game.getInstance().gameController.joinLobby(lobbyID);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -65,6 +57,15 @@ public class JoinGameView extends View {
     public void show() {
         super.show();
         status.setText("");
+        code.setText("");
     }
 
+    @Override
+    public void notify(Object change, GameData.Event changeEvent) {
+        if (changeEvent == GameData.Event.LOBBY_ID_SET) {
+            if ((Integer) change < 0) {
+                status.setText("Could not find lobby: " + code.getText());
+            }
+        }
+    }
 }

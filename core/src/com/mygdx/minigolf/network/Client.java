@@ -3,6 +3,8 @@ package com.mygdx.minigolf.network;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
+import com.mygdx.minigolf.controller.ComponentMappers;
+import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.controller.InputHandler;
 import com.mygdx.minigolf.controller.ScreenController;
 import com.mygdx.minigolf.model.GameData;
@@ -13,6 +15,7 @@ import com.mygdx.minigolf.network.messages.Message.ClientGameCommand;
 import com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand;
 import com.mygdx.minigolf.network.messages.Message.ServerGameCommand;
 import com.mygdx.minigolf.network.messages.Message.ServerLobbyCommand;
+import com.mygdx.minigolf.util.ConcurrencyUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -28,13 +31,10 @@ public class Client implements Runnable{
     ObjectInputStream objIn;
     ObjectOutputStream objOut;
     String name;
-    GameData gameData;
 
     State state = State.IN_LOBBY;
-    public List<String> playerList = new ArrayList<>();
 
-    public Client(GameData gameData) throws IOException {
-        this.gameData = gameData;
+    public Client() throws IOException {
         socket = new Socket("localhost", 8888);
         socket.setTcpNoDelay(true);
         objOut = new ObjectOutputStream(socket.getOutputStream());
@@ -45,14 +45,12 @@ public class Client implements Runnable{
         send(new Message<>(ClientLobbyCommand.CREATE));
     }
 
-    public void joinLobby(Integer lobbyID) throws IOException, ClassNotFoundException, IllegalArgumentException {
+    public void joinLobby(Integer lobbyID) throws IOException {
         send(new Message<>(ClientLobbyCommand.JOIN, lobbyID));
-        new Thread(this).start();
     }
 
     public void startGame() throws IOException {
         send(new Message<>(ClientLobbyCommand.START_GAME));
-        new Thread(this).start();
     }
 
     private void send(Message msg) throws IOException {
@@ -87,7 +85,6 @@ public class Client implements Runnable{
     @Override
     public void run() {
         Thread.currentThread().setName(this.getClass().getName() + "-" + name);
-        final Map<String, Physical> playerPhysicals = new HashMap<>();
 
         // TODO: Handle GAME_COMPLETE. Handle score screen.
         // TODO: Connect to game interface / screens.
@@ -104,45 +101,42 @@ public class Client implements Runnable{
                     case IN_LOBBY:
                         if (msg != null) {
                             lm = msg;
-
                             switch (lm.command) {
                                 case LOBBY_NOT_FOUND:
-                                    gameData.lobbyID.set(-1);
+                                    GameData.get().lobbyID.set(-1);
+                                    break;
                                 case LOBBY_ID:
-                                    gameData.lobbyID.set((Integer) lm.data);
+                                    GameData.get().lobbyID.set((Integer) lm.data);
+                                    break;
                                 case NAME:
-                                    gameData.localPlayerName.set((String) lm.data);
+                                    GameData.get().localPlayerName.set((String) lm.data);
                                     Thread.currentThread().setName(this.getClass().getName() + "-" + name);
                                     break;
                                 case ENTER_GAME:
                                     state = State.LOADING_GAME;
                                     break;
                                 case PLAYER_LIST:
-                                    gameData.playerNames.set((List<String>) lm.data);
+                                    GameData.get().playerNames.set((List<String>) lm.data);
                                     break;
                             }
                         }
                         break;
                     case LOADING_GAME:
-                        gameData.state.set(GameData.State.INITIALIZING_GAME);
-                        gameData.players.get().entrySet().forEach(entry -> playerPhysicals.put(
-                                entry.getKey(),
-                                entry.getValue().getComponent(Physical.class)
-                        ));
+                        GameData.get().state.set(GameData.State.INITIALIZING_GAME);
                         send(new Message<>(ClientLobbyCommand.GAME_READY));
                         state = State.WAITING_FOR_LEVEL_INFO;
-                        gameData.state.set(GameData.State.LOADING_LEVEL);
+                        GameData.get().state.set(GameData.State.LOADING_LEVEL);
                         break;
                     case WAITING_FOR_LEVEL_INFO:
                         gm = msg == null ? waitRecv() : msg;
                         if (gm.command == ServerGameCommand.LOAD_LEVEL) {
                             String levelName = (String) gm.data;
-                            gameData.levelName.set(levelName);
+                            GameData.get().levelName.set(levelName);
                             send(new Message<>(ClientGameCommand.LEVEL_LOADED, levelName));
                             state = State.WAITING_FOR_START;
                         } else if (gm.command == ServerGameCommand.GAME_COMPLETE) {
                             System.out.println("GAME COMPLETE");
-                            gameData.state.set(GameData.State.GAME_OVER);
+                            GameData.get().state.set(GameData.State.GAME_OVER);
                             state = State.EXITING;
                         } else
                             new RuntimeException("Expected level info (or game complete). Got " + gm).printStackTrace();
@@ -150,7 +144,7 @@ public class Client implements Runnable{
                     case WAITING_FOR_START:
                         gm = msg == null ? waitRecv() : msg;
                         if (gm.command == ServerGameCommand.START_GAME) {
-                            gameData.state.set(GameData.State.IN_GAME);
+                            GameData.get().state.set(GameData.State.IN_GAME);
                             state = State.IN_GAME;
                         } else
                             new RuntimeException("Expected level info. Got " + gm).printStackTrace();
@@ -170,19 +164,19 @@ public class Client implements Runnable{
                             case GAME_DATA:
                                 NetworkedGameState networkedGameState = (NetworkedGameState) gm.data;
                                 if (networkedGameState != null) {
-                                    Gdx.app.postRunnable(() -> {
+                                    ConcurrencyUtils.postRunnable(() ->
                                         networkedGameState.stateMap.entrySet().forEach(entry -> {
-                                            Physical phys = playerPhysicals.get(entry.getKey());
+                                            Physical phys = PhysicalMapper.get(GameData.get().players.get().get(entry.getKey()));
                                             phys.setVelocity(entry.getValue().velocity);
                                             phys.setPosition(entry.getValue().position);
                                             // phys.moveTowards(entry.getValue().position);
-                                        });
-                                    });
+                                        })
+                                    );
                                 }
                                 break;
                             case PLAYER_EXIT:
                                 String exitingPlayer = (String) gm.data;
-                                gameData.players.remove(exitingPlayer);
+                                GameData.get().players.remove(exitingPlayer);
                                 // TODO: Notify player of the removal of exitingPlayer
                                 break;
                             case LEVEL_COMPLETE:
@@ -194,7 +188,7 @@ public class Client implements Runnable{
                     case SCORE_SCREEN:
                         gm = msg == null ? waitRecv() : msg;
                         if (gm.command == ServerGameCommand.GAME_SCORE) {
-                            gameData.scores.set((HashMap<String, Integer>) msg.data);
+                            GameData.get().scores.set((HashMap<String, Integer>) msg.data);
                             state = State.WAITING_FOR_LEVEL_INFO;
                         } else
                             new RuntimeException("Expected level info. Got " + gm).printStackTrace();

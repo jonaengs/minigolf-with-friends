@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand.EXIT;
 import static com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand.GAME_READY;
 
 class LobbyController implements Runnable {
@@ -87,6 +88,7 @@ class LobbyController implements Runnable {
                                 case EXIT:
                                     synchronized (comms) {
                                         comms.remove(comm);
+                                        if (comms.isEmpty()) return;
                                     }
                                     playerListUpdated.set(true);
                                     break;
@@ -110,6 +112,7 @@ class LobbyController implements Runnable {
                     synchronized (comms) {
                         broadcastMsg(new Message<>(ServerLobbyCommand.ENTER_GAME));
                         // Receive GAME_READY from all players
+                        // TODO: Handle players exiting the game here
                         for (CommunicationHandler comm : comms) {
                             Message<ClientLobbyCommand> data;
                             // TODO: Change to not do spin waiting

@@ -7,7 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.controller.ScreenController;
-import com.mygdx.minigolf.network.Client;
+import com.mygdx.minigolf.model.GameData;
 import com.mygdx.minigolf.util.ConcurrencyUtils;
 
 import java.io.IOException;
@@ -17,14 +17,11 @@ import java.util.List;
 public class LobbyView extends View {
 
     public static final int MAX_NUM_PLAYERS = 4;
-    private List<Label> players = new ArrayList<>();
-    Integer lobbyID = 0;
+    private List<Label> playerLabels = new ArrayList<>();
     Label lobbyIDLabel;
-    Client client;
 
-
-    public LobbyView() {
-        super();
+    public LobbyView(GameData.Observable... observables) {
+        super(observables);
 
         // Creating actors
         Label title = new Label("New Game", skin);
@@ -50,12 +47,11 @@ public class LobbyView extends View {
         table.row().pad(10f, 0, 40f, 0);
         table.add(players).expandX();
 
-        // For testing purposes
         for (int i = 0; i < MAX_NUM_PLAYERS; i++) {
             Label player = new Label("Player [empty]", skin);
             table.row().pad(10f, 0, 10f, 0);
             table.add(player).expandX();
-            this.players.add(player);
+            this.playerLabels.add(player);
         }
 
         table.row().pad(50f, 0, 0, 0);
@@ -65,7 +61,7 @@ public class LobbyView extends View {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 try {
-                    client.startGame();
+                    Game.getInstance().gameController.startGame();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -73,37 +69,27 @@ public class LobbyView extends View {
         });
     }
 
-    @Override
-    public void show() {
-        super.show();
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-        // TODO: Dispose of resources used here only. For example, remove itself from GameState observers
-    }
-
     public void enterGame() {
         ConcurrencyUtils.waitForPostRunnable(() -> {
-            ScreenController.gameView.create();
-            ScreenController.changeScreen(ScreenController.gameView);
+            ScreenController.GAME_VIEW.create();
+            ScreenController.changeScreen(ScreenController.GAME_VIEW);
         });
     }
 
     @Override
-    public void render(float delta) {
-        if (client == null) {
-            client = Game.getInstance().client;
-            if (client != null) {
+    public void notify(Object change, GameData.Event changeEvent) {
+        System.out.println("change = " + change + ", changeEvent = " + changeEvent);
+        switch (changeEvent) {
+            case LOBBY_ID_SET:
+                Integer lobbyID = (Integer) change;
                 lobbyIDLabel.setText(lobbyID.toString());
-            }
-        }
-        super.render(delta);
-        if (client != null) {
-            for (int i = 0; i < client.playerList.size(); i++) {
-                players.get(i).setText(client.playerList.get(i));
-            }
+                break;
+            case PLAYER_NAMES_SET:
+                List<String> playerNames = (List<String>) change;
+                for (int i = 0; i < playerNames.size(); i++) {
+                    playerLabels.get(i).setText(playerNames.get(i));
+                }
+                break;
         }
     }
 }

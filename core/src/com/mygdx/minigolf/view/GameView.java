@@ -8,6 +8,11 @@ import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.controller.InputHandler;
 import com.mygdx.minigolf.controller.systems.GraphicsSystem;
+import com.mygdx.minigolf.model.GameData;
+import com.mygdx.minigolf.model.components.Physical;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class GameView extends HeadlessGame implements Screen {
     GraphicsSystem graphicsSystem;

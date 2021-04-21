@@ -10,6 +10,7 @@ import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.controller.EntityFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class LevelLoader {
