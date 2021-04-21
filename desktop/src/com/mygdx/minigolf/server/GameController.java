@@ -22,15 +22,14 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-public class GameController implements Runnable {
+public class GameController extends ClientsController<GameCommunicationHandler> {
     private static final int REFRESH_RATE = 1_000 / 15; // in milliseconds
-    private final List<GameCommunicationHandler> comms;
     private State state = State.INITIALIZING;
     HeadlessGame game;
     Application app;
 
     // Receive LobbyComms. Shut them down and transfer sockets to GameComms
-    GameController(List<CommunicationHandler> comms) throws InterruptedException {
+    GameController(List<LobbyCommunicationHandler> comms) throws InterruptedException {
         game = new HeadlessGame();
         app = ServerUtils.initGame(game);
 
@@ -44,41 +43,22 @@ public class GameController implements Runnable {
             }
         });
         // Setup game communication handlers and start them
-        this.comms = comms.stream()
-                .map(comm -> new GameCommunicationHandler(comm, this))
-                .peek(comm -> new Thread(comm).start())
-                .collect(Collectors.toList());
-    }
-
-    // TODO: Handle IOException by removing comm (and player) that it resulted from.
-    private void broadcast(Message<ServerGameCommand> msg) {
-        for (GameCommunicationHandler comm : comms) {
+        comms.forEach(comm -> {
             try {
-                comm.send(msg);
+                GameCommunicationHandler gameComm = new GameCommunicationHandler(comm, this);
+                this.comms.add(gameComm);
+                new Thread(gameComm).start();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-    }
 
-    private void waitForRecv(Message<ClientGameCommand> recv) {
-        for (GameCommunicationHandler comm : comms) {
-            Message<ClientGameCommand> msg;
-            do { // TODO: Change to not do spin waiting
-                msg = comm.recvBuffer.poll();
-            } while (msg == null || msg.command != recv.command);
-        }
-    }
-
-    private void synchronize(Message<ServerGameCommand> send, Message<ClientGameCommand> recv) {
-        broadcast(send);
-        waitForRecv(recv);
+        });
     }
 
     // TODO: Improve parameter or make players an object attribute
     private Map<String, Integer> getScores(Map<GameCommunicationHandler, Entity> players) {
         return players.entrySet().stream().collect(Collectors.toMap(
-                entry -> entry.getKey().name,
+                entry -> entry.getKey().playerName,
                 entry -> PlayerMapper.get(players.get(entry.getKey())).getLevelStrokes()
         ));
     }
@@ -111,7 +91,7 @@ public class GameController implements Runnable {
                         comm -> players.get(comm).getComponent(Physical.class)
                 ));
         NetworkedGameState networkedGameState = new NetworkedGameState(comms.stream().collect(Collectors.toMap(
-                comm -> comm.name,
+                comm -> comm.playerName,
                 comm -> new NetworkedGameState.PlayerState(new Vector2(0, 0), new Vector2(0, 0))
         )));
 
@@ -130,7 +110,7 @@ public class GameController implements Runnable {
                 case SELECTING_LEVEL:
                     try {
                         currentLevel = levelsIterator.next();
-                        synchronize(
+                        barrier(
                                 new Message<>(ServerGameCommand.LOAD_LEVEL, currentLevel),
                                 new Message<>(ClientGameCommand.LEVEL_LOADED, currentLevel)
                         );
@@ -199,7 +179,7 @@ public class GameController implements Runnable {
                         // update gameState and broadcast it
                         playerPhysicalComponents.entrySet().forEach(
                                 entry -> {
-                                    PlayerState playerState = networkedGameState.stateMap.get(entry.getKey().name);
+                                    PlayerState playerState = networkedGameState.stateMap.get(entry.getKey().playerName);
                                     playerState.position = entry.getValue().getPosition();
                                     playerState.velocity = entry.getValue().getVelocity();
                                 }

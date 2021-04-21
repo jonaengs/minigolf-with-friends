@@ -102,7 +102,7 @@ public class Message<T extends Message.TypedEnum> implements Serializable {
         }
     }
 
-    interface TypedEnum {
+    public interface TypedEnum {
         Class<?> getType();
     }
 }

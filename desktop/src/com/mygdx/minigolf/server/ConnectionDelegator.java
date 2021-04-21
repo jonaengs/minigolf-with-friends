@@ -79,7 +79,7 @@ public class ConnectionDelegator {
             try {
                 ObjectInputStream objIn = new ObjectInputStream(socket.getInputStream());
                 ObjectOutputStream objOut = new ObjectOutputStream(socket.getOutputStream());
-                CommunicationHandler comm = new CommunicationHandler(socket, objIn, objOut);
+                LobbyCommunicationHandler comm = new LobbyCommunicationHandler(socket, objIn, objOut);
 
                 Message<ClientLobbyCommand> msg = (Message<ClientLobbyCommand>) objIn.readObject();
                 Integer lobbyID;
