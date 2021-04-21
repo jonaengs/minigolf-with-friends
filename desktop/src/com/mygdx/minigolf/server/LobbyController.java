@@ -123,6 +123,7 @@ class LobbyController implements Runnable {
                         try {
                             gameController = new GameController(comms);
                             new Thread(gameController).start();
+                            return;
                         } catch (InterruptedException ignored) {
                         }
                         running.set(false);

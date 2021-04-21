@@ -42,7 +42,6 @@ public class GameController extends GameData.Subscriber {
     }
 
     private void createPlayers() {
-        System.out.println("\n\n" + Screens.GAME_VIEW.factory + "\n\n");
         GameData.get().players.set(
                 GameData.get().playerNames.get().stream().collect(Collectors.toMap(
                         name -> name,

@@ -69,7 +69,6 @@ public class LobbyView extends View {
 
     @Override
     public void notify(Object change, GameData.Event changeEvent) {
-        System.out.println("change = " + change + ", changeEvent = " + changeEvent);
         switch (changeEvent) {
             case LOBBY_ID_SET:
                 Integer lobbyID = (Integer) change;

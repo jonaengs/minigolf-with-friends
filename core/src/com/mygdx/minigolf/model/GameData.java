@@ -118,7 +118,6 @@ public class GameData {
         }
 
         public void set(T data) {
-            System.out.println("data = " + data);
             ConcurrencyUtils.postRunnable(() -> {
                 _set(data);
             });
