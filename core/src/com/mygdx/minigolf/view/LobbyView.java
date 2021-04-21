@@ -1,6 +1,5 @@
 package com.mygdx.minigolf.view;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -8,7 +7,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.controller.ScreenController;
-import com.mygdx.minigolf.model.GameState;
 import com.mygdx.minigolf.network.Client;
 import com.mygdx.minigolf.util.ConcurrencyUtils;
 

@@ -45,24 +45,12 @@ public class MainMenuView extends View {
         table.row().pad(30, 0, 30, 0).expand();
         table.add(tutorial).expand();
 
-        ChangeListener toNetworkedScreen = new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                try {
-                    Game.getInstance().client = new Client();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-        joinGame.addListener(toNetworkedScreen);
-        newGame.addListener(toNetworkedScreen);
         newGame.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 try {
-                    ScreenController.LOBBY_VIEW.lobbyID = Game.getInstance().client.createLobby();
-                    Game.getInstance().client.runAsThread();
+                    // TODO: Find or create a better way to access the game controller
+                    ScreenController.gameView.gameController.createLobby();
                 } catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();
                 }

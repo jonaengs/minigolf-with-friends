@@ -4,8 +4,9 @@ import com.badlogic.gdx.math.Vector2;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 
-public class Message<T extends Enum<T>> implements Serializable {
+public class Message<T extends Message.TypedEnum> implements Serializable {
     public T command;
     public Object data;
 
@@ -14,9 +15,13 @@ public class Message<T extends Enum<T>> implements Serializable {
     }
 
     public Message(T command, Object data) {
+        if (command.getType() != Void.class) {
+            if (command.getType() != data.getClass()) {
+                new IllegalArgumentException("Invalid combo: " + command + " & " + data).printStackTrace();
+            }
+        }
         this.command = command;
         this.data = data;
-        // TODO: Enforce/assert data and its type based on command
     }
 
     @Override
@@ -24,23 +29,43 @@ public class Message<T extends Enum<T>> implements Serializable {
         return "Message{" + command + (data == null ? "" : ", " + data) + '}';
     }
 
-    public enum ServerLobbyCommand {
-        NAME, // Give player its name
-        LOBBY_ID,
-        PLAYER_LIST,
-        ENTER_GAME,
-        LOBBY_NOT_FOUND
+    public enum ServerLobbyCommand implements TypedEnum {
+        NAME(String.class), // Give player its name
+        LOBBY_ID(Integer.class),
+        PLAYER_LIST(List.class),
+        ENTER_GAME(Void.class),
+        LOBBY_NOT_FOUND(Integer.class);
+
+        private final Class<?> clazz;
+
+        ServerLobbyCommand(Class<?> clazz) {
+            this.clazz = clazz;
+        }
+
+        public Class<?> getType() {
+            return clazz;
+        }
     }
 
-    public enum ClientLobbyCommand {
-        CREATE,
-        JOIN,
-        EXIT,
-        START_GAME,
-        GAME_READY,
+    public enum ClientLobbyCommand implements TypedEnum {
+        CREATE(Void.class),
+        JOIN(Integer.class),
+        EXIT(Void.class),
+        START_GAME(Void.class),
+        GAME_READY(Void.class);
+
+        private final Class<?> clazz;
+
+        ClientLobbyCommand(Class<?> clazz) {
+            this.clazz = clazz;
+        }
+
+        public Class<?> getType() {
+            return clazz;
+        }
     }
 
-    public enum ServerGameCommand {
+    public enum ServerGameCommand implements TypedEnum {
         LOAD_LEVEL(String.class),
         LEVEL_COMPLETE(Void.class),
         START_GAME(Void.class),
@@ -49,22 +74,35 @@ public class Message<T extends Enum<T>> implements Serializable {
         GAME_SCORE(HashMap.class), // String playerName -> int score
         GAME_COMPLETE(Void.class);
 
+
         private final Class<?> clazz;
 
         ServerGameCommand(Class<?> clazz) {
             this.clazz = clazz;
         }
+
+        public Class<?> getType() {
+            return clazz;
+        }
     }
 
-    public enum ClientGameCommand {
+    public enum ClientGameCommand implements TypedEnum {
         INPUT(Vector2.class),
         LEVEL_LOADED(String.class),
         EXIT(Void.class);
 
-        public final Class<?> clazz;
+        private final Class<?> clazz;
 
         ClientGameCommand(Class<?> clazz) {
             this.clazz = clazz;
         }
+
+        public Class<?> getType() {
+            return clazz;
+        }
+    }
+
+    interface TypedEnum {
+        Class<?> getType();
     }
 }

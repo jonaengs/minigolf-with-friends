@@ -6,9 +6,12 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.minigolf.controller.EntityFactory;
+import com.mygdx.minigolf.controller.GameController;
 import com.mygdx.minigolf.controller.systems.PhysicsSystem;
 import com.mygdx.minigolf.model.levels.LevelLoader;
 import com.mygdx.minigolf.model.levels.LevelLoader.Level;
+
+import java.io.IOException;
 
 // See link below for example of use
 // https://github.com/TomGrill/gdx-testing/blob/master/tests/src/de/tomgrill/gdxtesting/GdxTestRunner.java
@@ -18,16 +21,24 @@ public class HeadlessGame implements ApplicationListener {
     public EntityFactory factory;
     public LevelLoader levelLoader;
     public Level currentLevel;
+    public GameController gameController;
 
     private long t0;
 
     @Override
-    public void create() {
+    public void create()  {
         world = new World(new Vector2(0, 0), true);
         engine = new Engine();
         engine.addSystem(new PhysicsSystem(world, engine));
         factory = new EntityFactory(engine, world, false);
         levelLoader = new LevelLoader(factory);
+
+        try {
+            gameController = new GameController(this);
+        } catch (IOException e) {
+            // No use continuing without a game controller. Let it crash.
+            throw new RuntimeException(e);
+        }
 
         t0 = System.currentTimeMillis();
     }

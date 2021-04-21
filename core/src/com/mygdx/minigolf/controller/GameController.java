@@ -1,39 +1,41 @@
 package com.mygdx.minigolf.controller;
 
+import com.badlogic.gdx.Gdx;
 import com.mygdx.minigolf.HeadlessGame;
-import com.mygdx.minigolf.model.GameState;
+import com.mygdx.minigolf.model.GameData;
 import com.mygdx.minigolf.model.levels.LevelLoader;
+import com.mygdx.minigolf.network.Client;
 import com.mygdx.minigolf.util.ConcurrencyUtils;
 import com.mygdx.minigolf.view.GameView;
 
+import java.io.IOException;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
-import static com.mygdx.minigolf.model.GameState.Event.LEVEL_NAME_CHANGE;
-import static com.mygdx.minigolf.model.GameState.Event.STATE_CHANGE;
-
-public class GameController implements GameState.Observer {
+// Singleton
+public class GameController implements GameData.Observer {
     LevelLoader levelLoader;
     HeadlessGame game;
-    GameState gameState;
+    GameData gameData;
+    Client client;
     boolean server = false;
 
-    public GameController(HeadlessGame game) {
+    public GameController(HeadlessGame game) throws IOException {
         this.game = game;
         levelLoader = new LevelLoader(game.factory);
-        gameState.addObserver(this, LEVEL_NAME_CHANGE, STATE_CHANGE);
+        gameData = new GameData();
+        client = new Client(gameData);
+
+        gameData.subscribe(this, gameData.levelName, gameData.state);
     }
 
-    public void connectToServer() {
-
-    }
-
-    public void setupClient() {
-
+    public void createLobby() throws IOException, ClassNotFoundException {
+        client.createLobby();
     }
 
     public void createPlayers() {
-        gameState.setPlayers(
-                gameState.getPlayerNames().stream().collect(Collectors.toMap(
+        gameData.players.set(
+                gameData.playerNames.get().stream().collect(Collectors.toMap(
                         name -> name,
                         ____ -> game.getFactory().createPlayer(-1, -1)
                 ))
@@ -41,7 +43,11 @@ public class GameController implements GameState.Observer {
     }
 
     public void resetPlayers() {
-
+        Gdx.app.postRunnable(() ->
+                gameData.players.get().values().forEach(p ->
+                        ComponentMappers.PhysicalMapper.get(p).setPosition(gameData.level.get().getSpawnCenter())
+                )
+        );
     }
 
     // Hide player when they complete e level
@@ -49,37 +55,46 @@ public class GameController implements GameState.Observer {
 
     }
 
+    private void disposeGameData() {
+        gameData = new GameData();
+    }
+
     private void loadLevel(String levelName) {
         ConcurrencyUtils.waitForPostRunnable(() -> {
-                    if (GameState.getLevel() != null) {
+                    if (gameData.level.get() != null) {
                         // dispose of the previous level before loading the new one
-                        GameState.getLevel().dispose(game.engine);
+                        gameData.level.get().dispose(game.engine);
                     }
-                    GameState.setLevel(levelLoader.load(levelName));
+                    gameData.level.set(levelLoader.load(levelName));
                 }
         );
     }
 
     @Override
-    public void update(Object change, GameState.Event event) {
+    public void notify(Object change, GameData.Event event) {
         switch (event) {
-            case LEVEL_NAME_CHANGE:
-                resetPlayers();
+            case LEVEL_NAME_SET:
                 loadLevel((String) change);
+                resetPlayers();
                 break;
-            case STATE_CHANGE:
-                switch ((GameState.State) change) {
-                    case INITIALISING_GAME:
+            case STATE_SET:
+                switch ((GameData.State) change) {
+                    case INITIALIZING_GAME:
                         createPlayers();
                         if (!server) {
-                            ((GameView) game).setInput(GameState.getPlayers().get(GameState.getLocalPlayerName()));
+                            ((GameView) game).setInput(gameData.players.get().get(gameData.localPlayerName.get()));
                             ScreenController.LOBBY_VIEW.enterGame();
                         }
                         break;
                     case SCORE_SCREEN:
+                        System.out.println(Collections.singletonList(gameData.scores.get()));
                         // ScreenController.changeScreen(SCORE_SCREEN);
                         break;
                 }
+            case PLAYER_REMOVED:
+                String playerName = (String) change;
+                game.engine.removeEntity(gameData.players.get().get(playerName));
+                break;
         }
     }
 }

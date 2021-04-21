@@ -91,7 +91,7 @@ public class ConnectionDelegator {
                             lobbies.get(lobbyID).addPlayer(comm);
                         } catch (NullPointerException e) {
                             e.printStackTrace();
-                            objOut.writeObject(new Message<>(ServerLobbyCommand.LOBBY_NOT_FOUND));
+                            objOut.writeObject(new Message<>(ServerLobbyCommand.LOBBY_NOT_FOUND, lobbyID));
                             return;
                         }
                         break;
