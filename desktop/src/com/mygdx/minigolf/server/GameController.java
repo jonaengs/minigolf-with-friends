@@ -232,6 +232,8 @@ public class GameController implements Runnable {
                     break;
                 case EXITING:
                     comms.forEach(c -> c.running.set(false));
+                    game.dispose();
+                    Gdx.app.exit();
                     return;
             }
         }

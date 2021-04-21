@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import static com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand.EXIT;
 import static com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand.GAME_READY;
 
+// TODO: Enforce max player limit
 class LobbyController implements Runnable {
     private static final String[] names = {"Leader", "Yatzy", "Chess", "Bridge", "Poker", "Jacket", "Shirt", "Pants"};
     private final AtomicInteger nameIndex = new AtomicInteger(0);
@@ -20,6 +21,7 @@ class LobbyController implements Runnable {
     private final List<CommunicationHandler> comms;
     private final CommunicationHandler leader;
     private final AtomicBoolean playerListUpdated = new AtomicBoolean(true);
+    private final AtomicBoolean running = new AtomicBoolean(true);
     public final Integer lobbyID;
     private State state = State.INITIALIZING;
 
@@ -38,6 +40,10 @@ class LobbyController implements Runnable {
         comm.sendBuffer.add(new Message<>(ServerLobbyCommand.LOBBY_ID, lobbyID));
         comm.sendBuffer.add(new Message<>(ServerLobbyCommand.NAME, comm.name));
         playerListUpdated.set(true);
+    }
+
+    public void shutDown() {
+        running.set(false);
     }
 
     ///////////////////////////
@@ -71,14 +77,14 @@ class LobbyController implements Runnable {
     @Override
     public void run() {
         state = State.NORMAL;
-        while (true) {
+        while (running.get()) {
             switch (state) {
                 case NORMAL:
                     // If the player list (comms) has been updated, broadcast it.
                     if (playerListUpdated.getAndSet(false)) {
                         broadcastPlayerList();
                         if (!leader.running.get() || !comms.contains(leader)) { // If leader no longer running, shut down lobby.
-                            state = State.CLOSING;
+                            running.set(false);
                         }
                     }
                     for (CommunicationHandler comm : copyComms()) {
@@ -99,13 +105,6 @@ class LobbyController implements Runnable {
                         }
                     }
                     break;
-                case CLOSING:
-                    synchronized (comms) {
-                        for (CommunicationHandler comm : comms) {
-                            comm.close();
-                        }
-                    }
-                    return;
                 case STARTING_GAME:
                     System.out.println("STARTING GAME");
                     GameController gameController;
@@ -124,16 +123,20 @@ class LobbyController implements Runnable {
                         try {
                             gameController = new GameController(comms);
                             new Thread(gameController).start();
-                            return;
-                        } catch (InterruptedException e) {
-                            state = State.CLOSING;
+                        } catch (InterruptedException ignored) {
                         }
+                        running.set(false);
                     }
+            }
+        }
+        synchronized (comms) {
+            for (CommunicationHandler comm : comms) {
+                comm.close();
             }
         }
     }
 
     private enum State {
-        INITIALIZING, NORMAL, CLOSING, STARTING_GAME
+        INITIALIZING, NORMAL, STARTING_GAME
     }
 }

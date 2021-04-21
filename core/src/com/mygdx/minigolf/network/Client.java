@@ -29,7 +29,7 @@ public class Client implements Runnable{
     ObjectOutputStream objOut;
     String name;
 
-    State state = State.IN_LOBBY;
+    State state = State.JOINING_LOBBY;
 
     public Client() throws IOException {
         socket = new Socket("localhost", 8888);
@@ -95,16 +95,25 @@ public class Client implements Runnable{
                 prevState = state;
                 // TODO: Handle unexpected messages (invalid state & msg.cmd combinations)
                 switch (state) {
+                    case JOINING_LOBBY:
+                        lm = msg == null ? waitRecv() : msg;
+                        switch (lm.command) {
+                            case LOBBY_ID:
+                                GameData.get().lobbyID.set((Integer) lm.data);
+                                GameData.get().state.set(GameData.State.IN_LOBBY);
+                                state = State.IN_LOBBY;
+                                break;
+                            case LOBBY_NOT_FOUND:
+                                GameData.get().lobbyID.set(-1);
+                                break;
+                        }
+                        break;
                     case IN_LOBBY:
                         if (msg != null) {
                             lm = msg;
+                            System.out.println(msg);
                             switch (lm.command) {
-                                case LOBBY_NOT_FOUND:
-                                    GameData.get().lobbyID.set(-1);
-                                    break;
-                                case LOBBY_ID:
-                                    GameData.get().lobbyID.set((Integer) lm.data);
-                                    break;
+
                                 case NAME:
                                     GameData.get().localPlayerName.set((String) lm.data);
                                     Thread.currentThread().setName(this.getClass().getName() + "-" + name);
@@ -202,6 +211,6 @@ public class Client implements Runnable{
     }
 
     private enum State {
-        INITIALIZING, IN_LOBBY, LOADING_GAME, WAITING_FOR_LEVEL_INFO, WAITING_FOR_START, IN_GAME, SCORE_SCREEN, EXITING;
+        JOINING_LOBBY, IN_LOBBY, LOADING_GAME, WAITING_FOR_LEVEL_INFO, WAITING_FOR_START, IN_GAME, SCORE_SCREEN, EXITING;
     }
 }

@@ -23,8 +23,12 @@ public class ScreenController extends GameData.Subscriber {
 
     @Override
     public void notify(Object change, GameData.Event changeEvent) {
+        System.out.println("change = " + change + ", changeEvent = " + changeEvent);
         if (changeEvent == GameData.Event.STATE_SET) {
             switch ((GameData.State) change) {
+                case IN_LOBBY:
+                    changeScreen(Screens.LOBBY_VIEW);
+                    break;
                 case IN_GAME:
                     changeScreen(Screens.GAME_VIEW);
                     break;

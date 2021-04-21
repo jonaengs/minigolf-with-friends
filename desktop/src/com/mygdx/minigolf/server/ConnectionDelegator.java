@@ -15,11 +15,11 @@ import java.util.stream.IntStream;
 
 
 public class ConnectionDelegator {
-    ServerSocket ss;
     final static int MIN_ID = 100_000;
     final static int MAX_ID = 1_000_000 - MIN_ID;
-    static Random random = new Random();
     static final HashMap<Integer, LobbyController> lobbies = new HashMap<>();
+    static Random random = new Random();
+    ServerSocket ss;
 
     public ConnectionDelegator() throws IOException {
         this(8888);
@@ -29,20 +29,24 @@ public class ConnectionDelegator {
         ss = new ServerSocket(port);
     }
 
+    private static int generateLobbyID() {
+        IntStream intStream = random.ints(Integer.MAX_VALUE, 32, MAX_ID); // middle number is seed?
+        int ID;
+        synchronized (lobbies) {
+            ID = intStream
+                    .map(i -> i + MIN_ID)
+                    .filter(id -> !lobbies.containsKey(id))
+                    .findFirst().getAsInt();
+        }
+        return ID;
+    }
+
     public void accept() throws IOException {
         while (true) {
             Socket s = ss.accept();
             s.setTcpNoDelay(true);
             new Thread(new ConnectionHandler(s)).start();
         }
-    }
-
-    private static int generateLobbyID() {
-        IntStream intStream = random.ints(Integer.MAX_VALUE, 32, MAX_ID); // middle number is seed?
-        return intStream
-                .map(i -> i + MIN_ID)
-                .filter(id -> !lobbies.containsKey(id))
-                .findFirst().getAsInt();
     }
 
     private static class ConnectionHandler implements Runnable {
@@ -61,10 +65,11 @@ public class ConnectionDelegator {
                 try {
                     lobbyThread.join();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    lobby.shutDown();
                 }
-                // Problem: This solution will make lobby unjoinable if this thread is ever interrupted
-                ConnectionDelegator.lobbies.remove(lobby.lobbyID);
+                synchronized (lobbies) {
+                    lobbies.remove(lobby.lobbyID);
+                }
             }).start();
         }
 
@@ -82,7 +87,9 @@ public class ConnectionDelegator {
                     case CREATE:
                         lobbyID = generateLobbyID();
                         LobbyController lobby = new LobbyController(comm, lobbyID);
-                        lobbies.put(lobbyID, lobby);
+                        synchronized (lobbies) {
+                            lobbies.put(lobbyID, lobby);
+                        }
                         startLobbyAndSupervisor(lobby);
                         break;
                     case JOIN:

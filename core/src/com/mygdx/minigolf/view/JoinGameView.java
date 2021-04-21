@@ -43,8 +43,8 @@ public class JoinGameView extends View {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 status.setText("Attempting to join lobby " + code.getText());
+                Integer lobbyID = Integer.parseInt(code.getText());
                 try { // TODO: Better way to access game controller
-                    Integer lobbyID = Integer.parseInt(code.getText());
                     Game.getInstance().gameController.joinLobby(lobbyID);
                 } catch (IOException e) {
                     e.printStackTrace();

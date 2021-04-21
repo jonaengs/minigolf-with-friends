@@ -55,12 +55,6 @@ public class MainMenuView extends View {
                 }
             }
         });
-        joinGame.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                ScreenController.get().changeScreen(Screens.JOIN_GAME_VIEW);
-            }
-        });
     }
 
 }

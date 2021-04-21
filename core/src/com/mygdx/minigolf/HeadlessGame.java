@@ -51,6 +51,9 @@ public class HeadlessGame implements ApplicationListener {
 
     @Override
     public void dispose() {
+        engine.removeAllEntities();
+        engine.getSystems().forEach(engine::removeSystem);
+        world.dispose();
     }
 
     public void loadLevel(String levelName, Application app) {
