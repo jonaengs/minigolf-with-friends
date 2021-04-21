@@ -20,10 +20,16 @@ import com.mygdx.minigolf.model.components.Objective;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.components.Player;
 import com.mygdx.minigolf.model.components.PowerUpTaker;
-import com.mygdx.minigolf.util.Constants;
 
 import java.util.Arrays;
 import java.util.Objects;
+
+import static com.mygdx.minigolf.util.Constants.BIT_COURSE;
+import static com.mygdx.minigolf.util.Constants.BIT_HOLE;
+import static com.mygdx.minigolf.util.Constants.BIT_PLAYER;
+import static com.mygdx.minigolf.util.Constants.BIT_POWERUP;
+import static com.mygdx.minigolf.util.Constants.BIT_SPAWN;
+import static com.mygdx.minigolf.util.Constants.BIT_WALL;
 
 public class EntityFactory {
 
@@ -31,6 +37,16 @@ public class EntityFactory {
     private final Engine engine;
     private final World world;
     public boolean showGraphics;
+
+    public EntityFactory(Engine engine, World world) {
+        this(engine, world, true);
+    }
+
+    public EntityFactory(Engine engine, World world, boolean showGraphics) {
+        this.engine = engine;
+        this.world = world;
+        this.showGraphics = showGraphics;
+    }
 
     static public float[] getVertices(PolygonShape shape) {
         int nVertices = shape.getVertexCount();
@@ -42,16 +58,6 @@ public class EntityFactory {
             vertices[2 * i + 1] = v.y;
         }
         return vertices;
-    }
-
-    public EntityFactory(Engine engine, World world) {
-        this(engine, world, true);
-    }
-
-    public EntityFactory(Engine engine, World world, boolean showGraphics) {
-        this.engine = engine;
-        this.world = world;
-        this.showGraphics = showGraphics;
     }
 
     private Entity createEntity(Component... components) {
@@ -73,8 +79,8 @@ public class EntityFactory {
                 y,
                 shape,
                 BodyDef.BodyType.DynamicBody,
-                Constants.BIT_PLAYER,
-                (short) (Constants.BIT_WALL | Constants.BIT_HOLE | Constants.BIT_POWERUP | Constants.BIT_PLAYER | Constants.BIT_SPAWN),
+                BIT_PLAYER,
+                (short) (BIT_WALL | BIT_HOLE | BIT_POWERUP | BIT_PLAYER | BIT_SPAWN),
                 false);
 
         /* Set bounce to 0. This way we can more easily control bounce between the player and other objects.
@@ -102,8 +108,8 @@ public class EntityFactory {
                 y + shape.getRadius(),
                 shape,
                 BodyDef.BodyType.StaticBody,
-                Constants.BIT_HOLE,
-                Constants.BIT_PLAYER,
+                BIT_HOLE,
+                BIT_PLAYER,
                 false);
         return createEntity(
                 physical,
@@ -119,8 +125,8 @@ public class EntityFactory {
                         y,
                         shape,
                         BodyDef.BodyType.StaticBody,
-                        Constants.BIT_WALL,
-                        Constants.BIT_PLAYER,
+                        BIT_WALL,
+                        BIT_PLAYER,
                         false),
                 showGraphics ? new Graphical(Sprite.Obstacle.color, 1, getVertices(shape)) : null
         );
@@ -133,8 +139,8 @@ public class EntityFactory {
                         y + shape.getRadius(),
                         shape,
                         BodyDef.BodyType.StaticBody,
-                        Constants.BIT_POWERUP,
-                        Constants.BIT_PLAYER,
+                        BIT_POWERUP,
+                        BIT_PLAYER,
                         true),
                 showGraphics ? new Graphical(Sprite.Powerup, 1) : null
 
@@ -149,8 +155,8 @@ public class EntityFactory {
                 y,
                 shape,
                 BodyDef.BodyType.StaticBody,
-                Constants.BIT_SPAWN,
-                Constants.BIT_PLAYER,
+                BIT_SPAWN,
+                BIT_PLAYER,
                 true));
     }
 
@@ -165,8 +171,8 @@ public class EntityFactory {
                         y,
                         shape,
                         BodyDef.BodyType.StaticBody,
-                        Constants.BIT_WALL,
-                        Constants.BIT_PLAYER,
+                        BIT_WALL,
+                        BIT_PLAYER,
                         false),
                 showGraphics ? new Graphical(Sprite.SurfaceB.color, 1, getVertices(shape)) : null
 
@@ -180,10 +186,10 @@ public class EntityFactory {
                         y,
                         shape,
                         BodyDef.BodyType.StaticBody,
-                        Constants.BIT_COURSE,
-                        Constants.BIT_COURSE,
+                        BIT_COURSE,
+                        BIT_COURSE,
                         false),
-            showGraphics ? new Graphical(sprite.color, layer, getVertices(shape)) : null
+                showGraphics ? new Graphical(sprite.color, layer, getVertices(shape)) : null
         );
     }
 

@@ -6,6 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.controller.ScreenController;
+import com.mygdx.minigolf.controller.Screens;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -17,16 +18,16 @@ public class MainMenuView extends View {
 
         // Creating elements
         TextButton newGame = new TextButton("New Game", skin);
-        newGame.addListener(new ScreenController.ChangeViewListener(ScreenController.LOBBY_VIEW));
+        newGame.addListener(new Screens.ChangeViewListener(Screens.LOBBY_VIEW));
 
         TextButton joinGame = new TextButton("Join Game", skin);
-        joinGame.addListener(new ScreenController.ChangeViewListener(ScreenController.JOIN_GAME_VIEW));
+        joinGame.addListener(new Screens.ChangeViewListener(Screens.JOIN_GAME_VIEW));
 
         TextButton settings = new TextButton("Settings", skin);
-        settings.addListener(new ScreenController.ChangeViewListener(ScreenController.SETTINGS_VIEW));
+        settings.addListener(new Screens.ChangeViewListener(Screens.SETTINGS_VIEW));
 
         TextButton tutorial = new TextButton("Tutorial", skin);
-        tutorial.addListener(new ScreenController.ChangeViewListener(ScreenController.TUTORIAL_VIEW));
+        tutorial.addListener(new Screens.ChangeViewListener(Screens.TUTORIAL_VIEW));
 
         // Transform actors
         for (TextButton btn : Arrays.asList(newGame, joinGame, settings, tutorial)) {
@@ -57,7 +58,7 @@ public class MainMenuView extends View {
         joinGame.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                ScreenController.changeScreen(ScreenController.JOIN_GAME_VIEW);
+                ScreenController.get().changeScreen(Screens.JOIN_GAME_VIEW);
             }
         });
     }

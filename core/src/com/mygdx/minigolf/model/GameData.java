@@ -83,17 +83,22 @@ public class GameData {
     }
 
     public abstract static class Subscriber implements Notifiable {
-        private final Set<Observable> observables;
+        private final Set<Observable> observables = new HashSet<>();
 
-        protected Subscriber(Observable... observables) {
-            this.observables = new HashSet<>(Arrays.asList(observables));
-            // setupSubscriptions();
+        protected Subscriber(Observable... baseObservables) {
+            observables.addAll(Arrays.asList(baseObservables));
         }
 
-        public void removeSubscriptions() {
+        public void removeSubscriptions(Observable... toRemove) {
+            if (toRemove.length > 0) {
+                observables.removeAll(Arrays.asList(toRemove));
+            } else {
+                observables.clear();
+            }
             observables.forEach(o -> o.cancelSubscription(this));
         }
-        public void setupSubscriptions() {
+        public void setupSubscriptions(Observable... toAdd) {
+            observables.addAll(Arrays.asList(toAdd));
             observables.forEach(o -> o.subscribe(this));
         }
     }

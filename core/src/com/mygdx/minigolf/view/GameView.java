@@ -10,9 +10,11 @@ import com.mygdx.minigolf.controller.InputHandler;
 import com.mygdx.minigolf.controller.systems.GraphicsSystem;
 import com.mygdx.minigolf.model.GameData;
 import com.mygdx.minigolf.model.components.Physical;
+import com.mygdx.minigolf.model.components.Player;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class GameView extends HeadlessGame implements Screen {
     GraphicsSystem graphicsSystem;
@@ -20,7 +22,6 @@ public class GameView extends HeadlessGame implements Screen {
     @Override
     public void create() {
         super.create();
-
         factory.showGraphics = true;
         graphicsSystem = new GraphicsSystem();
 

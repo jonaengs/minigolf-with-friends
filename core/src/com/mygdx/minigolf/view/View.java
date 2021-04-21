@@ -1,6 +1,7 @@
 package com.mygdx.minigolf.view;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -9,7 +10,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.minigolf.controller.ScreenController;
+import com.mygdx.minigolf.controller.Screens;
 import com.mygdx.minigolf.model.GameData;
+
 
 public abstract class View extends GameData.Subscriber implements Screen {
 
@@ -44,7 +47,10 @@ public abstract class View extends GameData.Subscriber implements Screen {
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
         stage.draw();
 
-        ScreenController.catchBackKey();
+        Gdx.input.setCatchKey(Input.Keys.BACK, true);
+        if (Gdx.input.isKeyPressed(Input.Keys.BACK) || Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
+            ScreenController.get().changeScreen(Screens.MAIN_MENU_VIEW);
+        }
     }
 
     @Override

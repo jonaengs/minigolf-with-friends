@@ -3,10 +3,9 @@ package com.mygdx.minigolf.network;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
-import com.mygdx.minigolf.controller.ComponentMappers;
 import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.controller.InputHandler;
-import com.mygdx.minigolf.controller.ScreenController;
+import com.mygdx.minigolf.controller.Screens;
 import com.mygdx.minigolf.model.GameData;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.network.messages.NetworkedGameState;
@@ -21,10 +20,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Client implements Runnable{
     Socket socket;
@@ -194,7 +191,6 @@ public class Client implements Runnable{
                             new RuntimeException("Expected level info. Got " + gm).printStackTrace();
                         break;
                     case EXITING:
-                        Gdx.app.postRunnable(() -> ScreenController.changeScreen(ScreenController.MAIN_MENU_VIEW));
                         System.out.println(name + "Exiting...");
                         return;
                 }

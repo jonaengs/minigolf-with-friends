@@ -23,10 +23,4 @@ public class Utils {
             socket.setSoTimeout(0);
         }
     }
-
-    public static Application initHeadlessGame(HeadlessGame game) {
-        HeadlessApplicationConfiguration config = new HeadlessApplicationConfiguration();
-        config.renderInterval = 1 / 30f;
-        return new HeadlessApplication(game, config);
-    }
 }

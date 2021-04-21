@@ -1,6 +1,8 @@
 package com.mygdx.minigolf.server;
 
 import com.badlogic.gdx.Application;
+import com.badlogic.gdx.backends.headless.HeadlessApplication;
+import com.badlogic.gdx.backends.headless.HeadlessApplicationConfiguration;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import com.mygdx.minigolf.HeadlessGame;
@@ -16,8 +18,14 @@ public class ServerUtils {
         return new LwjglApplication(game, config);
     }
 
+    public static Application initHeadlessGame(HeadlessGame game) {
+        HeadlessApplicationConfiguration config = new HeadlessApplicationConfiguration();
+        config.renderInterval = 1 / 30f;
+        return new HeadlessApplication(game, config);
+    }
+
     public static Application initGame(HeadlessGame game) throws InterruptedException {
-        Application app = game instanceof GameView ? initGameView((GameView) game) : Utils.initHeadlessGame(game);
+        Application app = game instanceof GameView ? initGameView((GameView) game) : initHeadlessGame(game);
         final Object lock = new Object();
         synchronized (lock) {
             app.postRunnable(() -> {

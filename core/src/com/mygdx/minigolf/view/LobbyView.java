@@ -6,9 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.mygdx.minigolf.Game;
-import com.mygdx.minigolf.controller.ScreenController;
 import com.mygdx.minigolf.model.GameData;
-import com.mygdx.minigolf.util.ConcurrencyUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -66,13 +64,6 @@ public class LobbyView extends View {
                     e.printStackTrace();
                 }
             }
-        });
-    }
-
-    public void enterGame() {
-        ConcurrencyUtils.waitForPostRunnable(() -> {
-            ScreenController.GAME_VIEW.create();
-            ScreenController.changeScreen(ScreenController.GAME_VIEW);
         });
     }
 

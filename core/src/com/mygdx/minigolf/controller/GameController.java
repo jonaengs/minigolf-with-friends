@@ -17,11 +17,9 @@ public class GameController extends GameData.Subscriber {
     boolean clientGame = true;
 
     public GameController(HeadlessGame game) throws IOException {
-        super(GameData.get().levelName, GameData.get().state);
+        setupSubscriptions(GameData.get().levelName, GameData.get().state);
         this.game = game;
         client = new Client();
-
-        setupSubscriptions();
     }
 
     public void createLobby() throws IOException {
@@ -38,16 +36,17 @@ public class GameController extends GameData.Subscriber {
         client.startGame();
     }
 
-    private void reset() {
+    protected void reset() {
         // TODO: new client, ++
         GameData.reset();
     }
 
     private void createPlayers() {
+        System.out.println("\n\n" + Screens.GAME_VIEW.factory + "\n\n");
         GameData.get().players.set(
                 GameData.get().playerNames.get().stream().collect(Collectors.toMap(
                         name -> name,
-                        ____ -> game.getFactory().createPlayer(-1, -1)
+                        ____ -> Screens.GAME_VIEW.factory.createPlayer(-1, -1)
                 ))
         );
     }
@@ -63,7 +62,7 @@ public class GameController extends GameData.Subscriber {
 
     }
 
-    private void loadLevel(String levelName) {
+    public void loadLevel(String levelName) {
         ConcurrencyUtils.waitForPostRunnable(() -> {
                     if (GameData.get().level.get() != null) {
                         // dispose of the previous level before loading the new one
@@ -90,7 +89,6 @@ public class GameController extends GameData.Subscriber {
                         if (clientGame) {
                             Entity localPlayer = gameData.players.get().get(gameData.localPlayerName.get());
                             ((GameView) game).setInput(localPlayer);
-                            ScreenController.LOBBY_VIEW.enterGame();
                         }
                         break;
                     case SCORE_SCREEN:
