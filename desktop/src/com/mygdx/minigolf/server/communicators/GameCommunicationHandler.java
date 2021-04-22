@@ -10,6 +10,7 @@ import static com.mygdx.minigolf.network.messages.Message.ServerGameCommand;
 public class GameCommunicationHandler extends CommunicationHandler<ServerGameCommand, ClientGameCommand> {
     public GameCommunicationHandler(LobbyCommunicationHandler comm) {
         super(comm.socket, comm.objIn, comm.objOut);
+        playerName = comm.playerName;
     }
 
     @Override

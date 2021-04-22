@@ -18,14 +18,19 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+
+import static com.mygdx.minigolf.model.GameData.State.INITIALIZING_GAME;
+import static com.mygdx.minigolf.model.GameData.State.IN_LOBBY;
+import static com.mygdx.minigolf.model.GameData.State.IN_MENU;
+import static com.mygdx.minigolf.model.GameData.State.JOINING_LOBBY;
 
 public class Client implements Runnable {
     Socket socket;
     ObjectOutputStream objOut;
     MessageBuffer recvBuffer;
-    String name;
 
     public Client() throws IOException {
         socket = new Socket("localhost", 8888);
@@ -47,14 +52,14 @@ public class Client implements Runnable {
     }
 
     private void send(Message msg) throws IOException {
-        System.out.println(name + " sends:\t" + msg);
+        System.out.println("send:\t" + msg);
         objOut.writeObject(msg);
         objOut.flush();
     }
 
     @Override
     public void run() {
-        Thread.currentThread().setName(this.getClass().getName() + "-" + name);
+        Thread.currentThread().setName(this.getClass().getName());
         GameData gameData = GameData.get();
 
         // TODO: Handle GAME_COMPLETE. Handle score screen.
@@ -65,19 +70,18 @@ public class Client implements Runnable {
         while (true) {
             try {
                 switch (gameData.state.get()) {
-
                     /* INITIAL SETUP STATES */
                     case JOINING_LOBBY:
                         lm = recvBuffer.waitMsg();
                         switch (lm.command) {
                             case LOBBY_ID:
                                 gameData.lobbyID.set((Integer) lm.data);
-                                gameData.state.waitSet(GameData.State.IN_LOBBY);
+                                gameData.state.waitSet(IN_LOBBY);
                                 break;
                             case LOBBY_NOT_FOUND:
                                 gameData.lobbyID.set(-1);
                                 // TODO: Handle better. Maybe set state in GameController if lobbyID = -1 is detected and then do more logic there
-                                gameData.state.waitSet(GameData.State.IN_MENU);
+                                gameData.state.waitSet(IN_MENU);
                                 break;
                         }
                         break;
@@ -85,12 +89,12 @@ public class Client implements Runnable {
                         lm = recvBuffer.waitMsg();
                         switch (lm.command) {
                             case NAME:
-                                gameData.localPlayerName.set((String) lm.data);
-                                name = (String) lm.data;
+                                String name = (String) lm.data;
+                                gameData.localPlayerName.set(name);
                                 Thread.currentThread().setName(this.getClass().getName() + "-" + name);
                                 break;
                             case ENTER_GAME:
-                                gameData.state.waitSet(GameData.State.INITIALIZING_GAME);
+                                gameData.state.waitSet(INITIALIZING_GAME);
                                 break;
                             case PLAYER_LIST:
                                 gameData.playerNames.set((List<String>) lm.data);
@@ -144,15 +148,17 @@ public class Client implements Runnable {
                             );
                         } else {
                             gm = recvBuffer.pollMsg();
-                            switch (gm.command) {
-                                case PLAYER_EXIT:
-                                    String exitingPlayer = (String) gm.data;
-                                    gameData.players.remove(exitingPlayer);
-                                    // TODO: Notify player of the removal of exitingPlayer
-                                    break;
-                                case LEVEL_COMPLETE:
-                                    gameData.state.waitSet(GameData.State.SCORE_SCREEN);
-                                    break;
+                            if (gm != null) {
+                                switch (gm.command) {
+                                    case PLAYER_EXIT:
+                                        String exitingPlayer = (String) gm.data;
+                                        gameData.players.remove(exitingPlayer);
+                                        // TODO: Notify player of the removal of exitingPlayer
+                                        break;
+                                    case LEVEL_COMPLETE:
+                                        gameData.state.waitSet(GameData.State.SCORE_SCREEN);
+                                        break;
+                                }
                             }
                         }
                         break;
@@ -165,16 +171,21 @@ public class Client implements Runnable {
                             new RuntimeException("Expected level info. Got " + gm).printStackTrace();
                         break;
                     case GAME_OVER:
-                        System.out.println(name + "Exiting... (GAME OVER)");
+                        System.out.println("Exiting... (GAME OVER)");
                         return;
                 }
-            } catch (Exception ignored) {
+            } catch (Exception e1) {
+                recvBuffer.running.set(false);
                 try {
-                    send(new Message<>(ClientLobbyCommand.EXIT));
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    if (Arrays.asList(JOINING_LOBBY, IN_LOBBY, IN_MENU, INITIALIZING_GAME).contains(gameData.state.get()))
+                        send(new Message<>(ClientLobbyCommand.EXIT));
+                    else
+                        send(new Message<>(ClientGameCommand.EXIT));
+                } catch (IOException e2) {
+                    e2.printStackTrace();
                 }
-                break;
+                e1.printStackTrace();
+                return;
             }
         }
     }

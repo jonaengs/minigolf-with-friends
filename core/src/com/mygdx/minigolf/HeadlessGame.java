@@ -9,6 +9,7 @@ import com.mygdx.minigolf.controller.EntityFactory;
 import com.mygdx.minigolf.controller.systems.PhysicsSystem;
 import com.mygdx.minigolf.model.levels.LevelLoader;
 import com.mygdx.minigolf.model.levels.LevelLoader.Level;
+import com.mygdx.minigolf.util.ConcurrencyUtils;
 
 public class HeadlessGame implements ApplicationListener {
     public Engine engine;
@@ -56,28 +57,14 @@ public class HeadlessGame implements ApplicationListener {
         world.dispose();
     }
 
+    // TODO: Phase out
     public void loadLevel(String levelName, Application app) {
-        // Tasks game thread (through game application) with loading level.
-        // https://github.com/libgdx/libgdx/wiki/Threading
-        Object lock = new Object();
-        synchronized (lock) {
-            app.postRunnable(() -> {
-                        if (currentLevel != null) {
-                            // dispose of the previous level before loading the new one
-                            currentLevel.dispose(engine);
-                        }
-                        currentLevel = levelLoader.load(levelName);
-                        synchronized (lock) {
-                            lock.notify();
-                        }
-                    }
-            );
-            try {
-                lock.wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        ConcurrencyUtils.waitForPostRunnable(() -> {
+            if (currentLevel != null) {
+                currentLevel.dispose(engine);
             }
-        }
+            currentLevel = levelLoader.load(levelName);
+        });
     }
 
     public Engine getEngine() {

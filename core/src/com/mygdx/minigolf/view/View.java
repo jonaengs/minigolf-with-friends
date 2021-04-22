@@ -5,12 +5,13 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.minigolf.controller.ScreenController;
-import com.mygdx.minigolf.controller.Screens;
 import com.mygdx.minigolf.model.GameData;
 
 
@@ -21,7 +22,7 @@ public abstract class View extends GameData.Subscriber implements Screen {
     protected Skin skin;
     protected Color backgroundColor = new Color(51f / 255f, 153f / 255f, 51f / 255f, 0);
 
-    public View(GameData.Observable... observables) {
+    protected View(GameData.Observable... observables) {
         super(observables);
         stage = new Stage(new ScreenViewport());
 
@@ -49,7 +50,7 @@ public abstract class View extends GameData.Subscriber implements Screen {
 
         Gdx.input.setCatchKey(Input.Keys.BACK, true);
         if (Gdx.input.isKeyPressed(Input.Keys.BACK) || Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
-            ScreenController.get().changeScreen(Screens.MAIN_MENU_VIEW);
+            ScreenController.changeScreen(ScreenController.MAIN_MENU_VIEW);
         }
     }
 
@@ -78,5 +79,18 @@ public abstract class View extends GameData.Subscriber implements Screen {
 
     @Override
     public void notify(Object change, GameData.Event changeEvent) {
+    }
+
+    public static class ChangeViewListener extends ChangeListener {
+        Screen view;
+
+        public ChangeViewListener(Screen targetView) {
+            this.view = targetView;
+        }
+
+        @Override
+        public void changed(ChangeEvent event, Actor actor) {
+            ScreenController.changeScreen(view);
+        }
     }
 }

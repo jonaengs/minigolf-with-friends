@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+// TODO: Consider changing command types to ControlCommand & GameData, not separating between if the message is meant for a lobby or the game
 public class Message<T extends TypedEnum> implements Serializable {
     public T command;
     public Object data;

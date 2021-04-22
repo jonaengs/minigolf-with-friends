@@ -4,9 +4,9 @@ import com.badlogic.gdx.Gdx;
 
 public class ConcurrencyUtils {
     public static void waitForPostRunnable(Runnable runnable) {
-        // Don't postpone if already in App thread.
-        // TODO: The if-case may cause concurrentModificationError for some reason. Consider removing it.
+        // TODO: This only checks for desktop main thread name (LWJGL). It does not check for the android thread's name.
         if (Thread.currentThread().getName().contentEquals("LWJGL Application")) {
+            // Don't postpone if already in App thread. Will break if libGdx ever changes the main thread's name
             runnable.run();
         } else {
             final Object lock = new Object();
@@ -27,8 +27,9 @@ public class ConcurrencyUtils {
     }
 
     public static void postRunnable(Runnable runnable) {
-        // Don't postpone if already in App thread.
+        // TODO: This only checks for desktop main thread name (LWJGL). It does not check for the android thread's name.
         if (Thread.currentThread().getName().contentEquals("LWJGL Application")) {
+            // Don't postpone if already in App thread.
             runnable.run();
         } else {
             Gdx.app.postRunnable(runnable);

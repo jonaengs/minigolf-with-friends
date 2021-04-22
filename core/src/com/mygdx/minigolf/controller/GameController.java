@@ -4,6 +4,7 @@ import com.badlogic.ashley.core.Entity;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.model.GameData;
 import com.mygdx.minigolf.network.Client;
+import com.mygdx.minigolf.network.messages.Message;
 import com.mygdx.minigolf.util.ConcurrencyUtils;
 import com.mygdx.minigolf.view.GameView;
 
@@ -38,8 +39,9 @@ public class GameController extends GameData.Subscriber {
         client.startGame();
     }
 
-    protected void reset() {
+    protected void reset() throws IOException {
         // TODO: new client, ++
+        client = new Client();
         GameData.reset();
     }
 
@@ -47,7 +49,7 @@ public class GameController extends GameData.Subscriber {
         GameData.get().players.set(
                 GameData.get().playerNames.get().stream().collect(Collectors.toMap(
                         name -> name,
-                        ____ -> Screens.GAME_VIEW.factory.createPlayer(-1, -1)
+                        ____ -> game.factory.createPlayer(-1, -1)
                 ))
         );
     }
@@ -74,6 +76,7 @@ public class GameController extends GameData.Subscriber {
         );
     }
 
+    // TODO: Make separate versions for client and server or something like that
     @Override
     public void notify(Object change, GameData.Event event) {
         GameData gameData = GameData.get();
@@ -95,6 +98,15 @@ public class GameController extends GameData.Subscriber {
                     case SCORE_SCREEN:
                         System.out.println(Collections.singletonList(gameData.scores.get()));
                         // ScreenController.changeScreen(SCORE_SCREEN);
+                        break;
+                    case GAME_OVER:
+                        // TODO: Show "game over" button on score screen that takes player to main menu
+                        try {
+                            reset();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        ScreenController.changeScreen(ScreenController.MAIN_MENU_VIEW);
                         break;
                 }
                 break;
