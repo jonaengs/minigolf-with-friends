@@ -1,21 +1,23 @@
-package com.mygdx.minigolf.server;
+package com.mygdx.minigolf.server.controllers;
 
 import com.mygdx.minigolf.network.messages.Message;
 import com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand;
 import com.mygdx.minigolf.network.messages.Message.ServerLobbyCommand;
+import com.mygdx.minigolf.server.communicators.LobbyCommunicationHandler;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 // TODO: Enforce max player limit
-class LobbyController extends ClientsController<LobbyCommunicationHandler> {
-    private static final String[] names = {"Leader", "Yatzy", "Chess", "Bridge", "Poker", "Jacket", "Shirt", "Pants"};
+public class LobbyController extends BaseController<LobbyCommunicationHandler, ServerLobbyCommand, ClientLobbyCommand> {
+    private static final String[] names = {"Yatzy", "Chess", "Bridge", "Poker", "Jacket", "Shirt", "Pants", "Boots"};
     public final Integer lobbyID;
-    private final AtomicInteger nameIndex = new AtomicInteger(0);
+    private final AtomicInteger nameIndex = new AtomicInteger(new Random().nextInt(names.length));
     private final LobbyCommunicationHandler leader;
     private final AtomicBoolean playerListUpdated = new AtomicBoolean(true);
     private final AtomicBoolean running = new AtomicBoolean(true);
@@ -26,11 +28,11 @@ class LobbyController extends ClientsController<LobbyCommunicationHandler> {
         addPlayer(leader);
     }
 
-    public void addPlayer(LobbyCommunicationHandler comm) throws IOException {
+    public synchronized void addPlayer(LobbyCommunicationHandler comm) throws IOException {
         synchronized (comms) {
             comms.add(comm);
         }
-        comm.playerName = names[nameIndex.getAndIncrement()];
+        comm.playerName = names[nameIndex.getAndIncrement() % names.length];
         comm.send(new Message<>(ServerLobbyCommand.LOBBY_ID, lobbyID));
         comm.send(new Message<>(ServerLobbyCommand.NAME, comm.playerName));
         playerListUpdated.set(true);
@@ -52,40 +54,39 @@ class LobbyController extends ClientsController<LobbyCommunicationHandler> {
         broadcast(new Message<>(ServerLobbyCommand.PLAYER_LIST, playerNames));
     }
 
-    private List<LobbyCommunicationHandler> copyComms() {
-        List<LobbyCommunicationHandler> copy;
+    private void removePlayers(List<LobbyCommunicationHandler> playersToRemove) {
         synchronized (comms) {
-            copy = new ArrayList<>(comms);
-        }
-        return copy;
-    }
-
-    private void removePlayer(LobbyCommunicationHandler comm) {
-        synchronized (comms) {
-            comms.remove(comm);
+            comms.removeAll(playersToRemove);
         }
         playerListUpdated.set(true);
     }
 
     @Override
     public void run() {
+        List<LobbyCommunicationHandler> playersToRemove = new ArrayList<>();
         while (running.get()) {
             if (playerListUpdated.getAndSet(false)) {
                 if (comms.isEmpty() || !leader.running.get() || !comms.contains(leader))
                     return; // TODO: Should something more be done here?
                 broadcastPlayerList();
             }
-            for (LobbyCommunicationHandler comm : copyComms()) {
-                Message<ClientLobbyCommand> clientMsg = comm.recvBuffer.poll();
-                if (clientMsg != null) {
-                    switch (clientMsg.command) {
-                        case EXIT:
-                            removePlayer(comm);
-                            break;
-                        case START_GAME:
-                            running.set(comm == leader);
+            synchronized (comms) {
+                for (LobbyCommunicationHandler comm : comms) {
+                    Message<ClientLobbyCommand> clientMsg = comm.recvBuffer.poll();
+                    if (clientMsg != null) {
+                        switch (clientMsg.command) {
+                            case EXIT:
+                                playersToRemove.add(comm);
+                                break;
+                            case START_GAME:
+                                running.set(comm == leader);
+                                break;
+                        }
                     }
                 }
+            }
+            if (!playersToRemove.isEmpty()) {
+                removePlayers(playersToRemove);
             }
         }
         synchronized (comms) {

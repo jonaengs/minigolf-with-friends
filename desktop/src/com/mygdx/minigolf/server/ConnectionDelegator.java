@@ -3,21 +3,23 @@ package com.mygdx.minigolf.server;
 import com.mygdx.minigolf.network.messages.Message;
 import com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand;
 import com.mygdx.minigolf.network.messages.Message.ServerLobbyCommand;
+import com.mygdx.minigolf.server.communicators.LobbyCommunicationHandler;
+import com.mygdx.minigolf.server.controllers.LobbyController;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
-
+// TODO: Make all static, singleton, or just a normal class
 public class ConnectionDelegator {
     final static int MIN_ID = 100_000;
     final static int MAX_ID = 1_000_000 - MIN_ID;
-    static final HashMap<Integer, LobbyController> lobbies = new HashMap<>();
+    static final ConcurrentHashMap<Integer, LobbyController> lobbies = new ConcurrentHashMap<>();
     static Random random = new Random();
     ServerSocket ss;
 
@@ -31,16 +33,13 @@ public class ConnectionDelegator {
 
     private static int generateLobbyID() {
         IntStream intStream = random.ints(Integer.MAX_VALUE, 32, MAX_ID); // middle number is seed?
-        int ID;
-        synchronized (lobbies) {
-            ID = intStream
-                    .map(i -> i + MIN_ID)
-                    .filter(id -> !lobbies.containsKey(id))
-                    .findFirst().getAsInt();
-        }
-        return ID;
+        return intStream
+                .map(i -> i + MIN_ID)
+                .filter(id -> !lobbies.containsKey(id))
+                .findFirst().getAsInt();
     }
 
+    // TODO: Use a threadpool of connectionhandlers
     public void accept() throws IOException {
         while (true) {
             Socket s = ss.accept();
@@ -56,8 +55,8 @@ public class ConnectionDelegator {
             this.socket = s;
         }
 
-        // Start lobby thread plus a separate thread to remove it from the lobbies index once it terminates
-        private void startLobbyAndSupervisor(LobbyController lobby) {
+        // Start lobby thread plus a separate thread to remove it from the lobbies index once the lobby terminates
+        private void startLobbyWithSupervisor(com.mygdx.minigolf.server.controllers.LobbyController lobby) {
             new Thread(() -> {
                 Thread.currentThread().setName("LobbySupervisor");
                 Thread lobbyThread = new Thread(lobby);
@@ -67,9 +66,7 @@ public class ConnectionDelegator {
                 } catch (InterruptedException e) {
                     lobby.shutDown();
                 }
-                synchronized (lobbies) {
-                    lobbies.remove(lobby.lobbyID);
-                }
+                lobbies.remove(lobby.lobbyID);
             }).start();
         }
 
@@ -86,11 +83,9 @@ public class ConnectionDelegator {
                 switch (msg.command) {
                     case CREATE:
                         lobbyID = generateLobbyID();
-                        LobbyController lobby = new LobbyController(comm, lobbyID);
-                        synchronized (lobbies) {
-                            lobbies.put(lobbyID, lobby);
-                        }
-                        startLobbyAndSupervisor(lobby);
+                        com.mygdx.minigolf.server.controllers.LobbyController lobby = new LobbyController(comm, lobbyID);
+                        lobbies.put(lobbyID, lobby);
+                        startLobbyWithSupervisor(lobby);
                         break;
                     case JOIN:
                         lobbyID = (Integer) msg.data;

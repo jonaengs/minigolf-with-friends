@@ -12,21 +12,25 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public class MainMenuView extends View {
+    TextButton newGame;
+    TextButton joinGame;
+    TextButton settings;
+    TextButton tutorial;
 
     public MainMenuView() {
         super();
 
         // Creating elements
-        TextButton newGame = new TextButton("New Game", skin);
+        newGame = new TextButton("New Game", skin);
         newGame.addListener(new Screens.ChangeViewListener(Screens.LOBBY_VIEW));
 
-        TextButton joinGame = new TextButton("Join Game", skin);
+        joinGame = new TextButton("Join Game", skin);
         joinGame.addListener(new Screens.ChangeViewListener(Screens.JOIN_GAME_VIEW));
 
-        TextButton settings = new TextButton("Settings", skin);
+        settings = new TextButton("Settings", skin);
         settings.addListener(new Screens.ChangeViewListener(Screens.SETTINGS_VIEW));
 
-        TextButton tutorial = new TextButton("Tutorial", skin);
+        tutorial = new TextButton("Tutorial", skin);
         tutorial.addListener(new Screens.ChangeViewListener(Screens.TUTORIAL_VIEW));
 
         // Transform actors
@@ -55,6 +59,11 @@ public class MainMenuView extends View {
                 }
             }
         });
+    }
+
+    @Override
+    public void show() {
+        super.show();
     }
 
 }

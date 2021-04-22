@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 
-public class Message<T extends Message.TypedEnum> implements Serializable {
+public class Message<T extends TypedEnum> implements Serializable {
     public T command;
     public Object data;
 
@@ -100,9 +100,5 @@ public class Message<T extends Message.TypedEnum> implements Serializable {
         public Class<?> getType() {
             return clazz;
         }
-    }
-
-    public interface TypedEnum {
-        Class<?> getType();
     }
 }

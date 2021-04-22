@@ -15,8 +15,9 @@ import java.util.List;
 public class LobbyView extends View {
 
     public static final int MAX_NUM_PLAYERS = 4;
-    private List<Label> playerLabels = new ArrayList<>();
     Label lobbyIDLabel;
+    private List<Label> playerLabels = new ArrayList<>();
+    TextButton start;
 
     public LobbyView(GameData.Observable... observables) {
         super(observables);
@@ -25,7 +26,7 @@ public class LobbyView extends View {
         Label title = new Label("New Game", skin);
         lobbyIDLabel = new Label("LOBBY ID", skin);
         Label players = new Label("Players", skin);
-        TextButton start = new TextButton("Start", skin);
+        start = new TextButton("Start", skin);
 
         // Transform actors
         title.setFontScale(3f);
@@ -78,6 +79,10 @@ public class LobbyView extends View {
                 List<String> playerNames = (List<String>) change;
                 for (int i = 0; i < playerNames.size(); i++) {
                     playerLabels.get(i).setText(playerNames.get(i));
+                }
+                // Disable start button if not lobby leader (Naively assumes first name in playerNames list is leader's name)
+                if (!playerNames.get(0).contentEquals(GameData.get().localPlayerName.get())) {
+                    start.setDisabled(true);
                 }
                 break;
         }

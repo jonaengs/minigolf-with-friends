@@ -1,4 +1,4 @@
-package com.mygdx.minigolf.server;
+package com.mygdx.minigolf.server.controllers;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Application;
@@ -13,6 +13,9 @@ import com.mygdx.minigolf.network.messages.NetworkedGameState.PlayerState;
 import com.mygdx.minigolf.network.messages.Message;
 import com.mygdx.minigolf.network.messages.Message.ClientGameCommand;
 import com.mygdx.minigolf.network.messages.Message.ServerGameCommand;
+import com.mygdx.minigolf.server.ServerUtils;
+import com.mygdx.minigolf.server.communicators.GameCommunicationHandler;
+import com.mygdx.minigolf.server.communicators.LobbyCommunicationHandler;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -22,7 +25,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-public class GameController extends ClientsController<GameCommunicationHandler> {
+public class GameController extends BaseController<GameCommunicationHandler, ServerGameCommand, ClientGameCommand> {
     private static final int REFRESH_RATE = 1_000 / 15; // in milliseconds
     private State state = State.INITIALIZING;
     HeadlessGame game;
@@ -45,7 +48,7 @@ public class GameController extends ClientsController<GameCommunicationHandler> 
         // Setup game communication handlers and start them
         comms.forEach(comm -> {
             try {
-                GameCommunicationHandler gameComm = new GameCommunicationHandler(comm, this);
+                com.mygdx.minigolf.server.communicators.GameCommunicationHandler gameComm = new com.mygdx.minigolf.server.communicators.GameCommunicationHandler(comm);
                 this.comms.add(gameComm);
                 new Thread(gameComm).start();
             } catch (IOException e) {
@@ -56,7 +59,7 @@ public class GameController extends ClientsController<GameCommunicationHandler> 
     }
 
     // TODO: Improve parameter or make players an object attribute
-    private Map<String, Integer> getScores(Map<GameCommunicationHandler, Entity> players) {
+    private Map<String, Integer> getScores(Map<com.mygdx.minigolf.server.communicators.GameCommunicationHandler, Entity> players) {
         return players.entrySet().stream().collect(Collectors.toMap(
                 entry -> entry.getKey().playerName,
                 entry -> PlayerMapper.get(players.get(entry.getKey())).getLevelStrokes()
@@ -80,7 +83,7 @@ public class GameController extends ClientsController<GameCommunicationHandler> 
     public void run() {
         Thread.currentThread().setName(this.getClass().getName());
         // TODO: Consider changing these into attributes
-        Map<GameCommunicationHandler, Entity> players = comms.stream()
+        Map<com.mygdx.minigolf.server.communicators.GameCommunicationHandler, Entity> players = comms.stream()
                 .collect(Collectors.toMap(
                         comm -> comm,
                         comm -> game.getFactory().createPlayer(-1, -1)
