@@ -9,11 +9,15 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class LobbyCommunicationHandler extends CommunicationHandler<ServerLobbyCommand, ClientLobbyCommand> {
-    final ClientLobbyCommand exitCmd = ClientLobbyCommand.EXIT;
     public Thread runningThread;
 
     public LobbyCommunicationHandler(Socket socket, ObjectInputStream objIn, ObjectOutputStream objOut) throws IOException {
         super(socket, objIn, objOut);
+    }
+
+    @Override
+    ClientLobbyCommand getExitCmd() {
+        return ClientLobbyCommand.EXIT;
     }
 
     @Override

@@ -24,11 +24,13 @@ public class GameController extends GameData.Subscriber {
 
     public void createLobby() throws IOException {
         client.createLobby();
+        GameData.get().state.set(GameData.State.JOINING_LOBBY);
         new Thread(client).start();
     }
 
     public void joinLobby(Integer lobbyID) throws IOException {
         client.joinLobby(lobbyID);
+        GameData.get().state.set(GameData.State.JOINING_LOBBY);
         new Thread(client).start();
     }
 
@@ -58,7 +60,7 @@ public class GameController extends GameData.Subscriber {
 
     // Hide player when they complete e level
     private void hidePlayer() {
-
+        // TODO
     }
 
     public void loadLevel(String levelName) {

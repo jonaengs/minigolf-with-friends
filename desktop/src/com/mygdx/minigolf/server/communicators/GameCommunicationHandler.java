@@ -8,10 +8,13 @@ import static com.mygdx.minigolf.network.messages.Message.ClientGameCommand;
 import static com.mygdx.minigolf.network.messages.Message.ServerGameCommand;
 
 public class GameCommunicationHandler extends CommunicationHandler<ServerGameCommand, ClientGameCommand> {
-    final ClientGameCommand exitCmd = ClientGameCommand.EXIT;
-
-    public GameCommunicationHandler(LobbyCommunicationHandler comm) throws IOException {
+    public GameCommunicationHandler(LobbyCommunicationHandler comm) {
         super(comm.socket, comm.objIn, comm.objOut);
+    }
+
+    @Override
+    ClientGameCommand getExitCmd() {
+        return Message.ClientGameCommand.EXIT;
     }
 
     public void send(Message<ServerGameCommand> msg) throws IOException {

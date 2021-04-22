@@ -24,10 +24,8 @@ public abstract class BaseController<T extends CommunicationHandler<SendCmd, Rec
 
     protected void waitForRecv(Message<RecvCmd> recv) {
         for (T comm : comms) {
-            Message<RecvCmd> msg;
-            do { // TODO: Change to not do spin waiting
-                msg = (Message<RecvCmd>) comm.recvBuffer.poll();
-            } while (msg == null || msg.command != recv.command);
+            while (comm.blockingRead().command != recv.command) {
+            }
         }
     }
 

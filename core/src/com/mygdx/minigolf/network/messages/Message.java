@@ -3,8 +3,8 @@ package com.mygdx.minigolf.network.messages;
 import com.badlogic.gdx.math.Vector2;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class Message<T extends TypedEnum> implements Serializable {
     public T command;
@@ -17,7 +17,10 @@ public class Message<T extends TypedEnum> implements Serializable {
     public Message(T command, Object data) {
         if (command.getType() != Void.class) {
             if (command.getType() != data.getClass()) {
-                new IllegalArgumentException("Invalid combo: " + command + " & " + data).printStackTrace();
+                new IllegalArgumentException(
+                        "Invalid combo: " + command + " [" + command.getType() + "]"
+                        + " & " + data + " [" + data.getClass() + "]"
+                ).printStackTrace();
             }
         }
         this.command = command;
@@ -32,9 +35,10 @@ public class Message<T extends TypedEnum> implements Serializable {
     public enum ServerLobbyCommand implements TypedEnum {
         NAME(String.class), // Give player its name
         LOBBY_ID(Integer.class),
-        PLAYER_LIST(List.class),
+        PLAYER_LIST(ArrayList.class),
         ENTER_GAME(Void.class),
-        LOBBY_NOT_FOUND(Integer.class);
+        LOBBY_NOT_FOUND(Integer.class),
+        EXIT(Void.class);
 
         private final Class<?> clazz;
 
@@ -73,7 +77,6 @@ public class Message<T extends TypedEnum> implements Serializable {
         GAME_DATA(NetworkedGameState.class),
         GAME_SCORE(HashMap.class), // String playerName -> int score
         GAME_COMPLETE(Void.class);
-
 
         private final Class<?> clazz;
 

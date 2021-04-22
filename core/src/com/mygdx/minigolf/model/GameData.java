@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static com.mygdx.minigolf.model.GameData.Event.LEVEL_SET;
@@ -62,7 +63,15 @@ public class GameData {
     }
 
     public enum State {
-        IN_MENU, IN_LOBBY, INITIALIZING_GAME, IN_GAME, SCORE_SCREEN, LOADING_LEVEL, GAME_OVER
+        IN_MENU,
+        JOINING_LOBBY,
+        IN_LOBBY, 
+        INITIALIZING_GAME,
+        WAITING_FOR_LEVEL_INFO,
+        WAITING_FOR_START,
+        IN_GAME, 
+        SCORE_SCREEN, 
+        GAME_OVER
     }
 
     public enum Event {
@@ -79,7 +88,8 @@ public class GameData {
     }
 
     public interface Notifiable {
-        void notify(Object change, Event changeEvent);
+        void notify(Object change, 
+        Event changeEvent);
     }
 
     public abstract static class Subscriber implements Notifiable {
@@ -105,27 +115,30 @@ public class GameData {
 
     public static class Observable<T> {
         Set<Notifiable> notifiables = new HashSet<>();
-        T data;
+        AtomicReference<T> data = new AtomicReference<>();
         Event changeEvent;
 
         private Observable(T data, Event changeEvent) {
-            this.data = data;
+            this.data.set(data);
             this.changeEvent = changeEvent;
         }
 
         public synchronized T get() {
-            return data;
+            return data.get();
         }
 
-        public void set(T data) {
-            ConcurrencyUtils.postRunnable(() -> {
-                _set(data);
-            });
+        public void set(T newData) {
+            ConcurrencyUtils.postRunnable(() -> _set(newData));
         }
 
-        private synchronized void _set(T data) {
-            this.data = data;
-            notifiables.forEach(o -> o.notify(data, changeEvent));
+        public void waitSet(T newData) {
+            ConcurrencyUtils.waitForPostRunnable(() -> _set(newData));
+        }
+
+        private void _set(T newData) {
+            // TODO: Find out which order these should happen in
+            notifiables.forEach(o -> o.notify(newData, changeEvent));
+            data.set(newData);
         }
 
         public void subscribe(Notifiable notifiable) {
@@ -148,10 +161,10 @@ public class GameData {
         public synchronized void remove(U entry) {
             ConcurrencyUtils.postRunnable(() -> {
                 notifiables.forEach(o -> o.notify(entry, removeEvent));
-                if (data instanceof List)
-                    ((List) data).remove(entry);
-                if (data instanceof Map)
-                    ((Map) data).remove(entry);
+                if (data.get() instanceof List)
+                    ((List) data.get()).remove(entry);
+                if (data.get() instanceof Map)
+                    ((Map) data.get()).remove(entry);
             });
         }
     }

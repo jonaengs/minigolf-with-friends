@@ -54,11 +54,12 @@ public class LobbyController extends BaseController<LobbyCommunicationHandler, S
         broadcast(new Message<>(ServerLobbyCommand.PLAYER_LIST, playerNames));
     }
 
-    private void removePlayers(List<LobbyCommunicationHandler> playersToRemove) {
+    private void removePlayers(List<LobbyCommunicationHandler> playerList) {
         synchronized (comms) {
-            comms.removeAll(playersToRemove);
+            comms.removeAll(playerList);
         }
         playerListUpdated.set(true);
+        playerList.clear();
     }
 
     @Override
@@ -66,20 +67,22 @@ public class LobbyController extends BaseController<LobbyCommunicationHandler, S
         List<LobbyCommunicationHandler> playersToRemove = new ArrayList<>();
         while (running.get()) {
             if (playerListUpdated.getAndSet(false)) {
-                if (comms.isEmpty() || !leader.running.get() || !comms.contains(leader))
+                if (comms.isEmpty() || !leader.running.get() || !comms.contains(leader)) {
+                    broadcast(new Message<>(ServerLobbyCommand.EXIT));
                     return; // TODO: Should something more be done here?
+                }
                 broadcastPlayerList();
             }
             synchronized (comms) {
                 for (LobbyCommunicationHandler comm : comms) {
-                    Message<ClientLobbyCommand> clientMsg = comm.recvBuffer.poll();
+                    Message<ClientLobbyCommand> clientMsg = comm.read();
                     if (clientMsg != null) {
                         switch (clientMsg.command) {
                             case EXIT:
                                 playersToRemove.add(comm);
                                 break;
                             case START_GAME:
-                                running.set(comm == leader);
+                                if (comm == leader) running.set(false);
                                 break;
                         }
                     }
@@ -98,7 +101,9 @@ public class LobbyController extends BaseController<LobbyCommunicationHandler, S
             try {
                 gameController = new GameController(comms);
                 new Thread(gameController).start();
-            } catch (InterruptedException ignored) {
+            } catch (InterruptedException e) {
+                broadcast(new Message<>(ServerLobbyCommand.EXIT));
+                e.printStackTrace();
             }
         }
     }

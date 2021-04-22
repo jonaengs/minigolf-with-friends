@@ -17,7 +17,6 @@ import com.mygdx.minigolf.server.ServerUtils;
 import com.mygdx.minigolf.server.communicators.GameCommunicationHandler;
 import com.mygdx.minigolf.server.communicators.LobbyCommunicationHandler;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -32,34 +31,24 @@ public class GameController extends BaseController<GameCommunicationHandler, Ser
     Application app;
 
     // Receive LobbyComms. Shut them down and transfer sockets to GameComms
-    GameController(List<LobbyCommunicationHandler> comms) throws InterruptedException {
+    GameController(List<LobbyCommunicationHandler> lobbyComms) throws InterruptedException {
         game = new HeadlessGame();
         app = ServerUtils.initGame(game);
-
         // Stop lobby communication handlers
-        comms.forEach(comm -> {
-            try {
-                comm.running.set(false);
-                comm.runningThread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
+        for (LobbyCommunicationHandler comm : lobbyComms) {
+            comm.running.set(false);
+            comm.runningThread.join();
+        }
         // Setup game communication handlers and start them
-        comms.forEach(comm -> {
-            try {
-                com.mygdx.minigolf.server.communicators.GameCommunicationHandler gameComm = new com.mygdx.minigolf.server.communicators.GameCommunicationHandler(comm);
-                this.comms.add(gameComm);
+        lobbyComms.forEach(comm -> {
+                GameCommunicationHandler gameComm = new GameCommunicationHandler(comm);
+                comms.add(gameComm);
                 new Thread(gameComm).start();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
         });
     }
 
     // TODO: Improve parameter or make players an object attribute
-    private Map<String, Integer> getScores(Map<com.mygdx.minigolf.server.communicators.GameCommunicationHandler, Entity> players) {
+    private Map<String, Integer> getScores(Map<GameCommunicationHandler, Entity> players) {
         return players.entrySet().stream().collect(Collectors.toMap(
                 entry -> entry.getKey().playerName,
                 entry -> PlayerMapper.get(players.get(entry.getKey())).getLevelStrokes()
@@ -68,22 +57,14 @@ public class GameController extends BaseController<GameCommunicationHandler, Ser
 
     // Clears all comm recvBuffers of input data
     private void clearComms() {
-        comms.forEach(comm -> {
-            synchronized (comm.recvBuffer) {
-                comm.recvBuffer.forEach(msg -> {
-                    if (msg.command == ClientGameCommand.INPUT) {
-                        comm.recvBuffer.remove(msg);
-                    }
-                });
-            }
-        });
+        // TODO (Is this necessary?)
     }
 
     @Override
     public void run() {
         Thread.currentThread().setName(this.getClass().getName());
         // TODO: Consider changing these into attributes
-        Map<com.mygdx.minigolf.server.communicators.GameCommunicationHandler, Entity> players = comms.stream()
+        Map<GameCommunicationHandler, Entity> players = comms.stream()
                 .collect(Collectors.toMap(
                         comm -> comm,
                         comm -> game.getFactory().createPlayer(-1, -1)
@@ -119,9 +100,7 @@ public class GameController extends BaseController<GameCommunicationHandler, Ser
                         );
                         state = State.LOADING_LEVEL;
                     } catch (NoSuchElementException e) {
-                        // All levels complete. Broadcast final scores and exit
                         broadcast(new Message<>(ServerGameCommand.GAME_COMPLETE));
-                        // broadcast(new Message<>(ServerGameCommand.GAME_SCORE, getScores(players)));
                         state = State.EXITING;
                     }
                     break;
@@ -159,10 +138,7 @@ public class GameController extends BaseController<GameCommunicationHandler, Ser
                         }
 
                         comms.forEach(comm -> {
-                            Message<ClientGameCommand> clientMsg;
-                            synchronized (comm.recvBuffer) {
-                                clientMsg = comm.recvBuffer.poll();
-                            }
+                            Message<ClientGameCommand> clientMsg = comm.read();
                             if (clientMsg != null) {
                                 System.out.println("DATA: " + clientMsg);
                                 switch (clientMsg.command) {
