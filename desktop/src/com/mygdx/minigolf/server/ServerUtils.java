@@ -7,6 +7,7 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.network.Utils;
+import com.mygdx.minigolf.util.ConcurrencyUtils;
 import com.mygdx.minigolf.view.GameView;
 
 public class ServerUtils {
@@ -26,15 +27,15 @@ public class ServerUtils {
 
     public static Application initGame(HeadlessGame game) throws InterruptedException {
         Application app = game instanceof GameView ? initGameView((GameView) game) : initHeadlessGame(game);
-        final Object lock = new Object();
-        synchronized (lock) {
-            app.postRunnable(() -> {
-                synchronized (lock) {
-                    lock.notify();
-                }
-            });
-            lock.wait();
-        }
+        ConcurrencyUtils.waitForPostRunnable(() -> {});
         return app;
+    }
+
+    public static void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

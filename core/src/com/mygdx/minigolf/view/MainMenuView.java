@@ -5,7 +5,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.mygdx.minigolf.Game;
-import com.mygdx.minigolf.controller.ScreenController;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -21,16 +20,16 @@ public class MainMenuView extends View {
 
         // Creating elements
         newGame = new TextButton("New Game", skin);
-        newGame.addListener(new ChangeViewListener(ScreenController.LOBBY_VIEW));
+        newGame.addListener(new ChangeViewListener(ViewFactory.LobbyView()));
 
         joinGame = new TextButton("Join Game", skin);
-        joinGame.addListener(new ChangeViewListener(ScreenController.JOIN_GAME_VIEW));
+        joinGame.addListener(new ChangeViewListener(ViewFactory.JoinGameView()));
 
         settings = new TextButton("Settings", skin);
-        settings.addListener(new ChangeViewListener(ScreenController.SETTINGS_VIEW));
+        settings.addListener(new ChangeViewListener(ViewFactory.SettingsView()));
 
         tutorial = new TextButton("Tutorial", skin);
-        tutorial.addListener(new ChangeViewListener(ScreenController.TUTORIAL_VIEW));
+        tutorial.addListener(new ChangeViewListener(ViewFactory.TutorialView()));
 
         // Transform actors
         for (TextButton btn : Arrays.asList(newGame, joinGame, settings, tutorial)) {

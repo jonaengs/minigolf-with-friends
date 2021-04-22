@@ -11,12 +11,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.controller.ScreenController;
 import com.mygdx.minigolf.model.GameData;
 
 
-public abstract class View extends GameData.Subscriber implements Screen {
-
+abstract class View extends GameData.Subscriber implements Screen {
     protected Stage stage;
     protected Table table;
     protected Skin skin;
@@ -50,7 +50,7 @@ public abstract class View extends GameData.Subscriber implements Screen {
 
         Gdx.input.setCatchKey(Input.Keys.BACK, true);
         if (Gdx.input.isKeyPressed(Input.Keys.BACK) || Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
-            ScreenController.changeScreen(ScreenController.MAIN_MENU_VIEW);
+            Game.getInstance().screenController.changeScreen(ViewFactory.MainMenuView());
         }
     }
 
@@ -90,7 +90,7 @@ public abstract class View extends GameData.Subscriber implements Screen {
 
         @Override
         public void changed(ChangeEvent event, Actor actor) {
-            ScreenController.changeScreen(view);
+            Game.getInstance().screenController.changeScreen(view);
         }
     }
 }

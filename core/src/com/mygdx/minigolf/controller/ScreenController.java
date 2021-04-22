@@ -9,41 +9,36 @@ import com.mygdx.minigolf.view.LobbyView;
 import com.mygdx.minigolf.view.MainMenuView;
 import com.mygdx.minigolf.view.SettingsView;
 import com.mygdx.minigolf.view.TutorialView;
+import com.mygdx.minigolf.view.ViewFactory;
 
-public class ScreenController extends GameData.Subscriber {
-    private static ScreenController instance;
-
-    public static final GameView GAME_VIEW = new GameView();
-    public static final TutorialView TUTORIAL_VIEW = new TutorialView();
-    public static final SettingsView SETTINGS_VIEW = new SettingsView();
-    public static final LobbyView LOBBY_VIEW = new LobbyView(GameData.get().lobbyID, GameData.get().playerNames);
-    public static final JoinGameView JOIN_GAME_VIEW = new JoinGameView(GameData.get().lobbyID);
-    public static final MainMenuView MAIN_MENU_VIEW = new MainMenuView();
-
-    private ScreenController() {
-        setupSubscriptions(GameData.get().state);
+public class ScreenController implements GameData.Notifiable {
+    Game game;
+    public ScreenController(Game game) {
+        this.game = game;
+        GameData.subscribe(this, GameData.get().state);
     }
 
-    public static ScreenController get() {
-        if (instance == null) {
-            instance = new ScreenController();
-        }
-        return instance;
-    }
-
-    public static void changeScreen(Screen screen) {
-        Game.getInstance().setScreen(screen);
+    public void changeScreen(Screen screen) {
+        game.setScreen(screen);
     }
 
     @Override
     public void notify(Object change, GameData.Event changeEvent) {
+        System.out.println("change = " + change + ", changeEvent = " + changeEvent);
         if (changeEvent == GameData.Event.STATE_SET) {
             switch ((GameData.State) change) {
                 case IN_LOBBY:
-                    changeScreen(LOBBY_VIEW);
+                    changeScreen(ViewFactory.LobbyView());
                     break;
                 case IN_GAME:
-                    changeScreen(GAME_VIEW);
+                    changeScreen(ViewFactory.GameView());
+                    break;
+                case SCORE_SCREEN:
+                    // changeScreen(SCORE_VIEW);
+                    break;
+                case GAME_OVER:
+                    // TODO: Show "game over" button on score screen that takes player to main menu
+                    changeScreen(ViewFactory.MainMenuView());
                     break;
             }
         }

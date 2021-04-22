@@ -93,14 +93,14 @@ public class LobbyController extends BaseController<LobbyCommunicationHandler, S
             }
         }
         synchronized (comms) {
-            GameController gameController;
+            GameManager gameManager;
             barrier(
                     new Message<>(ServerLobbyCommand.ENTER_GAME),
                     new Message<>(ClientLobbyCommand.GAME_READY)
             );
             try {
-                gameController = new GameController(comms);
-                new Thread(gameController).start();
+                gameManager = new GameManager(comms);
+                new Thread(gameManager).start();
             } catch (InterruptedException e) {
                 broadcast(new Message<>(ServerLobbyCommand.EXIT));
                 e.printStackTrace();
