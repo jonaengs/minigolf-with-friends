@@ -6,6 +6,7 @@ import com.mygdx.minigolf.model.components.Graphical;
 import com.mygdx.minigolf.model.components.Objective;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.components.Player;
+import com.mygdx.minigolf.model.components.PowerUpGiver;
 
 public class ComponentMappers {
     public static class PhysicalMapper {
@@ -29,6 +30,12 @@ public class ComponentMappers {
     public static class PlayerMapper {
         public static final ComponentMapper<Player> mapper = ComponentMapper.getFor(Player.class);
         public static Player get(Entity entity) {
+            return mapper.get(entity);
+        }
+    }
+    public static class PowerUpGiverMapper {
+        public static final ComponentMapper<PowerUpGiver> mapper = ComponentMapper.getFor(PowerUpGiver.class);
+        public static PowerUpGiver get(Entity entity) {
             return mapper.get(entity);
         }
     }

@@ -1,4 +1,4 @@
-package com.mygdx.minigolf.model;
+package com.mygdx.minigolf.model.powerup;
 
 public class UseConstraint implements Constraint{
 

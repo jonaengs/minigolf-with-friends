@@ -1,7 +1,7 @@
 package com.mygdx.minigolf.model.components;
 
 import com.badlogic.ashley.core.Component;
-import com.mygdx.minigolf.model.Effect;
+import com.mygdx.minigolf.model.powerup.Effect;
 
 import java.util.ArrayList;
 import java.util.List;

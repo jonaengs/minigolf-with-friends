@@ -16,12 +16,13 @@ import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ShortArray;
 import com.mygdx.minigolf.controller.systems.PowerUpSystem;
-import com.mygdx.minigolf.model.Effect;
+import com.mygdx.minigolf.model.powerup.Effect;
 import com.mygdx.minigolf.model.components.Graphical;
 import com.mygdx.minigolf.model.components.Objective;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.components.Player;
 import com.mygdx.minigolf.model.components.PowerUpGiver;
+import com.mygdx.minigolf.util.ComponentMappers.PowerUpGiverMapper;
 import com.mygdx.minigolf.util.Constants;
 
 import java.util.Arrays;
@@ -200,7 +201,7 @@ public class EntityFactory {
         physical.addContactListener(new Physical.ContactListener(1) {
             @Override
             public void beginContact(Entity other, Contact contact) {
-                engine.getSystem(PowerUpSystem.class).givePowerUp(other, entity.getComponent(PowerUpGiver.class).getPowerup());
+                engine.getSystem(PowerUpSystem.class).givePowerUp(other, PowerUpGiverMapper.get(entity).getPowerup());
                 engine.removeEntity(entity);
             }
         });

@@ -8,10 +8,11 @@ import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.mygdx.minigolf.Game;
+
 import com.mygdx.minigolf.util.ComponentMappers;
-import com.mygdx.minigolf.model.Effect;
-import com.mygdx.minigolf.model.StrokeConstraint;
-import com.mygdx.minigolf.model.UseConstraint;
+import com.mygdx.minigolf.model.powerup.Effect;
+import com.mygdx.minigolf.model.powerup.StrokeConstraint;
+import com.mygdx.minigolf.model.powerup.UseConstraint;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.components.Player;
 import com.mygdx.minigolf.util.Constants;

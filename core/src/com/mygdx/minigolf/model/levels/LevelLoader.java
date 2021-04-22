@@ -81,7 +81,7 @@ public class LevelLoader {
         public final List<Entity> holes = new ArrayList<>();
         public final List<Entity> spawns = new ArrayList<>();
 
-        protected Level(List<CourseElement> courseElems) {
+        private Level(List<CourseElement> courseElems) {
             courseElems.forEach(ce -> {
                 Entity e = createEntity(ce);
                 switch (ce.function) {
