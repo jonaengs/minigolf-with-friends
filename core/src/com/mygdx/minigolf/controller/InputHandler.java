@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.mygdx.minigolf.model.components.Graphical;
+import com.mygdx.minigolf.util.ComponentMappers;
 
 /*
  *  Handles touch input to control movement of ball
@@ -28,12 +29,12 @@ public class InputHandler extends InputAdapter {
 
     public InputHandler(OrthographicCamera cam, Entity player, EntityFactory factory) {
         this.cam = cam;
-        this.ball = ComponentMappers.PhysicalMapper.get(player).getBody();
+        this.ball = com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper.get(player).getBody();
         Entity directionIndicator = factory.createInputDirectionIndicator(ball.getPosition());
         Entity strengthIndicator = factory.createInputStrengthIndicator(ball.getPosition());
 
-        this.directionIndicatorBody = ComponentMappers.PhysicalMapper.get(directionIndicator).getBody();
-        this.strengthIndicatorGraphical = ComponentMappers.GraphicalMapper.get(strengthIndicator);
+        this.directionIndicatorBody = com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper.get(directionIndicator).getBody();
+        this.strengthIndicatorGraphical = com.mygdx.minigolf.util.ComponentMappers.GraphicalMapper.get(strengthIndicator);
         this.strengthIndicatorBody = ComponentMappers.PhysicalMapper.get(strengthIndicator).getBody();
     }
 

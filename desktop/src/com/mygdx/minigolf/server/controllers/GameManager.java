@@ -4,7 +4,7 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.HeadlessGame;
-import com.mygdx.minigolf.controller.ComponentMappers.PlayerMapper;
+import com.mygdx.minigolf.util.ComponentMappers.PlayerMapper;
 import com.mygdx.minigolf.controller.GameController;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.levels.CourseLoader;

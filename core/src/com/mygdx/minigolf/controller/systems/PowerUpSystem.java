@@ -8,7 +8,7 @@ import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.mygdx.minigolf.Game;
-import com.mygdx.minigolf.controller.ComponentMappers;
+import com.mygdx.minigolf.util.ComponentMappers;
 import com.mygdx.minigolf.model.Effect;
 import com.mygdx.minigolf.model.StrokeConstraint;
 import com.mygdx.minigolf.model.UseConstraint;

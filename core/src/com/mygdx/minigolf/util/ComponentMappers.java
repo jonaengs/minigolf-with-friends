@@ -1,4 +1,4 @@
-package com.mygdx.minigolf.controller;
+package com.mygdx.minigolf.util;
 
 import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Entity;

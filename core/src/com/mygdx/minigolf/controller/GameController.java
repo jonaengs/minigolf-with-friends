@@ -2,8 +2,8 @@ package com.mygdx.minigolf.controller;
 
 import com.badlogic.ashley.core.Entity;
 import com.mygdx.minigolf.HeadlessGame;
-import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
-import com.mygdx.minigolf.controller.ComponentMappers.PlayerMapper;
+import com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper;
+import com.mygdx.minigolf.util.ComponentMappers.PlayerMapper;
 import com.mygdx.minigolf.model.levels.LevelLoader;
 import com.mygdx.minigolf.util.ConcurrencyUtils;
 

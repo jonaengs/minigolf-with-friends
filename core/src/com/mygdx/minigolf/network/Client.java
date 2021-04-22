@@ -2,7 +2,7 @@ package com.mygdx.minigolf.network;
 
 
 import com.badlogic.gdx.math.Vector2;
-import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
+import com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.controller.InputHandler;
 import com.mygdx.minigolf.model.GameData;
 import com.mygdx.minigolf.model.components.Physical;
