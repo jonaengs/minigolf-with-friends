@@ -28,9 +28,13 @@ public class GameController {
         ));
     }
 
+    public void placeAtSpawn(Entity player) {
+        PhysicalMapper.get(player).setPosition(currentLevel.getSpawnCenter());
+    }
+
     public void resetPlayers(Collection<Entity> players) {
         players.forEach(p -> {
-                    PhysicalMapper.get(p).setPosition(currentLevel.getSpawnCenter());
+                    placeAtSpawn(p);
                     PlayerMapper.get(p).completed = false;
                 }
         );

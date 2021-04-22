@@ -76,13 +76,21 @@ public class Physical implements Component {
     }
 
     public void setPosition(Vector2 position) {
-        this.body.setTransform(position, 0);
+        this.body.setTransform(position, this.body.getAngle());
     }
 
     public void moveTowards(Vector2 position) {
         Vector2 diff = position.sub(body.getPosition());
         diff.scl(5);
         body.setLinearVelocity(body.getLinearVelocity().add(diff));
+    }
+
+    public boolean isActive() {
+        return this.body.isActive();
+    }
+
+    public float getAngle() {
+        return (float) Math.toDegrees(this.body.getAngle());
     }
 
     public Shape getShape() {

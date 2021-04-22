@@ -4,17 +4,11 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.controller.InputHandler;
 import com.mygdx.minigolf.controller.systems.GraphicsSystem;
-import com.mygdx.minigolf.model.GameData;
-import com.mygdx.minigolf.model.components.Physical;
-import com.mygdx.minigolf.model.components.Player;
-
-import java.util.Arrays;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class GameView extends HeadlessGame implements Screen {
     GraphicsSystem graphicsSystem;
@@ -24,7 +18,6 @@ public class GameView extends HeadlessGame implements Screen {
         super.create();
         factory.showGraphics = true;
         graphicsSystem = new GraphicsSystem();
-
         engine.addSystem(graphicsSystem);
     }
 
@@ -61,7 +54,7 @@ public class GameView extends HeadlessGame implements Screen {
     }
 
     public void setInput(Entity player) {
-        Gdx.input.setInputProcessor(new InputHandler(this.getGraphicsSystem().getCam(), PhysicalMapper.get(player).getBody()));
+        Gdx.input.setInputProcessor(new InputHandler(this.getGraphicsSystem().getCam(), player, factory));
     }
 
 }

@@ -1,31 +1,18 @@
-import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.backends.headless.HeadlessApplicationConfiguration;
 import com.mygdx.minigolf.HeadlessGame;
-import com.mygdx.minigolf.controller.EntityFactory;
-import com.mygdx.minigolf.model.components.Graphical;
-import com.mygdx.minigolf.model.levels.CourseElement;
-import com.mygdx.minigolf.model.levels.CourseLoader;
-import com.mygdx.minigolf.model.levels.LevelLoader;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class LevelLoaderTest extends TestFileLoader {
+    HeadlessGame game;
+
     LevelLoaderTest() {
         this.dir = "levels/copies/";
     }
-
-    HeadlessGame game;
 
     @BeforeAll
     public void setup() throws InterruptedException {
@@ -57,6 +44,5 @@ public class LevelLoaderTest extends TestFileLoader {
         List<LevelLoader.Level> levels = courses.stream()
                 .map(ces -> game.levelLoader.loadLevel(ces))
                 .collect(Collectors.toList());
-    }
-     */
-}
+         */
+     }
