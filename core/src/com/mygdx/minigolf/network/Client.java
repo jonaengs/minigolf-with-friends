@@ -1,6 +1,8 @@
 package com.mygdx.minigolf.network;
 
 
+import com.badlogic.gdx.Application;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.controller.InputHandler;
@@ -33,7 +35,11 @@ public class Client implements Runnable {
     MessageBuffer recvBuffer;
 
     public Client() throws IOException {
-        socket = new Socket("localhost", 8888);
+        if (Gdx.app.getType() == Application.ApplicationType.Desktop) {
+            socket = new Socket("localhost", 8888);
+        } else if (Gdx.app.getType() == Application.ApplicationType.Android) {
+            socket = new Socket("10.0.2.2", 8888);
+        }
         socket.setTcpNoDelay(true);
         objOut = new ObjectOutputStream(socket.getOutputStream());
         recvBuffer = new MessageBuffer(new ObjectInputStream(socket.getInputStream())); // Must be instantiated after objOut

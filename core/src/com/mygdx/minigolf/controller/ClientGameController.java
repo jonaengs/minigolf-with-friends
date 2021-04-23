@@ -1,6 +1,7 @@
 package com.mygdx.minigolf.controller;
 
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.gdx.Gdx;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.model.GameData;
 import com.mygdx.minigolf.network.Client;
@@ -12,11 +13,12 @@ import java.util.Collections;
 public class ClientGameController extends GameController implements GameData.Notifiable {
     Client client;
     GameData gameData;
+    GameView game;
 
-    public ClientGameController(HeadlessGame game) throws IOException {
+    public ClientGameController(GameView game) throws IOException {
         super(game);
-        client = new Client();
         gameData = GameData.get();
+        client = new Client();
 
         GameData.subscribe(this, gameData.levelName, gameData.state);
     }
@@ -48,6 +50,12 @@ public class ClientGameController extends GameController implements GameData.Not
         gameData.players.set(super.createPlayers(gameData.playerNames.get()));
     }
 
+    private void setInput(Entity player) {
+        Gdx.input.setInputProcessor(
+                new InputHandler(game.getGraphicsSystem().getCam(), player, game.factory)
+        );
+    }
+
     private void resetPlayers() {
         super.resetPlayers(gameData.players.get().values());
     }
@@ -71,7 +79,7 @@ public class ClientGameController extends GameController implements GameData.Not
                         game.create();
                         createPlayers();
                         Entity localPlayer = gameData.players.get().get(gameData.localPlayerName.get());
-                        ((GameView) game).setInput(localPlayer);
+                        setInput(localPlayer);
                         break;
                     case SCORE_SCREEN:
                         System.out.println(Collections.singletonList(gameData.scores.get()));

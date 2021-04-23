@@ -3,12 +3,12 @@ package com.mygdx.minigolf.controller;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.mygdx.minigolf.model.components.Graphical;
-import com.mygdx.minigolf.util.ComponentMappers;
+import com.mygdx.minigolf.util.ComponentMappers.GraphicalMapper;
+import com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper;
 
 /*
  *  Handles touch input to control movement of ball
@@ -29,13 +29,13 @@ public class InputHandler extends InputAdapter {
 
     public InputHandler(OrthographicCamera cam, Entity player, EntityFactory factory) {
         this.cam = cam;
-        this.ball = com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper.get(player).getBody();
+        this.ball = PhysicalMapper.get(player).getBody();
         Entity directionIndicator = factory.createInputDirectionIndicator(ball.getPosition());
         Entity strengthIndicator = factory.createInputStrengthIndicator(ball.getPosition());
 
-        this.directionIndicatorBody = com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper.get(directionIndicator).getBody();
-        this.strengthIndicatorGraphical = com.mygdx.minigolf.util.ComponentMappers.GraphicalMapper.get(strengthIndicator);
-        this.strengthIndicatorBody = ComponentMappers.PhysicalMapper.get(strengthIndicator).getBody();
+        this.directionIndicatorBody = PhysicalMapper.get(directionIndicator).getBody();
+        this.strengthIndicatorGraphical = GraphicalMapper.get(strengthIndicator);
+        this.strengthIndicatorBody = PhysicalMapper.get(strengthIndicator).getBody();
     }
 
     @Override
@@ -67,12 +67,12 @@ public class InputHandler extends InputAdapter {
 
         // Set angle of direction indicator
         if (directionIndicatorBody.isActive()) {
-            directionIndicatorBody.setTransform(ball.getPosition(), (float) (angle + Math.PI/2));
+            directionIndicatorBody.setTransform(ball.getPosition(), (float) (angle + Math.PI / 2));
         }
 
         // Set angle and length of strength indicator
         if (strengthIndicatorBody.isActive()) {
-            strengthIndicatorBody.setTransform(ball.getPosition(), (float) (angle - Math.PI/2));
+            strengthIndicatorBody.setTransform(ball.getPosition(), (float) (angle - Math.PI / 2));
 
             float[] triangles = strengthIndicatorGraphical.getTriangles();
             triangles[5] = Math.min(-Vector2.dst(dragStartPos.x, dragStartPos.y, draggingPos.x, draggingPos.y) * 0.4f, -0.41f);

@@ -52,7 +52,7 @@ public class GameView extends HeadlessGame implements Screen {
     }
 
     public void setInput(Entity player) {
-        Gdx.input.setInputProcessor(new InputHandler(this.getGraphicsSystem().getCam(), player, factory));
+
     }
 
 }
