@@ -27,7 +27,7 @@ public class ServerUtils {
 
     public static Application initGame(HeadlessGame game) throws InterruptedException {
         Application app = game instanceof GameView ? initGameView((GameView) game) : initHeadlessGame(game);
-        ConcurrencyUtils.waitForPostRunnable(() -> {});
+        ConcurrencyUtils.skipWaitPostRunnable(() -> {});
         return app;
     }
 

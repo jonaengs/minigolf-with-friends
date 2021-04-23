@@ -2,37 +2,47 @@ package com.mygdx.minigolf.util;
 
 import com.badlogic.gdx.Gdx;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class ConcurrencyUtils {
-    public static void waitForPostRunnable(Runnable runnable) {
-        // TODO: This only checks for desktop main thread name (LWJGL). It does not check for the android thread's name.
-        if (Thread.currentThread().getName().contentEquals("LWJGL Application")) {
-            // Don't postpone if already in App thread. Will break if libGdx ever changes the main thread's name
-            runnable.run();
-        } else {
-            final Object lock = new Object();
-            synchronized (lock) {
-                Gdx.app.postRunnable(() -> {
-                    runnable.run();
-                    synchronized (lock) {
-                        lock.notify();
-                    }
-                });
-                try {
-                    lock.wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
+    // Will break if the libGdx main thread's name ever changes
+    private final static List<String> appThreadNames = Arrays.asList("LWJGL Application"); // TODO: Add android thread name
 
     public static void postRunnable(Runnable runnable) {
-        // TODO: This only checks for desktop main thread name (LWJGL). It does not check for the android thread's name.
-        if (Thread.currentThread().getName().contentEquals("LWJGL Application")) {
-            // Don't postpone if already in App thread.
+        Gdx.app.postRunnable(runnable);
+    }
+
+    public static void skipPostRunnable(Runnable runnable) {
+        if (appThreadNames.contains(Thread.currentThread().getName())) {
             runnable.run();
         } else {
             Gdx.app.postRunnable(runnable);
+        }
+    }
+
+    public static void skipWaitPostRunnable(Runnable runnable) {
+        if (appThreadNames.contains(Thread.currentThread().getName())) {
+            runnable.run();
+        } else {
+            waitPostRunnable(runnable);
+        }
+    }
+
+    public static void waitPostRunnable(Runnable runnable) {
+        final Object lock = new Object();
+        synchronized (lock) {
+            Gdx.app.postRunnable(() -> {
+                runnable.run();
+                synchronized (lock) {
+                    lock.notify();
+                }
+            });
+            try {
+                lock.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

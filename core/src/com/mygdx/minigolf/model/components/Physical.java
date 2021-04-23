@@ -67,6 +67,10 @@ public class Physical implements Component {
         this.body.setLinearVelocity(velocity);
     }
 
+    public void setVelocity(float x, float y) {
+        this.body.setLinearVelocity(x, y);
+    }
+
     public Vector2 getPosition() {
         return this.body.getPosition();
     }

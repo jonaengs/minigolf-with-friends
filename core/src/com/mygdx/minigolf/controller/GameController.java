@@ -3,6 +3,7 @@ package com.mygdx.minigolf.controller;
 import com.badlogic.ashley.core.Entity;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.controller.systems.PowerUpSystem;
+import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.util.ComponentMappers.PlayerMapper;
 import com.mygdx.minigolf.model.levels.LevelLoader;
@@ -29,24 +30,26 @@ public class GameController {
         ));
     }
 
-    public static void placeAtSpawn(Entity player, LevelLoader.Level level) {
+    public static void resetPhysicals(Entity player, LevelLoader.Level level) {
         PhysicalMapper.get(player).setPosition(level.getSpawnCenter());
     }
 
-    public void placeAtSpawn(Entity player) {
-        PhysicalMapper.get(player).setPosition(currentLevel.getSpawnCenter());
+    public void resetPhysicals(Entity player) {
+        Physical playerPhysics = PhysicalMapper.get(player);
+        playerPhysics.setPosition(currentLevel.getSpawnCenter());
+        playerPhysics.setVelocity(0, 0);
     }
 
     public void resetPlayers(Collection<Entity> players) {
         players.forEach(p -> {
-                    placeAtSpawn(p);
+                    resetPhysicals(p);
                     PlayerMapper.get(p).completed = false;
                 }
         );
     }
 
     public void loadLevel(String levelName) {
-        ConcurrencyUtils.waitForPostRunnable(() -> {
+        ConcurrencyUtils.skipWaitPostRunnable(() -> {
                     if (currentLevel != null) {
                        currentLevel.dispose(game.engine);
                     }

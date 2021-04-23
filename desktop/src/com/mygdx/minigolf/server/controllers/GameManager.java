@@ -4,7 +4,6 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.HeadlessGame;
-import com.mygdx.minigolf.util.ComponentMappers.PlayerMapper;
 import com.mygdx.minigolf.controller.GameController;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.levels.CourseLoader;
@@ -16,6 +15,8 @@ import com.mygdx.minigolf.network.messages.NetworkedGameState.PlayerState;
 import com.mygdx.minigolf.server.ServerUtils;
 import com.mygdx.minigolf.server.communicators.GameCommunicationHandler;
 import com.mygdx.minigolf.server.communicators.LobbyCommunicationHandler;
+import com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper;
+import com.mygdx.minigolf.util.ComponentMappers.PlayerMapper;
 import com.mygdx.minigolf.util.ConcurrencyUtils;
 import com.mygdx.minigolf.util.Constants;
 
@@ -52,14 +53,13 @@ public class GameManager extends BaseController<GameCommunicationHandler, Server
         lobbyComms.forEach(comm -> comms.add(new GameCommunicationHandler(comm)));
         comms.forEach(comm -> new Thread(comm).start());
 
-        // TODO: Use GameData and GameController for these
         // Setup game data
-        ConcurrencyUtils.waitForPostRunnable(() -> {
+        ConcurrencyUtils.skipWaitPostRunnable(() -> {
             List<String> playerNames = lobbyComms.stream().map(c -> c.playerName).collect(Collectors.toList());
             players = gameController.createPlayers(playerNames);
             playerPhysicals = players.entrySet().stream().collect(Collectors.toMap(
                     Map.Entry::getKey,
-                    entry -> entry.getValue().getComponent(Physical.class)
+                    entry -> PhysicalMapper.get(entry.getValue())
             ));
         });
         networkedGameState = new NetworkedGameState(comms.stream().collect(Collectors.toMap(
@@ -81,7 +81,7 @@ public class GameManager extends BaseController<GameCommunicationHandler, Server
     }
 
     private void updateGameState() {
-        ConcurrencyUtils.waitForPostRunnable(() ->
+        ConcurrencyUtils.skipWaitPostRunnable(() ->
                 playerPhysicals.entrySet().forEach(
                         entry -> {
                             PlayerState playerState = networkedGameState.stateMap.get(entry.getKey());
@@ -117,7 +117,7 @@ public class GameManager extends BaseController<GameCommunicationHandler, Server
             barrier(new Message<>(ServerGameCommand.LOAD_LEVEL, level),
                     new Message<>(ClientGameCommand.LEVEL_LOADED, level));
             gameController.loadLevel(level);
-            ConcurrencyUtils.waitForPostRunnable(() -> gameController.resetPlayers(players.values()));
+            ConcurrencyUtils.skipWaitPostRunnable(() -> gameController.resetPlayers(players.values()));
         } catch (NoSuchElementException e) {
             return false;
         }

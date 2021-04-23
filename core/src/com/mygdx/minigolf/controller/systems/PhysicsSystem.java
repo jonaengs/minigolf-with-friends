@@ -17,6 +17,8 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.joints.FrictionJoint;
 import com.badlogic.gdx.physics.box2d.joints.FrictionJointDef;
 import com.mygdx.minigolf.model.components.Physical;
+import com.mygdx.minigolf.util.ComponentMappers;
+import com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.util.Constants;
 
 import java.util.AbstractMap;
@@ -30,7 +32,7 @@ public class PhysicsSystem extends IteratingSystem implements ContactListener, E
 
     private final World world;
     private final Engine engine;
-    private final ComponentMapper<Physical> mapper = ComponentMapper.getFor(Physical.class);
+    private final ComponentMapper<Physical> mapper = PhysicalMapper.mapper;
     private final Map<Body, Entity> cache = new HashMap<>();
 
     // A common friction body to be used by all bodies that want friction

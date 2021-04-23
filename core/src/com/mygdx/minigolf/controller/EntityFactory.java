@@ -16,21 +16,23 @@ import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ShortArray;
 import com.mygdx.minigolf.controller.systems.PowerUpSystem;
-import com.mygdx.minigolf.model.powerup.Effect;
 import com.mygdx.minigolf.model.components.Graphical;
 import com.mygdx.minigolf.model.components.Objective;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.components.Player;
 import com.mygdx.minigolf.model.components.PowerUpGiver;
+import com.mygdx.minigolf.model.powerup.Effect;
 import com.mygdx.minigolf.util.ComponentMappers.PowerUpGiverMapper;
-import com.mygdx.minigolf.util.Constants;
 
 import java.util.Arrays;
 import java.util.Objects;
 
+import static com.mygdx.minigolf.util.Constants.BIT_COURSE;
 import static com.mygdx.minigolf.util.Constants.BIT_HOLE;
+import static com.mygdx.minigolf.util.Constants.BIT_OBSTACLE;
 import static com.mygdx.minigolf.util.Constants.BIT_PLAYER;
 import static com.mygdx.minigolf.util.Constants.BIT_POWERUP;
+import static com.mygdx.minigolf.util.Constants.BIT_SPAWN;
 import static com.mygdx.minigolf.util.Constants.BIT_WALL;
 
 public class EntityFactory {
@@ -96,8 +98,8 @@ public class EntityFactory {
                 y,
                 shape,
                 BodyDef.BodyType.DynamicBody,
-                Constants.BIT_PLAYER,
-                (short) (BIT_WALL | BIT_HOLE | Constants.BIT_POWERUP | Constants.BIT_PLAYER | Constants.BIT_OBSTACLE),
+                BIT_PLAYER,
+                (short) (BIT_WALL | BIT_HOLE | BIT_POWERUP | BIT_PLAYER | BIT_OBSTACLE),
                 false,
                 true);
 
@@ -163,21 +165,11 @@ public class EntityFactory {
 
     public Entity createObstacle(float x, float y, PolygonShape shape) {
         Physical physical = createPhysical(x, y, shape, BodyDef.BodyType.StaticBody,
-                BIT_WALL, BIT_PLAYER, false, true);
+                BIT_OBSTACLE, BIT_PLAYER, false, true);
+
         return createEntity(
                 physical,
                 showGraphics ? new Graphical(Sprite.Obstacle.color, 1, getTriangles(shape)) : null
-        );
-    }
-
-    public Entity createPowerup(float x, float y, CircleShape shape) {
-        Physical physical = createPhysical(x + shape.getRadius(), y + shape.getRadius(),
-                shape, BodyDef.BodyType.StaticBody, BIT_POWERUP,
-                BIT_PLAYER, false, true);
-
-        return createEntity(
-                physical,
-                showGraphics ? new Graphical(Sprite.Powerup, 1) : null
         );
     }
 
@@ -187,8 +179,8 @@ public class EntityFactory {
                 y + shape.getRadius(),
                 shape,
                 BodyDef.BodyType.StaticBody,
-                Constants.BIT_POWERUP,
-                Constants.BIT_PLAYER,
+                BIT_POWERUP,
+                BIT_PLAYER,
                 true,
                 true);
 
@@ -225,8 +217,8 @@ public class EntityFactory {
                 y,
                 shape,
                 BodyDef.BodyType.StaticBody,
-                Constants.BIT_SPAWN,
-                Constants.BIT_PLAYER,
+                BIT_SPAWN,
+                BIT_PLAYER,
                 true,
                 true));
     }
@@ -243,7 +235,7 @@ public class EntityFactory {
                         shape,
                         BodyDef.BodyType.StaticBody,
                         BIT_WALL,
-                        Constants.BIT_PLAYER,
+                        BIT_PLAYER,
                         false,
                         true),
                 showGraphics ? new Graphical(Sprite.Wall.color, 1, getTriangles(shape)) : null
@@ -257,8 +249,8 @@ public class EntityFactory {
                         y,
                         shape,
                         BodyDef.BodyType.StaticBody,
-                        Constants.BIT_COURSE,
-                        Constants.BIT_COURSE,
+                        BIT_COURSE,
+                        (short) 0, // this was BIT_COURSE before. Why?
                         false,
                         true),
                 showGraphics ? new Graphical(sprite.color, layer, getTriangles(shape)) : null

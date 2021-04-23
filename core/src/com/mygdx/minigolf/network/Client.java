@@ -140,7 +140,7 @@ public class Client implements Runnable {
                         }
                         NetworkedGameState receivedState = recvBuffer.pollGameData();
                         if (receivedState != null) {
-                            ConcurrencyUtils.postRunnable(() ->
+                            ConcurrencyUtils.skipPostRunnable(() ->
                                     receivedState.stateMap.entrySet().forEach(entry -> {
                                         Physical phys = PhysicalMapper.get(gameData.players.get().get(entry.getKey()));
                                         phys.setVelocity(entry.getValue().velocity);

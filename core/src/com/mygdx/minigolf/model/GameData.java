@@ -124,11 +124,11 @@ public class GameData {
         }
 
         public void set(T newData) {
-            ConcurrencyUtils.postRunnable(() -> _set(newData));
+            ConcurrencyUtils.skipPostRunnable(() -> _set(newData));
         }
 
         public void waitSet(T newData) {
-            ConcurrencyUtils.waitForPostRunnable(() -> _set(newData));
+            ConcurrencyUtils.skipWaitPostRunnable(() -> _set(newData));
         }
 
         private void _set(T newData) {
@@ -156,7 +156,7 @@ public class GameData {
         }
 
         public synchronized void remove(U entry) {
-            ConcurrencyUtils.postRunnable(() -> {
+            ConcurrencyUtils.skipPostRunnable(() -> {
                 subscribers.forEach(o -> o.notify(entry, removeEvent));
                 if (data.get() instanceof List)
                     ((List) data.get()).remove(entry);
