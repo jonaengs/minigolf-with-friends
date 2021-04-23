@@ -43,7 +43,7 @@ public class ScoreView extends View {
             Label label = new Label(player + "\t" + 0, skin);
             playerLabels.put(player, label);
             table.add(label).expandX();
-            table.row().pad(10f, 0, 10f, 0);
+            table.row().pad(10f, 0, 100f, 0);
         }
     }
 

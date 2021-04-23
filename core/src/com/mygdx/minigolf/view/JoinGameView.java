@@ -63,8 +63,10 @@ public class JoinGameView extends View {
     @Override
     public void notify(Object change, GameData.Event changeEvent) {
         if (changeEvent == GameData.Event.LOBBY_ID_SET) {
-            if ((Integer) change < 0) {
+            if ((int) change == -1) {
                 status.setText("Could not find lobby: " + code.getText());
+            } else if ((int) change == -2) {
+                status.setText("Lobby full: " + code.getText());
             }
         }
     }

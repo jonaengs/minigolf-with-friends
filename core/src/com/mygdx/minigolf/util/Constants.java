@@ -20,7 +20,7 @@ public final class Constants {
     public static float PHYSICS_TICK_RATE = REFRESH_RATE;
 
     // Gameplay
-    public static final int MAX_NUM_PLAYERS = 4;
+    public static final int MAX_NUM_PLAYERS = 2;
 
     // Box2D fixture filters
     public static final short BIT_PLAYER = 1;

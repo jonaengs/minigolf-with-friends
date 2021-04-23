@@ -63,28 +63,29 @@ public class ConnectionDelegator {
                 ObjectOutputStream objOut = new ObjectOutputStream(socket.getOutputStream());
                 LobbyCommunicationHandler comm = new LobbyCommunicationHandler(socket, objIn, objOut);
 
-                Message<ClientLobbyCommand> msg = (Message<ClientLobbyCommand>) objIn.readObject();
+                Message<ClientLobbyCommand> msg;
                 Integer lobbyID;
-                switch (msg.command) {
-                    case CREATE:
-                        lobbyID = generateLobbyID();
-                        com.mygdx.minigolf.server.controllers.LobbyController lobby = new LobbyController(comm, lobbyID);
-                        lobbies.put(lobbyID, lobby);
-                        new Thread(lobby).start();
-                        break;
-                    case JOIN:
-                        lobbyID = (Integer) msg.data;
-                        try {
-                            lobbies.get(lobbyID).addPlayer(comm);
-                        } catch (NullPointerException e) {
-                            e.printStackTrace();
-                            objOut.writeObject(new Message<>(ServerLobbyCommand.LOBBY_NOT_FOUND, lobbyID));
-                            return;
-                        } catch (IllegalArgumentException e) {
-                            objOut.writeObject(new Message<>(ServerLobbyCommand.LOBBY_FULL, lobbyID));
-                        }
-                        break;
-                }
+                findLobby: do {
+                    msg = (Message<ClientLobbyCommand>) objIn.readObject();
+                    switch (msg.command) {
+                        case CREATE:
+                            lobbyID = generateLobbyID();
+                            com.mygdx.minigolf.server.controllers.LobbyController lobby = new LobbyController(comm, lobbyID);
+                            lobbies.put(lobbyID, lobby);
+                            new Thread(lobby).start();
+                            break findLobby;
+                        case JOIN:
+                            lobbyID = (Integer) msg.data;
+                            try {
+                                lobbies.get(lobbyID).addPlayer(comm);
+                                break findLobby;
+                            } catch (NullPointerException e) {
+                                objOut.writeObject(new Message<>(ServerLobbyCommand.LOBBY_NOT_FOUND, lobbyID));
+                            } catch (IllegalArgumentException e) {
+                                objOut.writeObject(new Message<>(ServerLobbyCommand.LOBBY_FULL, lobbyID));
+                            }
+                    }
+                } while(true);
                 new Thread(comm).start();
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
