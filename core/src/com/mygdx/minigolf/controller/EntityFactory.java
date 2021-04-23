@@ -184,9 +184,21 @@ public class EntityFactory {
                 true,
                 true);
 
+        Graphical graphical = null;
+        if (showGraphics) {
+            Sprite sprite;
+            if (effect instanceof Effect.ExplodingEffect)
+                sprite = Sprite.ExplodingPowerup;
+            else if (effect instanceof Effect.NoCollisionEffect)
+                sprite = Sprite.NoCollisionPowerup;
+            else
+                sprite = Sprite.Powerup;
+            graphical = new Graphical(sprite, 1);
+        }
+
         Entity entity = createEntity(
                 physical,
-                showGraphics ? new Graphical(Sprite.Powerup, 1) : null,
+                graphical,
                 new PowerUpGiver(effect)
         );
 
@@ -282,6 +294,8 @@ public class EntityFactory {
         Player(Color.WHITE),
         Hole(Color.BLACK),
         Powerup(Color.BLUE),
+        ExplodingPowerup(Color.RED),
+        NoCollisionPowerup(Color.BLUE),
         SurfaceA(new Color(66 / 255f, 134 / 255f, 0f, 1f)),
         Wall(new Color(83 / 255f, 42 / 255f, 0f, 1f)),
         Obstacle(new Color(83 / 255f, 42 / 255f, 0f, 1f)),
