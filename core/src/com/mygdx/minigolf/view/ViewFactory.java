@@ -10,6 +10,7 @@ public class ViewFactory {
     private static LobbyView lobbyView;
     private static JoinGameView joinGameView;
     private static MainMenuView mainMenuView;
+    private static ScoreView scoreView;
 
     public static GameView GameView() {
         if (gameView == null)
@@ -47,5 +48,12 @@ public class ViewFactory {
         if (mainMenuView == null)
             mainMenuView = new MainMenuView();
         return mainMenuView;
+    }
+
+    public static ScoreView ScoreView() {
+        GameData gameData = GameData.get();
+        if (scoreView == null)
+            scoreView = new ScoreView(gameData.players, gameData.scores);
+        return scoreView;
     }
 }

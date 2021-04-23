@@ -30,7 +30,7 @@ public class LobbyController extends BaseController<LobbyCommunicationHandler, S
     }
 
     public synchronized void addPlayer(LobbyCommunicationHandler comm) throws IOException, IllegalArgumentException {
-        if (comms.size() > Constants.MAX_LOBBY_SIZE)
+        if (comms.size() > Constants.MAX_NUM_PLAYERS)
             throw new IllegalArgumentException("Lobby is full");
         synchronized (comms) {
             comms.add(comm);

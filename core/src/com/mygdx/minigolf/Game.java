@@ -22,7 +22,6 @@ public class Game extends com.badlogic.gdx.Game {
     @Override
     public void create() {
         instance = this;
-
         music = Gdx.audio.newMusic(Gdx.files.internal("music/Maxime Abbey - Operation Stealth - The Ballad of J. & J.ogg"));
         music.setLooping(true);
 
