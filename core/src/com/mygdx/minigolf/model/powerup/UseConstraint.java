@@ -24,6 +24,6 @@ public class UseConstraint implements Constraint{
 
     @Override
     public String toString(){
-        return "UseConstraint - uses: " + uses;
+        return "UseConstraint (" + uses + " remaining uses)";
     }
 }

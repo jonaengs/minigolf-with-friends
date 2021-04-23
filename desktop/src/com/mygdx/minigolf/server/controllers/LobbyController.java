@@ -4,6 +4,7 @@ import com.mygdx.minigolf.network.messages.Message;
 import com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand;
 import com.mygdx.minigolf.network.messages.Message.ServerLobbyCommand;
 import com.mygdx.minigolf.server.communicators.LobbyCommunicationHandler;
+import com.mygdx.minigolf.util.Constants;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,7 +29,9 @@ public class LobbyController extends BaseController<LobbyCommunicationHandler, S
         addPlayer(leader);
     }
 
-    public synchronized void addPlayer(LobbyCommunicationHandler comm) throws IOException {
+    public synchronized void addPlayer(LobbyCommunicationHandler comm) throws IOException, IllegalArgumentException {
+        if (comms.size() > Constants.MAX_LOBBY_SIZE)
+            throw new IllegalArgumentException("Lobby is full");
         synchronized (comms) {
             comms.add(comm);
         }

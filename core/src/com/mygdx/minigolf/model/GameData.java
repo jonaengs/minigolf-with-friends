@@ -30,7 +30,7 @@ public class GameData {
     public final Observable<String> levelName;
     public final Observable<String> localPlayerName;
     public final Observable<State> state;
-    public final Observable<Integer> lobbyID; // Negative value => lobby could not be found/joined
+    public final Observable<Integer> lobbyID; // -1 => Lobby not found. -2 => Lobby full.
 
     private GameData() {
         players = new MutableObservable<>(new HashMap<>(), PLAYERS_SET, PLAYER_REMOVED);

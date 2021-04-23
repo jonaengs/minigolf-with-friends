@@ -1,31 +1,27 @@
 package com.mygdx.minigolf.controller.systems;
 
-import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
-import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.box2d.Contact;
-import com.mygdx.minigolf.Game;
-
-import com.mygdx.minigolf.util.ComponentMappers;
+import com.mygdx.minigolf.controller.GameController;
+import com.mygdx.minigolf.model.components.Physical;
+import com.mygdx.minigolf.model.components.Player;
+import com.mygdx.minigolf.model.levels.LevelLoader;
 import com.mygdx.minigolf.model.powerup.Effect;
 import com.mygdx.minigolf.model.powerup.StrokeConstraint;
 import com.mygdx.minigolf.model.powerup.UseConstraint;
-import com.mygdx.minigolf.model.components.Physical;
-import com.mygdx.minigolf.model.components.Player;
+import com.mygdx.minigolf.util.ComponentMappers;
 import com.mygdx.minigolf.util.Constants;
 
 import java.util.List;
 
 public class PowerUpSystem extends EntitySystem {
+    private LevelLoader.Level currentLevel;
 
-    private final ImmutableArray<Entity> players;
-
-    public PowerUpSystem(Engine engine) {
-        super();
-        this.players = engine.getEntitiesFor(Family.all(Player.class).get());
+    public void setLevel(LevelLoader.Level level) {
+        currentLevel = level;
     }
 
     public void update(float dt) {
@@ -76,20 +72,18 @@ public class PowerUpSystem extends EntitySystem {
 
     private void applyEffectToPlayer(Entity effectApplier, Entity effectReciever) {
         List<Effect> effects = ComponentMappers.PlayerMapper.get(effectApplier).getEffects();
-        System.out.println(effects);
         for (Effect effect : effects) {
-            if (Effect.ExplodingEffect.class.equals(effect.getClass())) {
-                Game.getInstance().gameController.placeAtSpawn(effectReciever);
+            if (effect instanceof Effect.ExplodingEffect) {
+                GameController.placeAtSpawn(effectReciever, currentLevel);
             }
         }
     }
 
     private void removeExhaustedEffects(Physical.ContactListener listener, Entity p) {
         ComponentMappers.PhysicalMapper.get(p).removeContactListener(listener);
-        for (Entity player : players) {
+        for (Entity player : this.getEngine().getEntitiesFor(Family.all(Player.class).get())) {
             Player playerComponent = ComponentMappers.PlayerMapper.get(player);
             playerComponent.removeEffects();
         }
     }
-
 }

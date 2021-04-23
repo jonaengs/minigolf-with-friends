@@ -17,6 +17,7 @@ import com.mygdx.minigolf.server.ServerUtils;
 import com.mygdx.minigolf.server.communicators.GameCommunicationHandler;
 import com.mygdx.minigolf.server.communicators.LobbyCommunicationHandler;
 import com.mygdx.minigolf.util.ConcurrencyUtils;
+import com.mygdx.minigolf.util.Constants;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +28,6 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 public class GameManager extends BaseController<GameCommunicationHandler, ServerGameCommand, ClientGameCommand> {
-    private static final int REFRESH_RATE = 1_000 / 15; // in milliseconds
     HeadlessGame game;
     Application app;
 
@@ -99,7 +99,7 @@ public class GameManager extends BaseController<GameCommunicationHandler, Server
     private void shutDown() {
         comms.forEach(c -> c.running.set(false));
         game.dispose();
-        app.exit();
+        // app.exit(); // This appears to exit the entire program, not only the libGdx app
     }
 
     private void removePlayers(List<String> playersToRemove) {
@@ -128,7 +128,7 @@ public class GameManager extends BaseController<GameCommunicationHandler, Server
         List<String> exitingPlayers = new ArrayList<>();
         long delta, t0;
 
-        while (players.values().stream().noneMatch(p -> PlayerMapper.get(p).isCompleted())) {
+        while (!players.values().stream().allMatch(p -> PlayerMapper.get(p).isCompleted())) {
             t0 = System.currentTimeMillis();
 
             comms.forEach(comm -> {
@@ -152,7 +152,7 @@ public class GameManager extends BaseController<GameCommunicationHandler, Server
 
             // TODO: Where is engine.update()??
             delta = System.currentTimeMillis() - t0;
-            ServerUtils.sleep(Math.max(0, REFRESH_RATE - delta));
+            ServerUtils.sleep(Math.max(0, Constants.SERVER_TICK_RATE_MS - delta));
         }
     }
 

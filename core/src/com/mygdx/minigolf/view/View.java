@@ -12,8 +12,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.minigolf.Game;
-import com.mygdx.minigolf.controller.ScreenController;
 import com.mygdx.minigolf.model.GameData;
+import com.mygdx.minigolf.util.Constants;
 
 
 abstract class View extends GameData.Subscriber implements Screen {
@@ -45,7 +45,7 @@ abstract class View extends GameData.Subscriber implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         // tell our stage to do actions and draw itself
-        stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
+        stage.act(Math.min(Gdx.graphics.getDeltaTime(), Constants.REFRESH_RATE));
         stage.draw();
 
         Gdx.input.setCatchKey(Input.Keys.BACK, true);

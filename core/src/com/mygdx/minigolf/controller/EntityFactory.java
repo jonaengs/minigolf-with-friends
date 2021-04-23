@@ -84,11 +84,11 @@ public class EntityFactory {
         return entity;
     }
 
-    public Entity createPlayer(Vector2 position) {
-        return createPlayer(position.x, position.y);
+    public Entity createPlayer(float x, float y) {
+        return createPlayer(x, y, null);
     }
 
-    public Entity createPlayer(float x, float y) {
+    public Entity createPlayer(float x, float y, String name) {
         CircleShape shape = new CircleShape();
         shape.setRadius(0.15f);
         Physical physical = createPhysical(
@@ -109,7 +109,7 @@ public class EntityFactory {
         return createEntity(
                 physical,
                 showGraphics ? new Graphical(Sprite.Player, 1) : null,
-                new Player()
+                new Player(name)
         );
     }
 

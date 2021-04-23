@@ -81,7 +81,9 @@ public class Client implements Runnable {
                             case LOBBY_NOT_FOUND:
                                 gameData.lobbyID.set(-1);
                                 // TODO: Handle better. Maybe set state in GameController if lobbyID = -1 is detected and then do more logic there
-                                gameData.state.waitSet(IN_MENU);
+                                break;
+                            case LOBBY_FULL:
+                                gameData.lobbyID.set(-2);
                                 break;
                         }
                         break;

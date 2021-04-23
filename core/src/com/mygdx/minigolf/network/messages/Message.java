@@ -39,6 +39,7 @@ public class Message<T extends TypedEnum> implements Serializable {
         PLAYER_LIST(ArrayList.class),
         ENTER_GAME(Void.class),
         LOBBY_NOT_FOUND(Integer.class),
+        LOBBY_FULL(Integer.class),
         EXIT(Void.class);
 
         private final Class<?> clazz;

@@ -95,6 +95,8 @@ public class ConnectionDelegator {
                             e.printStackTrace();
                             objOut.writeObject(new Message<>(ServerLobbyCommand.LOBBY_NOT_FOUND, lobbyID));
                             return;
+                        } catch (IllegalArgumentException e) {
+                            objOut.writeObject(new Message<>(ServerLobbyCommand.LOBBY_FULL, lobbyID));
                         }
                         break;
                 }

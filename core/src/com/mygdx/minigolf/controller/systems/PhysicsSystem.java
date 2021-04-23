@@ -17,6 +17,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.joints.FrictionJoint;
 import com.badlogic.gdx.physics.box2d.joints.FrictionJointDef;
 import com.mygdx.minigolf.model.components.Physical;
+import com.mygdx.minigolf.util.Constants;
 
 import java.util.AbstractMap;
 import java.util.HashMap;
@@ -25,8 +26,6 @@ import java.util.function.Consumer;
 import java.util.stream.StreamSupport;
 
 public class PhysicsSystem extends IteratingSystem implements ContactListener, EntityListener {
-
-    private static final float MAX_STEP_TIME = 1 / 30f;
     private static float accumulator = 0f;
 
     private final World world;
@@ -37,7 +36,6 @@ public class PhysicsSystem extends IteratingSystem implements ContactListener, E
     // A common friction body to be used by all bodies that want friction
     public final Body frictionBody;
 
-    @SuppressWarnings("unchecked")
     public PhysicsSystem(World world, Engine engine) {
         super(Family.all(Physical.class).get());
         this.world = world;
@@ -52,9 +50,9 @@ public class PhysicsSystem extends IteratingSystem implements ContactListener, E
         super.update(deltaTime);
         float frameTime = Math.min(deltaTime, 0.25f);
         accumulator += frameTime;
-        if (accumulator >= MAX_STEP_TIME) {
-            world.step(MAX_STEP_TIME, 6, 2);
-            accumulator -= MAX_STEP_TIME;
+        if (accumulator >= Constants.PHYSICS_TICK_RATE) {
+            world.step(Constants.PHYSICS_TICK_RATE, 6, 2);
+            accumulator -= Constants.PHYSICS_TICK_RATE;
         }
     }
 

@@ -6,8 +6,8 @@ import com.badlogic.gdx.backends.headless.HeadlessApplicationConfiguration;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import com.mygdx.minigolf.HeadlessGame;
-import com.mygdx.minigolf.network.Utils;
 import com.mygdx.minigolf.util.ConcurrencyUtils;
+import com.mygdx.minigolf.util.Constants;
 import com.mygdx.minigolf.view.GameView;
 
 public class ServerUtils {
@@ -21,7 +21,7 @@ public class ServerUtils {
 
     public static Application initHeadlessGame(HeadlessGame game) {
         HeadlessApplicationConfiguration config = new HeadlessApplicationConfiguration();
-        config.renderInterval = 1 / 30f;
+        config.renderInterval = Constants.SERVER_TICK_RATE; // TODO: Maybe use different send/receive rate and game update rate
         return new HeadlessApplication(game, config);
     }
 

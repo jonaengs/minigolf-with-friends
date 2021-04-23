@@ -1,5 +1,7 @@
 package com.mygdx.minigolf.server;
 
+import com.mygdx.minigolf.util.Constants;
+
 import java.io.IOException;
 import java.util.stream.Collectors;
 
@@ -19,7 +21,7 @@ public class Server {
                         pastThreads = nowThreads;
                     }
                     try {
-                        Thread.sleep(10_000);
+                        Thread.sleep(3_000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

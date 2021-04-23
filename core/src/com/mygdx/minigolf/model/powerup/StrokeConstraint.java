@@ -30,6 +30,6 @@ public class StrokeConstraint implements Constraint{
 
     @Override
     public String toString(){
-        return "StrokeConstraint with " + allowedStrokes + " allowed strokes";
+        return "StrokeConstraint (" + allowedStrokes + " total uses)";
     }
 }

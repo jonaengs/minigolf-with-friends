@@ -9,10 +9,15 @@ import java.util.stream.Collectors;
 
 
 public class Player implements Component {
+    public final String name;
     public boolean completed = false;
     private int totalStrokes = 0;
     private int levelStrokes = 0;
     private List<Effect> effects = new ArrayList<>();
+
+    public Player(String name) {
+        this.name = name;
+    }
 
     public boolean isCompleted() {
         return completed;

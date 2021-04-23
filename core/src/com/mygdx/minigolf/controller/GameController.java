@@ -2,6 +2,7 @@ package com.mygdx.minigolf.controller;
 
 import com.badlogic.ashley.core.Entity;
 import com.mygdx.minigolf.HeadlessGame;
+import com.mygdx.minigolf.controller.systems.PowerUpSystem;
 import com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.util.ComponentMappers.PlayerMapper;
 import com.mygdx.minigolf.model.levels.LevelLoader;
@@ -24,8 +25,12 @@ public class GameController {
     public Map<String, Entity> createPlayers(List<String> playerNames) {
         return playerNames.stream().collect(Collectors.toMap(
                 name -> name,
-                ____ -> game.factory.createPlayer(-1, -1)
+                name -> game.factory.createPlayer(-1, -1, name)
         ));
+    }
+
+    public static void placeAtSpawn(Entity player, LevelLoader.Level level) {
+        PhysicalMapper.get(player).setPosition(level.getSpawnCenter());
     }
 
     public void placeAtSpawn(Entity player) {
@@ -46,6 +51,7 @@ public class GameController {
                        currentLevel.dispose(game.engine);
                     }
                     currentLevel = game.levelLoader.load(levelName);
+                    game.engine.getSystem(PowerUpSystem.class).setLevel(currentLevel);
                 }
         );
     }
