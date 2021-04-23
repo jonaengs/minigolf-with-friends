@@ -4,7 +4,6 @@ package com.mygdx.minigolf.network;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
-import com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.controller.InputHandler;
 import com.mygdx.minigolf.model.GameData;
 import com.mygdx.minigolf.model.components.Physical;
@@ -14,7 +13,9 @@ import com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand;
 import com.mygdx.minigolf.network.messages.Message.ServerGameCommand;
 import com.mygdx.minigolf.network.messages.Message.ServerLobbyCommand;
 import com.mygdx.minigolf.network.messages.NetworkedGameState;
+import com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.util.ConcurrencyUtils;
+import com.mygdx.minigolf.util.Constants;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -35,14 +36,20 @@ public class Client implements Runnable {
     MessageBuffer recvBuffer;
 
     public Client() throws IOException {
-        if (Gdx.app.getType() == Application.ApplicationType.Desktop) {
-            socket = new Socket("localhost", 8888);
-        } else if (Gdx.app.getType() == Application.ApplicationType.Android) {
-            socket = new Socket("10.0.2.2", 8888);
-        }
+        socket = new Socket(getIP(), 8888);
         socket.setTcpNoDelay(true);
         objOut = new ObjectOutputStream(socket.getOutputStream());
         recvBuffer = new MessageBuffer(new ObjectInputStream(socket.getInputStream())); // Must be instantiated after objOut
+    }
+
+    private String getIP() {
+        if (Constants.SERVER_IP != null)
+            return Constants.SERVER_IP;
+        else if (Gdx.app.getType() == Application.ApplicationType.Desktop)
+            return "localhost";
+        else if (Gdx.app.getType() == Application.ApplicationType.Android)
+            return "10.0.2.2";
+        throw new RuntimeException();
     }
 
     public void createLobby() throws IOException {

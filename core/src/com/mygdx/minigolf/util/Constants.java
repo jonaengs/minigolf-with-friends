@@ -10,6 +10,9 @@ public final class Constants {
     public static final int FPS = 30;
     public static final float REFRESH_RATE = 1f / FPS;
 
+    // Client
+    public static final String SERVER_IP = System.getenv("SERVER_IP");
+
     // Server
     public static final Integer DEFAULT_NUM_TICKS = 30;
     public static final int NUM_TICKS = Integer.parseInt(Optional.ofNullable(System.getenv("NUM_TICKS")).orElse(DEFAULT_NUM_TICKS.toString()));

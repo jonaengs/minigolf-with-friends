@@ -1,2 +1,2 @@
 new_level.xml
-new_level2.xml
+no_collision_race.xml

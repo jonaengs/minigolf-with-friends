@@ -110,7 +110,7 @@ public class EntityFactory {
 
         return createEntity(
                 physical,
-                showGraphics ? new Graphical(Sprite.Player, 1) : null,
+                showGraphics ? new Graphical(Sprite.Player, 2) : null,
                 new Player(name)
         );
     }
