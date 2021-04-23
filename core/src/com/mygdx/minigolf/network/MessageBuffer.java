@@ -12,14 +12,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MessageBuffer implements Runnable {
+    final AtomicBoolean running = new AtomicBoolean(true);
     private final BlockingQueue<Message> msgBuffer = new LinkedBlockingQueue<>(); // Use take() method to wait for items to appear
     private final NetworkedGameState[] gameDataBuffer = new NetworkedGameState[1];
-    final AtomicBoolean running = new AtomicBoolean(false);
     private final ObjectInputStream objIn;
 
     protected MessageBuffer(ObjectInputStream objIn) {
         this.objIn = objIn;
-        running.set(true);
         new Thread(this, this.getClass().getName()).start();
     }
 
@@ -56,7 +55,7 @@ public class MessageBuffer implements Runnable {
         try {
             while (running.get()) {
                 msg = (Message) objIn.readObject();
-                System.out.println(msg);
+                System.out.println("recv\t" + msg);
                 if (msg.command instanceof ServerLobbyCommand) {
                     msgBuffer.add(msg);
                 } else if (msg.command instanceof ServerGameCommand) {
@@ -70,7 +69,6 @@ public class MessageBuffer implements Runnable {
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
-            running.set(false);
         }
     }
 }

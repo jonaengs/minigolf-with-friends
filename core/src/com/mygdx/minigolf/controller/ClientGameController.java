@@ -2,7 +2,7 @@ package com.mygdx.minigolf.controller;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
-import com.mygdx.minigolf.HeadlessGame;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.mygdx.minigolf.model.GameData;
 import com.mygdx.minigolf.network.Client;
 import com.mygdx.minigolf.view.GameView;
@@ -13,7 +13,6 @@ import java.util.Collections;
 public class ClientGameController extends GameController implements GameData.Notifiable {
     Client client;
     GameData gameData;
-    GameView game;
 
     public ClientGameController(GameView game) throws IOException {
         super(game);
@@ -39,7 +38,7 @@ public class ClientGameController extends GameController implements GameData.Not
         client.startGame();
     }
 
-    protected void reset() throws IOException {
+    private void reset() throws IOException {
         // TODO: Flesh out
         client = new Client();
         // GameData.reset();
@@ -51,8 +50,9 @@ public class ClientGameController extends GameController implements GameData.Not
     }
 
     private void setInput(Entity player) {
+        OrthographicCamera gameCam = ((GameView) game).getGraphicsSystem().getCam();
         Gdx.input.setInputProcessor(
-                new InputHandler(game.getGraphicsSystem().getCam(), player, game.factory)
+                new InputHandler(gameCam, player, game.factory)
         );
     }
 
@@ -81,9 +81,6 @@ public class ClientGameController extends GameController implements GameData.Not
                         Entity localPlayer = gameData.players.get().get(gameData.localPlayerName.get());
                         setInput(localPlayer);
                         break;
-                    case SCORE_SCREEN:
-                        System.out.println(Collections.singletonList(gameData.scores.get()));
-                        break;
                     case GAME_OVER:
                         try {
                             reset();
@@ -95,6 +92,7 @@ public class ClientGameController extends GameController implements GameData.Not
                 break;
             case PLAYER_REMOVED:
                 String playerName = (String) change;
+                gameData.playerNames.remove(playerName);
                 game.engine.removeEntity(gameData.players.get().get(playerName));
                 break;
         }

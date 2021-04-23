@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 public class Player implements Component {
     public final String name;
-    public boolean completed = false;
+    private boolean completed = false;
     private int totalStrokes = 0;
     private int levelStrokes = 0;
     private List<Effect> effects = new ArrayList<>();
@@ -23,12 +23,17 @@ public class Player implements Component {
         return completed;
     }
 
-    public void complete() {
-        this.completed = true;
+    public void setCompleted(boolean b) {
+        completed = b;
+    }
+
+    public void resetStrokes() {
+        totalStrokes += levelStrokes;
+        levelStrokes = 0;
     }
 
     public int getStrokes() {
-        return levelStrokes;
+        return totalStrokes + levelStrokes;
     }
 
     public int getLevelStrokes() {

@@ -28,7 +28,7 @@ public class Objective extends ContactListener implements Component {
             if (!player.isCompleted() &&
                     physical.getVelocity().isZero(Constants.MOVING_MARGIN) &&
                     physical.getPosition().sub(this.physical.getPosition()).isZero(Constants.MOVING_MARGIN)) {
-                player.complete();
+                player.setCompleted(true);
             } else {
                 Vector2 force = this.physical.getPosition().sub(physical.getPosition());
                 physical.getBody().applyLinearImpulse(force, physical.getBody().getLocalCenter(), true);

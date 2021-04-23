@@ -73,7 +73,7 @@ public class GameManager extends BaseController<GameCommunicationHandler, Server
     private Map<String, Integer> getScores() {
         return players.entrySet().stream().collect(Collectors.toMap(
                 Map.Entry::getKey,
-                entry -> PlayerMapper.get(players.get(entry.getKey())).getLevelStrokes()
+                entry -> PlayerMapper.get(players.get(entry.getKey())).getStrokes()
         ));
     }
 

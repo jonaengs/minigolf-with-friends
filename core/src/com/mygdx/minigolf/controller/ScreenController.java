@@ -24,7 +24,6 @@ public class ScreenController implements GameData.Notifiable {
 
     @Override
     public void notify(Object change, GameData.Event changeEvent) {
-        System.out.println("change = " + change + ", changeEvent = " + changeEvent);
         if (changeEvent == GameData.Event.STATE_SET) {
             switch ((GameData.State) change) {
                 case IN_LOBBY:
@@ -34,7 +33,7 @@ public class ScreenController implements GameData.Notifiable {
                     changeScreen(ViewFactory.GameView());
                     break;
                 case SCORE_SCREEN:
-                    // changeScreen(SCORE_VIEW);
+                    changeScreen(ViewFactory.ScoreView());
                     break;
                 case GAME_OVER:
                     // TODO: Show "game over" button on score screen that takes player to main menu

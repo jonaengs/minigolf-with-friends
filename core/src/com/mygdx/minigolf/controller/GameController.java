@@ -4,9 +4,9 @@ import com.badlogic.ashley.core.Entity;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.controller.systems.PowerUpSystem;
 import com.mygdx.minigolf.model.components.Physical;
+import com.mygdx.minigolf.model.levels.LevelLoader;
 import com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.util.ComponentMappers.PlayerMapper;
-import com.mygdx.minigolf.model.levels.LevelLoader;
 import com.mygdx.minigolf.util.ConcurrencyUtils;
 
 import java.util.Collection;
@@ -23,15 +23,15 @@ public class GameController {
         this.game = game;
     }
 
+    public static void resetPhysicals(Entity player, LevelLoader.Level level) {
+        PhysicalMapper.get(player).setPosition(level.getSpawnCenter());
+    }
+
     public Map<String, Entity> createPlayers(List<String> playerNames) {
         return playerNames.stream().collect(Collectors.toMap(
                 name -> name,
                 name -> game.factory.createPlayer(-1, -1, name)
         ));
-    }
-
-    public static void resetPhysicals(Entity player, LevelLoader.Level level) {
-        PhysicalMapper.get(player).setPosition(level.getSpawnCenter());
     }
 
     public void resetPhysicals(Entity player) {
@@ -43,7 +43,9 @@ public class GameController {
     public void resetPlayers(Collection<Entity> players) {
         players.forEach(p -> {
                     resetPhysicals(p);
-                    PlayerMapper.get(p).completed = false;
+                    PlayerMapper.get(p).setCompleted(false);
+                    PlayerMapper.get(p).removeEffects();
+                    PlayerMapper.get(p).resetStrokes();
                 }
         );
     }
@@ -51,7 +53,7 @@ public class GameController {
     public void loadLevel(String levelName) {
         ConcurrencyUtils.skipWaitPostRunnable(() -> {
                     if (currentLevel != null) {
-                       currentLevel.dispose(game.engine);
+                        currentLevel.dispose(game.engine);
                     }
                     currentLevel = game.levelLoader.load(levelName);
                     game.engine.getSystem(PowerUpSystem.class).setLevel(currentLevel);

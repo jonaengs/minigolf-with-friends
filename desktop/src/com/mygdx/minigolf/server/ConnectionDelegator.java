@@ -19,7 +19,7 @@ import java.util.stream.IntStream;
 public class ConnectionDelegator {
     final static int MIN_ID = 100_000;
     final static int MAX_ID = 1_000_000 - MIN_ID;
-    static final ConcurrentHashMap<Integer, LobbyController> lobbies = new ConcurrentHashMap<>();
+    public static final ConcurrentHashMap<Integer, LobbyController> lobbies = new ConcurrentHashMap<>();
     static Random random = new Random();
     ServerSocket ss;
 
@@ -55,21 +55,6 @@ public class ConnectionDelegator {
             this.socket = s;
         }
 
-        // Start lobby thread plus a separate thread to remove it from the lobbies index once the lobby terminates
-        private void startLobbyWithSupervisor(com.mygdx.minigolf.server.controllers.LobbyController lobby) {
-            new Thread(() -> {
-                Thread.currentThread().setName("LobbySupervisor");
-                Thread lobbyThread = new Thread(lobby);
-                lobbyThread.start();
-                try {
-                    lobbyThread.join();
-                } catch (InterruptedException e) {
-                    lobby.shutDown();
-                }
-                lobbies.remove(lobby.lobbyID);
-            }).start();
-        }
-
         @Override
         public void run() {
             Thread.currentThread().setName(this.getClass().getName());
@@ -85,7 +70,7 @@ public class ConnectionDelegator {
                         lobbyID = generateLobbyID();
                         com.mygdx.minigolf.server.controllers.LobbyController lobby = new LobbyController(comm, lobbyID);
                         lobbies.put(lobbyID, lobby);
-                        startLobbyWithSupervisor(lobby);
+                        new Thread(lobby).start();
                         break;
                     case JOIN:
                         lobbyID = (Integer) msg.data;

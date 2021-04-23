@@ -132,8 +132,6 @@ public class GameData {
         }
 
         private void _set(T newData) {
-            System.out.println(Arrays.toString(subscribers.toArray()));
-            // TODO: Find out which order these should happen in
             subscribers.forEach(o -> o.notify(newData, changeEvent));
             data.set(newData);
         }

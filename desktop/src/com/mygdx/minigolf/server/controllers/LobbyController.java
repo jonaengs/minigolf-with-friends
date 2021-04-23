@@ -3,6 +3,7 @@ package com.mygdx.minigolf.server.controllers;
 import com.mygdx.minigolf.network.messages.Message;
 import com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand;
 import com.mygdx.minigolf.network.messages.Message.ServerLobbyCommand;
+import com.mygdx.minigolf.server.ConnectionDelegator;
 import com.mygdx.minigolf.server.communicators.LobbyCommunicationHandler;
 import com.mygdx.minigolf.util.Constants;
 
@@ -21,7 +22,6 @@ public class LobbyController extends BaseController<LobbyCommunicationHandler, S
     private final AtomicInteger nameIndex = new AtomicInteger(new Random().nextInt(names.length));
     private final LobbyCommunicationHandler leader;
     private final AtomicBoolean playerListUpdated = new AtomicBoolean(true);
-    private final AtomicBoolean running = new AtomicBoolean(true);
 
     public LobbyController(LobbyCommunicationHandler leader, Integer lobbyID) throws IOException {
         this.lobbyID = lobbyID;
@@ -39,10 +39,6 @@ public class LobbyController extends BaseController<LobbyCommunicationHandler, S
         comm.send(new Message<>(ServerLobbyCommand.LOBBY_ID, lobbyID));
         comm.send(new Message<>(ServerLobbyCommand.NAME, comm.playerName));
         playerListUpdated.set(true);
-    }
-
-    public void shutDown() {
-        running.set(false);
     }
 
     ///////////////////////////
@@ -65,49 +61,54 @@ public class LobbyController extends BaseController<LobbyCommunicationHandler, S
         playerList.clear();
     }
 
-    @Override
-    public void run() {
-        List<LobbyCommunicationHandler> playersToRemove = new ArrayList<>();
-        while (running.get()) {
-            if (playerListUpdated.getAndSet(false)) {
-                if (comms.isEmpty() || !leader.running.get() || !comms.contains(leader)) {
-                    broadcast(new Message<>(ServerLobbyCommand.EXIT));
-                    return; // TODO: Should something more be done here?
-                }
-                broadcastPlayerList();
-            }
-            synchronized (comms) {
-                for (LobbyCommunicationHandler comm : comms) {
-                    Message<ClientLobbyCommand> clientMsg = comm.read();
-                    if (clientMsg != null) {
-                        switch (clientMsg.command) {
-                            case EXIT:
-                                playersToRemove.add(comm);
-                                break;
-                            case START_GAME:
-                                if (comm == leader) running.set(false);
-                                break;
-                        }
-                    }
-                }
-            }
-            if (!playersToRemove.isEmpty()) {
-                removePlayers(playersToRemove);
-            }
-        }
+    private void startGame() throws InterruptedException {
         synchronized (comms) {
             GameManager gameManager;
             barrier(
                     new Message<>(ServerLobbyCommand.ENTER_GAME),
                     new Message<>(ClientLobbyCommand.GAME_READY)
             );
-            try {
-                gameManager = new GameManager(comms);
-                new Thread(gameManager).start();
-            } catch (InterruptedException e) {
-                broadcast(new Message<>(ServerLobbyCommand.EXIT));
-                e.printStackTrace();
+            gameManager = new GameManager(comms);
+            new Thread(gameManager).start();
+        }
+    }
+
+    @Override
+    public void run() {
+        List<LobbyCommunicationHandler> playersToRemove = new ArrayList<>();
+        boolean startRequested = false;
+        try {
+            while (!startRequested) {
+                if (playerListUpdated.getAndSet(false)) {
+                    if (!leader.running.get() || !comms.contains(leader)) {
+                        broadcast(new Message<>(ServerLobbyCommand.EXIT));
+                        break;
+                    }
+                    broadcastPlayerList();
+                }
+                synchronized (comms) {
+                    for (LobbyCommunicationHandler comm : comms) {
+                        Message<ClientLobbyCommand> clientMsg = comm.read();
+                        if (clientMsg != null) {
+                            if (clientMsg.command == ClientLobbyCommand.EXIT) {
+                                playersToRemove.add(comm);
+                            } else if (clientMsg.command == ClientLobbyCommand.START_GAME) {
+                                startRequested = comm == leader;
+                            }
+                        }
+                    }
+                }
+                if (!playersToRemove.isEmpty()) {
+                    removePlayers(playersToRemove);
+                }
+                Thread.sleep(100);
             }
+            if (startRequested) startGame();
+        } catch (InterruptedException e) {
+            broadcast(new Message<>(ServerLobbyCommand.EXIT));
+            e.printStackTrace();
+        } finally {
+            ConnectionDelegator.lobbies.remove(this.lobbyID);
         }
     }
 }
