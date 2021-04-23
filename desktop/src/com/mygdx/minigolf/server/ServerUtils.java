@@ -19,13 +19,13 @@ public class ServerUtils {
         return new LwjglApplication(game, config);
     }
 
-    public static Application initHeadlessGame(HeadlessGame game) {
+    public static HeadlessApplication initHeadlessGame(HeadlessGame game) {
         HeadlessApplicationConfiguration config = new HeadlessApplicationConfiguration();
         config.renderInterval = Constants.SERVER_TICK_RATE; // TODO: Maybe use different send/receive rate and game update rate
         return new HeadlessApplication(game, config);
     }
 
-    public static Application initGame(HeadlessGame game) throws InterruptedException {
+    public static Application initGame(HeadlessGame game) {
         Application app = game instanceof GameView ? initGameView((GameView) game) : initHeadlessGame(game);
         ConcurrencyUtils.skipWaitPostRunnable(() -> {});
         return app;

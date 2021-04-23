@@ -60,8 +60,7 @@ public abstract class CommunicationHandler<SendCmd extends TypedEnum, RecvCmd ex
                     recvBuffer.add(msg);
                 }
             }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+        } catch (IOException | ClassNotFoundException ignored) {
             recvBuffer.add(new Message<>(getExitCmd()));
         }
     }

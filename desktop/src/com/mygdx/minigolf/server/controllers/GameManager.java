@@ -2,6 +2,8 @@ package com.mygdx.minigolf.server.controllers;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Application;
+import com.badlogic.gdx.backends.headless.HeadlessApplication;
+import com.badlogic.gdx.backends.headless.HeadlessApplicationConfiguration;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.controller.GameController;
@@ -99,6 +101,8 @@ public class GameManager extends BaseController<GameCommunicationHandler, Server
     private void shutDown() {
         comms.forEach(c -> c.running.set(false));
         game.dispose();
+        ConcurrencyUtils.postRunnable(() -> {throw new RuntimeException();});
+        // ConcurrencyUtils.postRunnable(() -> Thread.currentThread().interrupt());
         // app.exit(); // This appears to exit the entire program, not only the libGdx app
     }
 
