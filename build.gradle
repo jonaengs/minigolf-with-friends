@@ -55,6 +55,9 @@ project(":desktop") {
         api "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
         api "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
+
+        compile "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
+        compile "org.mockito:mockito-all:1.9.+"
     }
 }
 
@@ -91,22 +94,6 @@ project(":core") {
         api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
         api "com.badlogicgames.ashley:ashley:$ashleyVersion"
         api "org.junit.jupiter:junit-jupiter:$junitVersion"
-
-        testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
-        testRuntime "org.junit.jupiter:junit-jupiter:$junitVersion"
-
-        // Makes these modules available during testing? Stops headless from crashing during tests at least
-        testImplementation "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
-        testImplementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
-        testImplementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
-
-        // move from project(":desktop") to make headless tests run
-        compile "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
-        compile "org.mockito:mockito-all:1.9.+"
-    }
-
-    test {
-        useJUnitPlatform()
     }
 }
 

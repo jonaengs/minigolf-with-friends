@@ -1,7 +1,7 @@
 package com.mygdx.minigolf.controller;
 
 import com.badlogic.ashley.core.Entity;
-import com.mygdx.minigolf.controller.ComponentMappers.GraphicalMapper;
+import com.mygdx.minigolf.util.ComponentMappers.GraphicalMapper;
 
 import java.util.Comparator;
 

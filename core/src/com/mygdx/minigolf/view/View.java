@@ -1,23 +1,29 @@
 package com.mygdx.minigolf.view;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.mygdx.minigolf.controller.screenControllers.ScreenController;
+import com.mygdx.minigolf.Game;
+import com.mygdx.minigolf.model.GameData;
+import com.mygdx.minigolf.util.Constants;
 
-public class View implements Screen {
 
+abstract class View extends GameData.Subscriber implements Screen {
     protected Stage stage;
     protected Table table;
     protected Skin skin;
     protected Color backgroundColor = new Color(51f / 255f, 153f / 255f, 51f / 255f, 0);
 
-    public View() {
+    protected View(GameData.Observable... observables) {
+        super(observables);
         stage = new Stage(new ScreenViewport());
 
         table = new Table();
@@ -29,6 +35,7 @@ public class View implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+        setupSubscriptions();
     }
 
     @Override
@@ -38,10 +45,13 @@ public class View implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         // tell our stage to do actions and draw itself
-        stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
+        stage.act(Math.min(Gdx.graphics.getDeltaTime(), Constants.REFRESH_RATE));
         stage.draw();
 
-        ScreenController.catchBackKey();
+        Gdx.input.setCatchKey(Input.Keys.BACK, true);
+        if (Gdx.input.isKeyPressed(Input.Keys.BACK) || Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
+            Game.getInstance().screenController.changeScreen(ViewFactory.MainMenuView());
+        }
     }
 
     @Override
@@ -59,6 +69,7 @@ public class View implements Screen {
 
     @Override
     public void hide() {
+        removeSubscriptions();
     }
 
     @Override
@@ -66,4 +77,20 @@ public class View implements Screen {
         stage.dispose();
     }
 
+    @Override
+    public void notify(Object change, GameData.Event changeEvent) {
+    }
+
+    public static class ChangeViewListener extends ChangeListener {
+        Screen view;
+
+        public ChangeViewListener(Screen targetView) {
+            this.view = targetView;
+        }
+
+        @Override
+        public void changed(ChangeEvent event, Actor actor) {
+            Game.getInstance().screenController.changeScreen(view);
+        }
+    }
 }

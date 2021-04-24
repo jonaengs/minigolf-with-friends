@@ -6,17 +6,13 @@ import com.mygdx.minigolf.controller.EntityFactory;
 
 public class Graphical implements Component {
 
-    public static boolean enabled = true; // Allows headless games to run. TODO: Find better solution
-
     public float[] triangles;
     public Color color;
     private int layer;
 
     public Graphical(Color color, int layer) {
-        if (enabled) {
-            this.color = color;
-            this.layer = layer;
-        }
+        this.color = color;
+        this.layer = layer;
     }
 
     public Graphical(EntityFactory.Sprite sprite, int layer) {
@@ -25,10 +21,7 @@ public class Graphical implements Component {
 
     public Graphical(Color color, int layer, float[] triangles) {
         this(color, layer);
-        if (enabled) {
-            this.triangles = triangles;
-        }
-
+        this.triangles = triangles;
     }
 
     public float[] getTriangles() {

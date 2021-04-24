@@ -1,10 +1,9 @@
 package com.mygdx.minigolf.controller;
+
 import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.EarClippingTriangulator;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -15,27 +14,44 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
-import com.mygdx.minigolf.controller.systems.PowerUpSystem;
-import com.mygdx.minigolf.model.Effect;
 import com.badlogic.gdx.utils.ShortArray;
-import com.mygdx.minigolf.controller.ComponentMappers.PhysicalMapper;
+import com.mygdx.minigolf.controller.systems.PowerUpSystem;
 import com.mygdx.minigolf.model.components.Graphical;
 import com.mygdx.minigolf.model.components.Objective;
 import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.components.Player;
-
-import com.mygdx.minigolf.util.Constants;
 import com.mygdx.minigolf.model.components.PowerUpGiver;
+import com.mygdx.minigolf.model.powerup.Effect;
+import com.mygdx.minigolf.util.ComponentMappers.PowerUpGiverMapper;
 
 import java.util.Arrays;
+import java.util.Objects;
+
+import static com.mygdx.minigolf.util.Constants.BIT_COURSE;
+import static com.mygdx.minigolf.util.Constants.BIT_HOLE;
+import static com.mygdx.minigolf.util.Constants.BIT_OBSTACLE;
+import static com.mygdx.minigolf.util.Constants.BIT_PLAYER;
+import static com.mygdx.minigolf.util.Constants.BIT_POWERUP;
+import static com.mygdx.minigolf.util.Constants.BIT_SPAWN;
+import static com.mygdx.minigolf.util.Constants.BIT_WALL;
 
 public class EntityFactory {
 
     public final static float DEFAULT_BOUNCE = 0.7f;
+    private static final EarClippingTriangulator triangulator = new EarClippingTriangulator();
     private final Engine engine;
     private final World world;
+    public boolean showGraphics;
 
-    private static final EarClippingTriangulator triangulator = new EarClippingTriangulator();
+    public EntityFactory(Engine engine, World world) {
+        this(engine, world, true);
+    }
+
+    public EntityFactory(Engine engine, World world, boolean showGraphics) {
+        this.engine = engine;
+        this.world = world;
+        this.showGraphics = showGraphics;
+    }
 
     static public float[] getTriangles(PolygonShape shape) {
         int nVertices = shape.getVertexCount();
@@ -63,19 +79,18 @@ public class EntityFactory {
         return triangles;
     }
 
-    public EntityFactory(Engine engine, World world) {
-        this.engine = engine;
-        this.world = world;
-    }
-
     private Entity createEntity(Component... components) {
         Entity entity = engine.createEntity();
-        Arrays.stream(components).forEach(entity::add);
+        Arrays.stream(components).filter(Objects::nonNull).forEach(entity::add);
         engine.addEntity(entity);
         return entity;
     }
 
     public Entity createPlayer(float x, float y) {
+        return createPlayer(x, y, null);
+    }
+
+    public Entity createPlayer(float x, float y, String name) {
         CircleShape shape = new CircleShape();
         shape.setRadius(0.15f);
         Physical physical = createPhysical(
@@ -83,8 +98,8 @@ public class EntityFactory {
                 y,
                 shape,
                 BodyDef.BodyType.DynamicBody,
-                Constants.BIT_PLAYER,
-                (short) (Constants.BIT_WALL | Constants.BIT_HOLE | Constants.BIT_POWERUP | Constants.BIT_PLAYER | Constants.BIT_OBSTACLE),
+                BIT_PLAYER,
+                (short) (BIT_WALL | BIT_HOLE | BIT_POWERUP | BIT_PLAYER | BIT_OBSTACLE),
                 false,
                 true);
 
@@ -95,16 +110,13 @@ public class EntityFactory {
 
         return createEntity(
                 physical,
-                new Graphical(Sprite.Player, 1),
-                new Player()
+                showGraphics ? new Graphical(Sprite.Player, 2) : null,
+                new Player(name)
         );
     }
 
-    public Entity createControllablePlayer(float x, float y, OrthographicCamera cam) {
-        Entity player = createPlayer(x, y);
-        Gdx.input.setInputProcessor(new InputHandler(cam, player,createInputDirectionIndicator(x, y),
-                createInputStrengthIndicator(x, y)));
-        return player;
+    public Entity createInputDirectionIndicator(Vector2 p) {
+        return createInputDirectionIndicator(p.x, p.y);
     }
 
     public Entity createInputDirectionIndicator(float x, float y) {
@@ -112,19 +124,17 @@ public class EntityFactory {
 
         PolygonShape shape = new PolygonShape();
         shape.set(vertices);
+        Physical physical = createPhysical(x, y, shape, BodyDef.BodyType.KinematicBody,
+                (short) 0, (short) 0, false, false);
 
         return createEntity(
-                createPhysical(
-                        x,
-                        y,
-                        shape,
-                        BodyDef.BodyType.KinematicBody,
-                        (short) 0,
-                        (short) 0,
-                        false,
-                        false),
+                physical,
                 new Graphical(Sprite.DirectionIndicator.color, 2, vertices)
         );
+    }
+
+    public Entity createInputStrengthIndicator(Vector2 p) {
+        return createInputStrengthIndicator(p.x, p.y);
     }
 
     public Entity createInputStrengthIndicator(float x, float y) {
@@ -132,31 +142,20 @@ public class EntityFactory {
 
         PolygonShape shape = new PolygonShape();
         shape.set(vertices);
+        Physical physical = createPhysical(x, y, shape, BodyDef.BodyType.KinematicBody,
+                (short) 0, (short) 0, false, false);
 
         return createEntity(
-                createPhysical(
-                        x,
-                        y,
-                        shape,
-                        BodyDef.BodyType.KinematicBody,
-                        (short) 0,
-                        (short) 0,
-                        false,
-                        false),
+                physical,
                 new Graphical(Sprite.StrengthIndicator.color, 2, vertices)
         );
     }
 
     public Entity createHole(float x, float y, CircleShape shape) {
-        Physical physical = createPhysical(
-                x + shape.getRadius(),
-                y + shape.getRadius(),
-                shape,
-                BodyDef.BodyType.StaticBody,
-                Constants.BIT_HOLE,
-                Constants.BIT_PLAYER,
-                false,
-                true);
+        Physical physical = createPhysical(x + shape.getRadius(), y + shape.getRadius(),
+                shape, BodyDef.BodyType.StaticBody, BIT_HOLE,
+                BIT_PLAYER, false, true);
+
         return createEntity(
                 physical,
                 new Graphical(Sprite.Hole, 0),
@@ -165,59 +164,60 @@ public class EntityFactory {
     }
 
     public Entity createObstacle(float x, float y, PolygonShape shape) {
+        Physical physical = createPhysical(x, y, shape, BodyDef.BodyType.StaticBody,
+                BIT_OBSTACLE, BIT_PLAYER, false, true);
+
         return createEntity(
-                createPhysical(
-                        x,
-                        y,
-                        shape,
-                        BodyDef.BodyType.StaticBody,
-                        Constants.BIT_OBSTACLE,
-                        Constants.BIT_PLAYER,
-                        false,
-                        true),
-                new Graphical(Sprite.Obstacle.color, 1, getTriangles(shape))
+                physical,
+                showGraphics ? new Graphical(Sprite.Obstacle.color, 1, getTriangles(shape)) : null
         );
     }
 
     private Entity createPowerup(float x, float y, CircleShape shape, Effect effect) {
-
-        Entity entity = createEntity();
-
-        PowerUpGiver powerUpGiver = new PowerUpGiver();
-        powerUpGiver.setPowerup(effect);
-
-        Graphical graphical = new Graphical(Sprite.Powerup, 1);
-
-        entity.add(powerUpGiver);
-        entity.add(graphical);
-
         Physical physical = createPhysical(
                 x + shape.getRadius(),
                 y + shape.getRadius(),
                 shape,
                 BodyDef.BodyType.StaticBody,
-                Constants.BIT_POWERUP,
-                Constants.BIT_PLAYER,
+                BIT_POWERUP,
+                BIT_PLAYER,
                 true,
                 true);
+
+        Graphical graphical = null;
+        if (showGraphics) {
+            Sprite sprite;
+            if (effect instanceof Effect.ExplodingEffect)
+                sprite = Sprite.ExplodingPowerup;
+            else if (effect instanceof Effect.NoCollisionEffect)
+                sprite = Sprite.NoCollisionPowerup;
+            else
+                sprite = Sprite.Powerup;
+            graphical = new Graphical(sprite, 1);
+        }
+
+        Entity entity = createEntity(
+                physical,
+                graphical,
+                new PowerUpGiver(effect)
+        );
+
         physical.addContactListener(new Physical.ContactListener(1) {
             @Override
             public void beginContact(Entity other, Contact contact) {
-                engine.getSystem(PowerUpSystem.class).givePowerUp(other, entity.getComponent(PowerUpGiver.class).getPowerup());
+                engine.getSystem(PowerUpSystem.class).givePowerUp(other, PowerUpGiverMapper.get(entity).getPowerup());
                 engine.removeEntity(entity);
             }
         });
 
-        entity.add(physical);
-
         return entity;
     }
 
-    public Entity createExplodingPowerup(float x, float  y, CircleShape shape){
+    public Entity createExplodingPowerup(float x, float y, CircleShape shape) {
         return createPowerup(x, y, shape, new Effect.ExplodingEffect());
     }
 
-    public Entity createNoCollisionPowerUp(float x, float y, CircleShape shape){
+    public Entity createNoCollisionPowerUp(float x, float y, CircleShape shape) {
         return createPowerup(x, y, shape, new Effect.NoCollisionEffect());
     }
 
@@ -229,8 +229,8 @@ public class EntityFactory {
                 y,
                 shape,
                 BodyDef.BodyType.StaticBody,
-                Constants.BIT_SPAWN,
-                Constants.BIT_PLAYER,
+                BIT_SPAWN,
+                BIT_PLAYER,
                 true,
                 true));
     }
@@ -246,11 +246,11 @@ public class EntityFactory {
                         y,
                         shape,
                         BodyDef.BodyType.StaticBody,
-                        Constants.BIT_WALL,
-                        Constants.BIT_PLAYER,
+                        BIT_WALL,
+                        BIT_PLAYER,
                         false,
                         true),
-                new Graphical(Sprite.Wall.color, 1, getTriangles(shape))
+                showGraphics ? new Graphical(Sprite.Wall.color, 1, getTriangles(shape)) : null
         );
     }
 
@@ -261,11 +261,11 @@ public class EntityFactory {
                         y,
                         shape,
                         BodyDef.BodyType.StaticBody,
-                        Constants.BIT_COURSE,
-                        Constants.BIT_COURSE,
+                        BIT_COURSE,
+                        (short) 0, // this was BIT_COURSE before. Why?
                         false,
                         true),
-                new Graphical(sprite.color, layer, getTriangles(shape))
+                showGraphics ? new Graphical(sprite.color, layer, getTriangles(shape)) : null
         );
     }
 
@@ -273,7 +273,8 @@ public class EntityFactory {
         return createSurface(x, y, Sprite.SurfaceA, shape, -1);
     }
 
-    private Physical createPhysical(float x, float y, Shape shape, BodyDef.BodyType type, short cBits, short mBits, boolean sensor, boolean active) {
+    private Physical createPhysical(float x, float y, Shape shape, BodyDef.BodyType type,
+                                    short cBits, short mBits, boolean sensor, boolean active) {
         BodyDef def = new BodyDef();
         def.type = type;
         def.position.set(x, y);
@@ -293,10 +294,12 @@ public class EntityFactory {
         Player(Color.WHITE),
         Hole(Color.BLACK),
         Powerup(Color.BLUE),
-        SurfaceA(new Color(66/255f, 134/255f, 0f, 1f)),
-        Wall(new Color(83/255f, 42/255f, 0f, 1f)),
-        Obstacle(new Color(83/255f, 42/255f, 0f, 1f)),
-        DirectionIndicator(new Color(1f, 255/215f, 0f, 0.9f)),
+        ExplodingPowerup(Color.RED),
+        NoCollisionPowerup(Color.BLUE),
+        SurfaceA(new Color(66 / 255f, 134 / 255f, 0f, 1f)),
+        Wall(new Color(83 / 255f, 42 / 255f, 0f, 1f)),
+        Obstacle(new Color(83 / 255f, 42 / 255f, 0f, 1f)),
+        DirectionIndicator(new Color(1f, 255 / 215f, 0f, 0.9f)),
         StrengthIndicator(new Color(1f, 1f, 1f, 0.5f));
 
         public final Color color;
@@ -305,4 +308,5 @@ public class EntityFactory {
             this.color = color;
         }
     }
+
 }

@@ -1,5 +1,6 @@
 package com.mygdx.minigolf.view;
 
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -16,7 +17,6 @@ public class SettingsView extends View {
         Label volume_text = new Label("Volume: ", skin);
         CheckBox volume = new CheckBox("Music ON/OFF", skin);
 
-
         // Transform actors
         label.setFontScale(3f);
         volume_text.setFontScale(2f);
@@ -31,11 +31,9 @@ public class SettingsView extends View {
         volume.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if (volume.isChecked()) {
-                    Game.getInstance().music.play();
-                } else {
-                    Game.getInstance().music.pause();
-                }
+                Music music = Game.getInstance().music;
+                if (music.isPlaying()) music.stop();
+                else music.play();
             }
         });
     }

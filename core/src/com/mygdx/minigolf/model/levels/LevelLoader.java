@@ -1,10 +1,12 @@
 package com.mygdx.minigolf.model.levels;
 
+import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
+import com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.controller.EntityFactory;
 
 import java.util.ArrayList;
@@ -18,7 +20,7 @@ public class LevelLoader {
         this.factory = factory;
     }
 
-    public Level loadLevel(String fileName) {
+    public Level load(String fileName) {
         return new Level(CourseLoader.load(fileName));
     }
 
@@ -79,7 +81,7 @@ public class LevelLoader {
         public final List<Entity> holes = new ArrayList<>();
         public final List<Entity> spawns = new ArrayList<>();
 
-        protected Level(List<CourseElement> courseElems) {
+        private Level(List<CourseElement> courseElems) {
             courseElems.forEach(ce -> {
                 Entity e = createEntity(ce);
                 switch (ce.function) {
@@ -98,8 +100,12 @@ public class LevelLoader {
             });
         }
 
-        public void dispose() {
-            elements.forEach(Entity::removeAll);
+        public void dispose(Engine engine) {
+            elements.forEach(engine::removeEntity);
+        }
+
+        public Vector2 getSpawnCenter() {
+            return PhysicalMapper.get(this.spawns.get(0)).getPosition();
         }
     }
 

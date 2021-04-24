@@ -6,36 +6,68 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
-import com.mygdx.minigolf.controller.screenControllers.ScreenController;
+import com.mygdx.minigolf.Game;
+import com.mygdx.minigolf.model.GameData;
+
+import java.io.IOException;
 
 public class JoinGameView extends View {
+    Label title;
+    Label status;
+    TextField code;
+    TextButton joinButton;
 
-    public JoinGameView() {
-        super();
-        Label label = new Label("Multiplayer", skin);
-        TextField code = new TextField("", skin);
-        TextButton join = new TextButton("Join", skin);
+    public JoinGameView(GameData.Observable... observables) {
+        super(observables);
+        title = new Label("Multiplayer", skin);
+        status = new Label("", skin);
+        code = new TextField("", skin);
+        joinButton = new TextButton("Join", skin);
 
-        label.setFontScale(3f);
+        code.setMaxLength(6);
+        title.setFontScale(3f);
         code.setScale(2f);
-        join.setTransform(true);
-        join.scaleBy(1f);
-        join.setOrigin(Align.center);
+        joinButton.setTransform(true);
+        joinButton.scaleBy(1f);
+        joinButton.setOrigin(Align.center);
 
-        table.add(label).expandX();
-        table.row().pad(250f, 0, 0, 0);
+        table.add(title).expandX();
+        table.row().pad(200f, 0, 0, 0);
+        table.add(status).expandX();
+        table.row().pad(10f, 0, 0, 0);
         table.add(code).expandX();
         table.row().pad(100f, 0, 0, 0);
-        table.add(join).expandX();
+        table.add(joinButton).expandX();
 
-        join.addListener(new ChangeListener() {
+        joinButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // Join lobby, access text in textfield
-                // code.getText();
+                status.setText("Attempting to join lobby " + code.getText());
+                Integer lobbyID = Integer.parseInt(code.getText());
+                try { // TODO: Better way to access game controller
+                    Game.getInstance().gameController.joinLobby(lobbyID);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
-        join.addListener(new ScreenController.ChangeViewListener(ScreenController.gameView));
     }
 
+    @Override
+    public void show() {
+        super.show();
+        status.setText("");
+        code.setText("");
+    }
+
+    @Override
+    public void notify(Object change, GameData.Event changeEvent) {
+        if (changeEvent == GameData.Event.LOBBY_ID_SET) {
+            if ((int) change == -1) {
+                status.setText("Could not find lobby: " + code.getText());
+            } else if ((int) change == -2) {
+                status.setText("Lobby full: " + code.getText());
+            }
+        }
+    }
 }

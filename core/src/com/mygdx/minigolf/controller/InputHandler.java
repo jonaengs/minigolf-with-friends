@@ -3,22 +3,22 @@ package com.mygdx.minigolf.controller;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.mygdx.minigolf.model.components.Graphical;
-import com.mygdx.minigolf.model.components.Physical;
+import com.mygdx.minigolf.util.ComponentMappers;
+import com.mygdx.minigolf.util.ComponentMappers.GraphicalMapper;
+import com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper;
 
 /*
  *  Handles touch input to control movement of ball
  */
 public class InputHandler extends InputAdapter {
 
+    public final static Vector2 input = new Vector2(0, 0);
     private final OrthographicCamera cam;
     private final Body ball;
-
-    private final Entity player;
 
     private final Body directionIndicatorBody;
     private final Body strengthIndicatorBody;
@@ -28,20 +28,21 @@ public class InputHandler extends InputAdapter {
     private final Vector3 dragStartPos = new Vector3();
     private final Vector3 draggingPos = new Vector3();
 
-    public InputHandler(OrthographicCamera cam, Entity player, Entity directionIndicator, Entity strengthIndicator) {
+    public InputHandler(OrthographicCamera cam, Entity player, EntityFactory factory) {
         this.cam = cam;
-        this.player = player;
-        this.ball = ComponentMappers.PhysicalMapper.get(player).getBody();
-        this.directionIndicatorBody = ComponentMappers.PhysicalMapper.get(directionIndicator).getBody();
-        this.strengthIndicatorGraphical = ComponentMappers.GraphicalMapper.get(strengthIndicator);
-        this.strengthIndicatorBody = ComponentMappers.PhysicalMapper.get(strengthIndicator).getBody();
+        this.ball = PhysicalMapper.get(player).getBody();
+        Entity directionIndicator = factory.createInputDirectionIndicator(ball.getPosition());
+        Entity strengthIndicator = factory.createInputStrengthIndicator(ball.getPosition());
+
+        this.directionIndicatorBody = PhysicalMapper.get(directionIndicator).getBody();
+        this.strengthIndicatorGraphical = GraphicalMapper.get(strengthIndicator);
+        this.strengthIndicatorBody = PhysicalMapper.get(strengthIndicator).getBody();
     }
 
     @Override
     public boolean touchDown(int x, int y, int pointer, int button) {
         dragStartPos.set(x, y, 0);
         cam.unproject(dragStartPos);
-
         return true;
     }
 
@@ -67,12 +68,12 @@ public class InputHandler extends InputAdapter {
 
         // Set angle of direction indicator
         if (directionIndicatorBody.isActive()) {
-            directionIndicatorBody.setTransform(ball.getPosition(), (float) (angle + Math.PI/2));
+            directionIndicatorBody.setTransform(ball.getPosition(), (float) (angle + Math.PI / 2));
         }
 
         // Set angle and length of strength indicator
         if (strengthIndicatorBody.isActive()) {
-            strengthIndicatorBody.setTransform(ball.getPosition(), (float) (angle - Math.PI/2));
+            strengthIndicatorBody.setTransform(ball.getPosition(), (float) (angle - Math.PI / 2));
 
             float[] triangles = strengthIndicatorGraphical.getTriangles();
             triangles[5] = Math.min(-Vector2.dst(dragStartPos.x, dragStartPos.y, draggingPos.x, draggingPos.y) * 0.4f, -0.41f);
@@ -82,6 +83,7 @@ public class InputHandler extends InputAdapter {
         return true;
     }
 
+    // TODO: Disable before level has loaded. Maybe just add a boolean
     @Override
     public boolean touchUp(int x, int y, int pointer, int button) {
         if (directionIndicatorBody.isActive()) {
@@ -92,19 +94,22 @@ public class InputHandler extends InputAdapter {
             strengthIndicatorBody.setActive(false);
         }
 
-        // Check if ball is moving
-        if (ball.getLinearVelocity().isZero()) {
+        if (ball.getLinearVelocity().isZero(0.01f)) {
             Vector3 dragEndPos = new Vector3(x, y, 0);
             cam.unproject(dragEndPos);
 
             // Convert dragging distance to amount of force to apply to the ball
             Vector3 force = dragStartPos.sub(dragEndPos);
+            synchronized (input) {
+                input.set(force.x, force.y);
+                System.out.println("input: " + input);
+            }
 
-            // Apply force
             ball.applyLinearImpulse(force.x, force.y, dragEndPos.x, dragEndPos.y, true);
 
-            //update stroke count for player
-            ComponentMappers.PlayerMapper.get(this.player).incrementStrokes();
+            // Update stroke count for player
+            // TODO: Move to GameData and use notifications
+            // ComponentMappers.PlayerMapper.get(this.player).incrementStrokes();
         }
 
         return true;
