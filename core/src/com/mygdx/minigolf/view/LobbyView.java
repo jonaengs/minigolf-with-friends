@@ -7,6 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.model.GameData;
+import com.mygdx.minigolf.util.Constants;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,7 +15,6 @@ import java.util.List;
 
 public class LobbyView extends View {
 
-    public static final int MAX_NUM_PLAYERS = 4;
     Label lobbyIDLabel;
     private List<Label> playerLabels = new ArrayList<>();
     TextButton start;
@@ -46,7 +46,7 @@ public class LobbyView extends View {
         table.row().pad(10f, 0, 40f, 0);
         table.add(players).expandX();
 
-        for (int i = 0; i < MAX_NUM_PLAYERS; i++) {
+        for (int i = 0; i < Constants.MAX_NUM_PLAYERS; i++) {
             Label player = new Label("Player [empty]", skin);
             table.row().pad(10f, 0, 10f, 0);
             table.add(player).expandX();
@@ -87,4 +87,5 @@ public class LobbyView extends View {
                 break;
         }
     }
+
 }
