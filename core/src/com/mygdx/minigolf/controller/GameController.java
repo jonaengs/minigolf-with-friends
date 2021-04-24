@@ -7,7 +7,6 @@ import com.mygdx.minigolf.model.components.Physical;
 import com.mygdx.minigolf.model.levels.LevelLoader;
 import com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.util.ComponentMappers.PlayerMapper;
-import com.mygdx.minigolf.util.ConcurrencyUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -51,13 +50,10 @@ public class GameController {
     }
 
     public void loadLevel(String levelName) {
-        ConcurrencyUtils.skipWaitPostRunnable(() -> {
-                    if (currentLevel != null) {
-                        currentLevel.dispose(game.engine);
-                    }
-                    currentLevel = game.levelLoader.load(levelName);
-                    game.engine.getSystem(PowerUpSystem.class).setLevel(currentLevel);
-                }
-        );
+        if (currentLevel != null) {
+            currentLevel.dispose(game.engine);
+        }
+        currentLevel = game.levelLoader.load(levelName);
+        game.engine.getSystem(PowerUpSystem.class).setLevel(currentLevel);
     }
 }

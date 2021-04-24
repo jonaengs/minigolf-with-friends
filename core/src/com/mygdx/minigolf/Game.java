@@ -24,6 +24,7 @@ public class Game extends com.badlogic.gdx.Game {
         instance = this;
         music = Gdx.audio.newMusic(Gdx.files.internal("music/Maxime Abbey - Operation Stealth - The Ballad of J. & J.ogg"));
         music.setLooping(true);
+        music.setVolume(1);
 
         screenController = new ScreenController(this);
         screenController.changeScreen(ViewFactory.MainMenuView());

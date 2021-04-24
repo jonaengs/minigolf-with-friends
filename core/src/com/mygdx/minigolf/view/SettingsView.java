@@ -32,7 +32,8 @@ public class SettingsView extends View {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 Music music = Game.getInstance().music;
-                music.setVolume(music.getVolume() > 0 ? 0 : 1);
+                if (music.isPlaying()) music.stop();
+                else music.play();
             }
         });
     }

@@ -9,6 +9,7 @@ import com.mygdx.minigolf.view.GameView;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Map;
 
 public class ClientGameController extends GameController implements GameData.Notifiable {
     Client client;
@@ -19,7 +20,7 @@ public class ClientGameController extends GameController implements GameData.Not
         gameData = GameData.get();
         client = new Client();
 
-        GameData.subscribe(this, gameData.levelName, gameData.state);
+        GameData.subscribe(this, gameData.levelName, gameData.state, gameData.players);
     }
 
     public void createLobby() throws IOException {
@@ -70,16 +71,17 @@ public class ClientGameController extends GameController implements GameData.Not
     public void notify(Object change, GameData.Event event) {
         switch (event) {
             case LEVEL_NAME_SET:
+                System.out.println(0);
                 loadLevel((String) change);
+                System.out.println(1);
                 resetPlayers();
+                System.out.println(2);
                 break;
             case STATE_SET:
                 switch ((GameData.State) change) {
                     case INITIALIZING_GAME:
                         game.create();
                         createPlayers();
-                        Entity localPlayer = gameData.players.get().get(gameData.localPlayerName.get());
-                        setInput(localPlayer);
                         break;
                     case GAME_OVER:
                         try {
@@ -89,6 +91,10 @@ public class ClientGameController extends GameController implements GameData.Not
                         }
                         break;
                 }
+                break;
+            case PLAYERS_SET:
+                Entity localPlayer = ((Map<String, Entity>) change).get(gameData.localPlayerName.get());
+                setInput(localPlayer);
                 break;
             case PLAYER_REMOVED:
                 String playerName = (String) change;

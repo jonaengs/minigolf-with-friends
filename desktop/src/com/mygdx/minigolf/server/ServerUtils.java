@@ -16,6 +16,7 @@ public class ServerUtils {
         config.x = 100; config.y = 100;
         config.width = 1280; config.height = 720;
         config.useHDPI = true;
+        config.foregroundFPS = Constants.FPS;
         return new LwjglApplication(game, config);
     }
 

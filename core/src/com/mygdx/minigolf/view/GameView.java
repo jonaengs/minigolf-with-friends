@@ -28,6 +28,8 @@ public class GameView extends HeadlessGame implements Screen {
         Gdx.gl.glClearColor(0.5f, 0.5f, 0.7f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        // System.out.println(Gdx.graphics.getFramesPerSecond());
+
         engine.update(delta);
     }
 

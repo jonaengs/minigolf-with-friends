@@ -11,7 +11,8 @@ public final class Constants {
     public static final float REFRESH_RATE = 1f / FPS;
 
     // Client
-    public static final String SERVER_IP = System.getenv("SERVER_IP");
+    // public static final String SERVER_IP = System.getenv("SERVER_IP");
+    public static final String SERVER_IP = "192.168.0.146";
 
     // Server
     public static final Integer DEFAULT_NUM_TICKS = 30;

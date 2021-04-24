@@ -132,8 +132,8 @@ public class GameData {
         }
 
         private void _set(T newData) {
-            subscribers.forEach(o -> o.notify(newData, changeEvent));
             data.set(newData);
+            subscribers.forEach(o -> o.notify(newData, changeEvent));
         }
 
         public void subscribe(Notifiable notifiable) {
