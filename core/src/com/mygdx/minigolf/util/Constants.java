@@ -11,8 +11,8 @@ public final class Constants {
     public static final float REFRESH_RATE = 1f / FPS;
 
     // Client
-    // public static final String SERVER_IP = System.getenv("SERVER_IP");
-    public static final String SERVER_IP = "192.168.0.146";
+    public static final String SERVER_IP = or(System.getenv("SERVER_IP"), "golf.intveld.no");
+    // public static final String SERVER_IP = "192.168.0.146";
 
     // Server
     public static final Integer DEFAULT_NUM_TICKS = 30;
@@ -48,5 +48,15 @@ public final class Constants {
             "Other colored circles are power-ups, these give you some special ability such as no collision or an exploding ball\n" +
             "Everything green is considered the playing area, but be aware of obstacles.\n" +
             "If you wish you can enable/disable the music by navigating to settings.";
+
+    /**
+     * Returns first non-null value
+     */
+    private static <T> T or(T... values) {
+        for (T value : values) {
+            if (value != null) return value;
+        }
+        return null;
+    }
 
 }
