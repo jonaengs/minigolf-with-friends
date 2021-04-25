@@ -7,21 +7,22 @@ public final class Constants {
     // Graphics
     public static final int SCREEN_WIDTH = 1280;
     public static final int SCREEN_HEIGHT = 720;
-    public static final int FPS = 30;
+    public static final int FPS = 60;
     public static final float REFRESH_RATE = 1f / FPS;
 
     // Client
-    public static final String SERVER_IP = or(System.getenv("SERVER_IP"), "golf.intveld.no");
+    public static final String SERVER_IP = null;
+    // public static final String SERVER_IP = or(System.getenv("SERVER_IP"), "golf.intveld.no");
     // public static final String SERVER_IP = "192.168.0.146";
 
     // Server
-    public static final Integer DEFAULT_NUM_TICKS = 30;
+    public static final Integer DEFAULT_NUM_TICKS = FPS;
     public static final int NUM_TICKS = Integer.parseInt(Optional.ofNullable(System.getenv("NUM_TICKS")).orElse(DEFAULT_NUM_TICKS.toString()));
     public static final float SERVER_TICK_RATE = 1f / NUM_TICKS;
     public static final long SERVER_TICK_RATE_MS = 1000 / NUM_TICKS;
 
     // Physics
-    public static float PHYSICS_TICK_RATE = REFRESH_RATE;
+    public static float PHYSICS_TICK_RATE = SERVER_TICK_RATE;
 
     // Gameplay
     public static final int MAX_NUM_PLAYERS = 5;
