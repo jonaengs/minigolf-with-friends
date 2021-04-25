@@ -19,6 +19,7 @@ public class InputHandler extends InputAdapter {
     public final static Vector2 input = new Vector2(0, 0);
     private final OrthographicCamera cam;
     private final Body ball;
+    private final Entity player;
 
     private final Body directionIndicatorBody;
     private final Body strengthIndicatorBody;
@@ -30,6 +31,7 @@ public class InputHandler extends InputAdapter {
 
     public InputHandler(OrthographicCamera cam, Entity player, EntityFactory factory) {
         this.cam = cam;
+        this.player = player;
         this.ball = PhysicalMapper.get(player).getBody();
         Entity directionIndicator = factory.createInputDirectionIndicator(ball.getPosition());
         Entity strengthIndicator = factory.createInputStrengthIndicator(ball.getPosition());
@@ -109,7 +111,7 @@ public class InputHandler extends InputAdapter {
 
             // Update stroke count for player
             // TODO: Move to GameData and use notifications
-            // ComponentMappers.PlayerMapper.get(this.player).incrementStrokes();
+            ComponentMappers.PlayerMapper.get(this.player).incrementStrokes();
         }
 
         return true;
