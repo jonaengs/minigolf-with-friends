@@ -4,6 +4,7 @@ package com.mygdx.minigolf.desktop;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import com.mygdx.minigolf.Game;
+import com.mygdx.minigolf.util.Constants;
 import com.mygdx.minigolf.view.GameView;
 
 
@@ -14,6 +15,7 @@ public class DesktopLauncher {
         config.y = 100;
         config.width = 1280;
         config.height = 720;
+        config.foregroundFPS = Constants.FPS;
         new LwjglApplication(new Game(), config);
     }
 }

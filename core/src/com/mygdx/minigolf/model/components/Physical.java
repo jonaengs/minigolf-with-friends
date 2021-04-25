@@ -9,6 +9,7 @@ import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.joints.FrictionJoint;
+import com.mygdx.minigolf.util.Constants;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,6 +31,10 @@ public class Physical implements Component {
     public Physical(Body body, float friction) {
         this.body = body;
         this.friction = friction;
+    }
+
+    public boolean isMoving() {
+        return !getVelocity().isZero(Constants.MOVING_MARGIN);
     }
 
     public Body getBody() {

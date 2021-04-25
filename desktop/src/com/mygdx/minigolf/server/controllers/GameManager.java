@@ -2,8 +2,6 @@ package com.mygdx.minigolf.server.controllers;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Application;
-import com.badlogic.gdx.backends.headless.HeadlessApplication;
-import com.badlogic.gdx.backends.headless.HeadlessApplicationConfiguration;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.HeadlessGame;
 import com.mygdx.minigolf.controller.GameController;
@@ -144,8 +142,11 @@ public class GameManager extends BaseController<GameCommunicationHandler, Server
                             exitingPlayers.add(comm.playerName);
                             break;
                         case INPUT:
-                            playerPhysicals.get(comm.playerName).setVelocity((Vector2) msg.data);
-                            PlayerMapper.get(players.get(comm.playerName)).incrementStrokes();
+                            Physical playerPhysics = playerPhysicals.get(comm.playerName);
+                            if (!playerPhysics.isMoving()) {
+                                playerPhysics.setVelocity((Vector2) msg.data);
+                                PlayerMapper.get(players.get(comm.playerName)).incrementStrokes();
+                            }
                             break;
                     }
                 }
@@ -156,6 +157,7 @@ public class GameManager extends BaseController<GameCommunicationHandler, Server
 
             // TODO: Where is engine.update()??
             delta = System.currentTimeMillis() - t0;
+            System.out.println(delta);
             ServerUtils.sleep(Math.max(0, Constants.SERVER_TICK_RATE_MS - delta));
         }
     }

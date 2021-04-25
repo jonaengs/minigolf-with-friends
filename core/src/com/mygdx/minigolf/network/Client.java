@@ -67,7 +67,7 @@ public class Client implements Runnable {
     private void send(Message msg) throws IOException {
         System.out.println("send:\t" + msg);
         objOut.writeObject(msg);
-        objOut.flush();
+        objOut.reset(); // Prevent cached values of mutable objects being sent again
     }
 
     @Override
@@ -143,11 +143,9 @@ public class Client implements Runnable {
                         break;
                     case IN_GAME:
                         synchronized (InputHandler.input) {
-                            if (!InputHandler.input.isZero(0.1f)) {
+                            if (!InputHandler.input.isZero(Constants.MOVING_MARGIN)) {
                                 System.out.println("PLAYER INPUT: " + InputHandler.input);
-                                // Must send new vector for input each time or call objOut.reset() for each input,
-                                // otherwise objOut will cache input values and always send duplicates of those
-                                send(new Message<>(ClientGameCommand.INPUT, new Vector2(InputHandler.input)));
+                                send(new Message<>(ClientGameCommand.INPUT, InputHandler.input));
                                 InputHandler.input.setZero();
                             }
                         }
