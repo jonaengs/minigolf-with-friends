@@ -42,14 +42,14 @@ public class GameData {
         lobbyID = new Observable<>(0, LOBBY_ID_SET);
     }
 
-    public static synchronized GameData get() {
+    public static GameData get() {
         if (instance == null) {
             instance = new GameData();
         }
         return instance;
     }
 
-    public static synchronized GameData reset() {
+    public static GameData reset() {
         // TODO: Remove all references to old object: Drop all subscribers, etc.
         instance = new GameData();
         return instance;

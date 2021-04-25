@@ -1,7 +1,5 @@
 package com.mygdx.minigolf.server;
 
-import com.mygdx.minigolf.util.Constants;
-
 import java.io.IOException;
 import java.util.stream.Collectors;
 
