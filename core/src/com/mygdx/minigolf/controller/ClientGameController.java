@@ -71,11 +71,8 @@ public class ClientGameController extends GameController implements GameData.Not
     public void notify(Object change, GameData.Event event) {
         switch (event) {
             case LEVEL_NAME_SET:
-                System.out.println(0);
                 loadLevel((String) change);
-                System.out.println(1);
                 resetPlayers();
-                System.out.println(2);
                 break;
             case STATE_SET:
                 switch ((GameData.State) change) {

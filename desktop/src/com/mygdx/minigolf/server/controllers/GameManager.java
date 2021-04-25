@@ -157,7 +157,6 @@ public class GameManager extends BaseController<GameCommunicationHandler, Server
 
             // TODO: Where is engine.update()??
             delta = System.currentTimeMillis() - t0;
-            System.out.println(delta);
             ServerUtils.sleep(Math.max(0, Constants.SERVER_TICK_RATE_MS - delta));
         }
     }
