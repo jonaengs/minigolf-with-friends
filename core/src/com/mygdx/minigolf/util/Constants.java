@@ -15,7 +15,6 @@ public final class Constants {
 
     // Client
     private static final String DEFAULT_SERVER = null; // "golf.intveld.no";
-    public static final String SERVER_ADDRESS = getServerAddress();
 
     // Server
     public static final Integer DEFAULT_NUM_TICKS = FPS;
@@ -62,7 +61,8 @@ public final class Constants {
         return null;
     }
 
-    private static String getServerAddress() {
+    // TODO: Move to more fitting class
+    public static String getServerAddress() {
         String env = System.getenv("SERVER_IP");
         if (env != null)
             return env;
@@ -72,7 +72,7 @@ public final class Constants {
             return "localhost";
         else if (Gdx.app.getType() == Application.ApplicationType.Android)
             return "10.0.2.2";
-        throw new RuntimeException();
+        return null;
     }
 
 }

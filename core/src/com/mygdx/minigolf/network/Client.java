@@ -35,7 +35,7 @@ public class Client implements Runnable {
     MessageBuffer recvBuffer;
 
     public Client() throws IOException {
-        socket = new Socket(Constants.SERVER_ADDRESS, 8888);
+        socket = new Socket(Constants.getServerAddress(), 8888);
         socket.setTcpNoDelay(true);
         objOut = new ObjectOutputStream(socket.getOutputStream());
         recvBuffer = new MessageBuffer(new ObjectInputStream(socket.getInputStream())); // Must be instantiated after objOut
@@ -64,8 +64,6 @@ public class Client implements Runnable {
         Thread.currentThread().setName(this.getClass().getName());
         GameData gameData = GameData.get();
 
-        // TODO: Handle GAME_COMPLETE. Handle score screen.
-        // TODO: Consider wrapping state in an AtomicReference so it can be changed by other threads
         // TODO: Handle unexpected messages (invalid state & msg.cmd combinations)
         Message<ServerLobbyCommand> lm;
         Message<ServerGameCommand> gm;
@@ -77,8 +75,8 @@ public class Client implements Runnable {
                         lm = recvBuffer.waitMsg();
                         switch (lm.command) {
                             case LOBBY_ID:
-                                gameData.lobbyID.set((Integer) lm.data);
                                 gameData.state.waitSet(IN_LOBBY);
+                                gameData.lobbyID.set((Integer) lm.data);
                                 break;
                             case LOBBY_NOT_FOUND:
                                 gameData.lobbyID.set(-1);

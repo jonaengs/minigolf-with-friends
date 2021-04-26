@@ -52,7 +52,7 @@ public class Player implements Component {
         return this.effects;
     }
 
-    public void removeEffects() {
+    public void removeExhaustedEffects() {
         this.effects = effects.stream().filter(effect -> effect.getConstraint().powerExhausted(this.levelStrokes)).collect(Collectors.toList());
     }
 

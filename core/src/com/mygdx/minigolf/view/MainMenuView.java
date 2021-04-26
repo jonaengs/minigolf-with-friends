@@ -30,7 +30,7 @@ public class MainMenuView extends View {
         tutorial = new TextButton("Tutorial", skin);
         tutorial.addListener(new ChangeViewListener(ViewFactory.TutorialView()));
 
-        connectionError = new Label("Unable to connect to server: " + Constants.SERVER_ADDRESS, skin);
+        connectionError = new Label("Unable to connect to server: " + Constants.getServerAddress(), skin);
         connectionError.setColor(1, 0, 0, 1);
 
         // Transform actors
