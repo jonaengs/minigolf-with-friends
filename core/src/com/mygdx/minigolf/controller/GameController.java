@@ -23,7 +23,9 @@ public class GameController {
     }
 
     public static void resetPhysicals(Entity player, LevelLoader.Level level) {
-        PhysicalMapper.get(player).setPosition(level.getSpawnCenter());
+        Physical playerPhysics = PhysicalMapper.get(player);
+        playerPhysics.setPosition(level.getSpawnCenter());
+        playerPhysics.setVelocity(0, 0);
     }
 
     public Map<String, Entity> createPlayers(List<String> playerNames) {
@@ -34,9 +36,7 @@ public class GameController {
     }
 
     public void resetPhysicals(Entity player) {
-        Physical playerPhysics = PhysicalMapper.get(player);
-        playerPhysics.setPosition(currentLevel.getSpawnCenter());
-        playerPhysics.setVelocity(0, 0);
+        resetPhysicals(player, currentLevel);
     }
 
     public void resetPlayers(Collection<Entity> players) {
