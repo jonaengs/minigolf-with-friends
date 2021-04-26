@@ -1,5 +1,8 @@
 package com.mygdx.minigolf.util;
 
+import com.badlogic.gdx.Application;
+import com.badlogic.gdx.Gdx;
+
 import java.util.Optional;
 
 public final class Constants {
@@ -11,9 +14,8 @@ public final class Constants {
     public static final float REFRESH_RATE = 1f / FPS;
 
     // Client
-    public static final String SERVER_IP = null;
-    // public static final String SERVER_IP = or(System.getenv("SERVER_IP"), "golf.intveld.no");
-    // public static final String SERVER_IP = "192.168.0.146";
+    private static final String DEFAULT_SERVER = null; // "golf.intveld.no";
+    public static final String SERVER_ADDRESS = getServerAddress();
 
     // Server
     public static final Integer DEFAULT_NUM_TICKS = FPS;
@@ -58,6 +60,19 @@ public final class Constants {
             if (value != null) return value;
         }
         return null;
+    }
+
+    private static String getServerAddress() {
+        String env = System.getenv("SERVER_IP");
+        if (env != null)
+            return env;
+        else if (DEFAULT_SERVER != null)
+            return DEFAULT_SERVER;
+        else if (Gdx.app.getType() == Application.ApplicationType.Desktop)
+            return "localhost";
+        else if (Gdx.app.getType() == Application.ApplicationType.Android)
+            return "10.0.2.2";
+        throw new RuntimeException();
     }
 
 }

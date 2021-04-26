@@ -82,7 +82,7 @@ public class LobbyView extends View {
                 }
                 // Disable start button if not lobby leader (Naively assumes first name in playerNames list is leader's name)
                 if (!playerNames.get(0).contentEquals(GameData.get().localPlayerName.get())) {
-                    start.setDisabled(true);
+                    start.remove();
                 }
                 break;
         }
