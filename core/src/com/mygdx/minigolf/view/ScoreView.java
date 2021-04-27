@@ -50,7 +50,7 @@ public class ScoreView extends View {
                 .sorted(Map.Entry.comparingByValue())
                 .map(entry -> {
                     String player = entry.getKey();
-                    String suffix = localPlayer.contentEquals(player) ? "\t<-- (YOU)" : "";
+                    String suffix = localPlayer.contentEquals(player) ? "\t<-- YOU" : "";
                     return new Label(player + "\t" + entry.getValue() + suffix, skin);
                 })
                 .collect(Collectors.toList());
