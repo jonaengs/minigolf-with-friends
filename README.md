@@ -39,6 +39,12 @@ To run the server, simply run `docker-compose up`. This will first build the doc
 then start the server. You can also add the `-d` flag to start it in detached mode in the background. If so,
 then `docker-compose down` will stop the server.
 
+# Project Structure
+
+The project is divided into three main parts: android, desktop and core. Core contains all of the game's core logic. Android part contains the logic for running and compiling the game for Android OS. Desktop contains logic for running and compiling the game on a desktop environment, plus the server logic. 
+
+Within the core module, the game is mainly divided between three packages: model, view and controller, after the Model-View-Controller (MVC) architecture pattern. The two other packages, util and network contain utility classes and networking related code. The Game and HeadlessGame classes are the main game classes, with Game being the class that is used to start the game when running it on your local device. The HeadlessGame class is used by the server when it runs the game. 
+
 # Configuration
 
 You can change some environment variables to change how the game runs.
@@ -52,6 +58,8 @@ SERVER_IP=localhost java -jar desktop-1.0.jar
 ````
 
 By default, it will try and connect to `golf.intveld.no`.
+Since setting environment variables on Android isn't really a possibility, it is also possible to change the DEFAULT_SERVER value in the Constants class. 
+Setting DEFAULT_SERVER to null will make the client connect to "localhost" on the desktop version and "10.0.2.2" (your computer's localhost when playing on a connected phone or using the emulator) on the android version.
 
 ### `NUM_TICKS`
 
