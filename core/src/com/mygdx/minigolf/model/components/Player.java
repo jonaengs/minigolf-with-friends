@@ -32,6 +32,10 @@ public class Player implements Component {
         levelStrokes = 0;
     }
 
+    public void setStrokes(int strokes) {
+        this.levelStrokes = strokes;
+    }
+
     public int getStrokes() {
         return totalStrokes + levelStrokes;
     }

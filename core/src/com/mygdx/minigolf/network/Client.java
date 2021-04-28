@@ -10,6 +10,7 @@ import com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand;
 import com.mygdx.minigolf.network.messages.Message.ServerGameCommand;
 import com.mygdx.minigolf.network.messages.Message.ServerLobbyCommand;
 import com.mygdx.minigolf.network.messages.NetworkedGameState;
+import com.mygdx.minigolf.util.ComponentMappers;
 import com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.util.ConcurrencyUtils;
 import com.mygdx.minigolf.util.Constants;
@@ -144,6 +145,7 @@ public class Client implements Runnable {
                                         phys.setVelocity(entry.getValue().velocity);
                                         phys.setPosition(entry.getValue().position);
                                         // phys.moveTowards(entry.getValue().position);
+                                        ComponentMappers.PlayerMapper.get(gameData.players.get().get(entry.getKey())).setStrokes(entry.getValue().strokes);
                                     })
                             );
                         } else {
