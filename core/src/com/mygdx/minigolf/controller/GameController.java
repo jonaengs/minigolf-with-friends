@@ -43,7 +43,7 @@ public class GameController {
         players.forEach(p -> {
                     resetPhysicals(p);
                     PlayerMapper.get(p).setCompleted(false);
-                    PlayerMapper.get(p).removeEffects();
+                    PlayerMapper.get(p).removeExhaustedEffects();
                     PlayerMapper.get(p).resetStrokes();
                 }
         );

@@ -87,6 +87,7 @@ public class GameManager extends BaseController<GameCommunicationHandler, Server
                             PlayerState playerState = networkedGameState.stateMap.get(entry.getKey());
                             playerState.position = entry.getValue().getPosition();
                             playerState.velocity = entry.getValue().getVelocity();
+                            playerState.strokes = PlayerMapper.get(players.get(entry.getKey())).getLevelStrokes();
                         }
                 )
         );

@@ -1,9 +1,6 @@
 package com.mygdx.minigolf.network;
 
 
-import com.badlogic.gdx.Application;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.math.Vector2;
 import com.mygdx.minigolf.controller.InputHandler;
 import com.mygdx.minigolf.model.GameData;
 import com.mygdx.minigolf.model.components.Physical;
@@ -13,6 +10,7 @@ import com.mygdx.minigolf.network.messages.Message.ClientLobbyCommand;
 import com.mygdx.minigolf.network.messages.Message.ServerGameCommand;
 import com.mygdx.minigolf.network.messages.Message.ServerLobbyCommand;
 import com.mygdx.minigolf.network.messages.NetworkedGameState;
+import com.mygdx.minigolf.util.ComponentMappers;
 import com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper;
 import com.mygdx.minigolf.util.ConcurrencyUtils;
 import com.mygdx.minigolf.util.Constants;
@@ -24,6 +22,7 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.mygdx.minigolf.model.GameData.State.INITIALIZING_GAME;
 import static com.mygdx.minigolf.model.GameData.State.IN_LOBBY;
@@ -31,25 +30,16 @@ import static com.mygdx.minigolf.model.GameData.State.IN_MENU;
 import static com.mygdx.minigolf.model.GameData.State.JOINING_LOBBY;
 
 public class Client implements Runnable {
+    public AtomicBoolean running = new AtomicBoolean(true);
     Socket socket;
     ObjectOutputStream objOut;
     MessageBuffer recvBuffer;
 
     public Client() throws IOException {
-        socket = new Socket(getIP(), 8888);
+        socket = new Socket(Constants.getServerAddress(), 8888);
         socket.setTcpNoDelay(true);
         objOut = new ObjectOutputStream(socket.getOutputStream());
         recvBuffer = new MessageBuffer(new ObjectInputStream(socket.getInputStream())); // Must be instantiated after objOut
-    }
-
-    private String getIP() {
-        if (Constants.SERVER_IP != null)
-            return Constants.SERVER_IP;
-        else if (Gdx.app.getType() == Application.ApplicationType.Desktop)
-            return "localhost";
-        else if (Gdx.app.getType() == Application.ApplicationType.Android)
-            return "10.0.2.2";
-        throw new RuntimeException();
     }
 
     public void createLobby() throws IOException {
@@ -75,12 +65,10 @@ public class Client implements Runnable {
         Thread.currentThread().setName(this.getClass().getName());
         GameData gameData = GameData.get();
 
-        // TODO: Handle GAME_COMPLETE. Handle score screen.
-        // TODO: Consider wrapping state in an AtomicReference so it can be changed by other threads
         // TODO: Handle unexpected messages (invalid state & msg.cmd combinations)
         Message<ServerLobbyCommand> lm;
         Message<ServerGameCommand> gm;
-        while (true) {
+        while (running.get()) {
             try {
                 switch (gameData.state.get()) {
                     /* INITIAL SETUP STATES */
@@ -88,8 +76,8 @@ public class Client implements Runnable {
                         lm = recvBuffer.waitMsg();
                         switch (lm.command) {
                             case LOBBY_ID:
-                                gameData.lobbyID.set((Integer) lm.data);
                                 gameData.state.waitSet(IN_LOBBY);
+                                gameData.lobbyID.set((Integer) lm.data);
                                 break;
                             case LOBBY_NOT_FOUND:
                                 gameData.lobbyID.set(-1);
@@ -157,6 +145,7 @@ public class Client implements Runnable {
                                         phys.setVelocity(entry.getValue().velocity);
                                         phys.setPosition(entry.getValue().position);
                                         // phys.moveTowards(entry.getValue().position);
+                                        ComponentMappers.PlayerMapper.get(gameData.players.get().get(entry.getKey())).setStrokes(entry.getValue().strokes);
                                     })
                             );
                         } else {
@@ -187,19 +176,18 @@ public class Client implements Runnable {
                         System.out.println("Exiting... (GAME OVER)");
                         return;
                 }
-            } catch (Exception e1) {
-                recvBuffer.running.set(false);
-                try {
-                    if (Arrays.asList(JOINING_LOBBY, IN_LOBBY, IN_MENU, INITIALIZING_GAME).contains(gameData.state.get()))
-                        send(new Message<>(ClientLobbyCommand.EXIT));
-                    else
-                        send(new Message<>(ClientGameCommand.EXIT));
-                } catch (IOException e2) {
-                    e2.printStackTrace();
-                }
-                e1.printStackTrace();
-                return;
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+        }
+        recvBuffer.running.set(false);
+        try {
+            if (Arrays.asList(JOINING_LOBBY, IN_LOBBY, IN_MENU, INITIALIZING_GAME).contains(gameData.state.get()))
+                send(new Message<>(ClientLobbyCommand.EXIT));
+            else
+                send(new Message<>(ClientGameCommand.EXIT));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

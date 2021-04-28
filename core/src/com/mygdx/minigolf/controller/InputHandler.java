@@ -10,6 +10,7 @@ import com.mygdx.minigolf.model.components.Graphical;
 import com.mygdx.minigolf.util.ComponentMappers;
 import com.mygdx.minigolf.util.ComponentMappers.GraphicalMapper;
 import com.mygdx.minigolf.util.ComponentMappers.PhysicalMapper;
+import com.mygdx.minigolf.util.Constants;
 
 /*
  *  Handles touch input to control movement of ball
@@ -96,7 +97,7 @@ public class InputHandler extends InputAdapter {
             strengthIndicatorBody.setActive(false);
         }
 
-        if (ball.getLinearVelocity().isZero(0.01f)) {
+        if (ball.getLinearVelocity().isZero(Constants.MOVING_MARGIN)) {
             Vector3 dragEndPos = new Vector3(x, y, 0);
             cam.unproject(dragEndPos);
 
@@ -106,12 +107,6 @@ public class InputHandler extends InputAdapter {
                 input.set(force.x, force.y);
                 System.out.println("input: " + input);
             }
-
-            ball.applyLinearImpulse(force.x, force.y, dragEndPos.x, dragEndPos.y, true);
-
-            // Update stroke count for player
-            // TODO: Move to GameData and use notifications
-            ComponentMappers.PlayerMapper.get(this.player).incrementStrokes();
         }
 
         return true;

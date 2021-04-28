@@ -4,31 +4,33 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Align;
 import com.mygdx.minigolf.model.GameData;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 
 public class ScoreView extends View {
+    List<Label> playerLabels = new ArrayList<>();
+    Label title;
 
     public ScoreView(GameData.Observable... observables) {
         super(observables);
         setupSubscriptions();
         // Creating actors
-        Label title = new Label("Scores", skin);
+        title = new Label("Scores", skin);
 
         // Transform actors
         title.setFontScale(2f);
         title.setOrigin(Align.center);
-
-        // Adding actors to table
-        table.add(title).expandX();
-        table.row().pad(10f, 0, 10f, 0);
-        title.setFontScale(1f);
     }
 
     @Override
     public void show() { // Don't change user input
+        table.reset();
+        table.add(title).expandX();
+        table.row().pad(10f, 0, 10f, 0);
+        title.setFontScale(1f);
     }
 
     @Override
@@ -48,15 +50,15 @@ public class ScoreView extends View {
                 .sorted(Map.Entry.comparingByValue())
                 .map(entry -> {
                     String player = entry.getKey();
-                    String suffix = localPlayer.contentEquals(player) ? "\t<-- (YOU)" : "";
+                    String suffix = localPlayer.contentEquals(player) ? "\t<-- YOU" : "";
                     return new Label(player + "\t" + entry.getValue() + suffix, skin);
                 })
                 .collect(Collectors.toList());
-
     }
 
     private void createScoreBoard(Map<String, Integer> scores) {
-        for (Label label : generatePlayerLabels(scores)) {
+        playerLabels = generatePlayerLabels(scores);
+        for (Label label : playerLabels) {
             table.add(label).expandX();
             table.row().pad(10f, 0, 10f, 0);
         }
@@ -69,6 +71,7 @@ public class ScoreView extends View {
                 // setupScoreBoard((Map<String, Entity>) change); // Requires scoreboard to not be lazily created
                 break;
             case SCORES_SET:
+                playerLabels.forEach(label -> table.removeActor(label));
                 createScoreBoard((Map<String, Integer>) change);
                 break;
         }

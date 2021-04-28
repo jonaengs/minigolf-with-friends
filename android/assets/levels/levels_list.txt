@@ -1,3 +1,2 @@
 mia.xml
-new_level.xml
 no_collision_race.xml

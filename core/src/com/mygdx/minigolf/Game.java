@@ -29,11 +29,6 @@ public class Game extends com.badlogic.gdx.Game {
         screenController = new ScreenController(this);
         screenController.changeScreen(ViewFactory.MainMenuView());
 
-        try {
-            gameController = new ClientGameController(ViewFactory.GameView());
-        } catch (IOException e) {
-            // No use continuing without a game controller. Let it crash.
-            throw new RuntimeException(e);
-        }
+        gameController = new ClientGameController(ViewFactory.GameView());
     }
 }

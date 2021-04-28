@@ -44,10 +44,10 @@ public class JoinGameView extends View {
             public void changed(ChangeEvent event, Actor actor) {
                 status.setText("Attempting to join lobby " + code.getText());
                 Integer lobbyID = Integer.parseInt(code.getText());
-                try { // TODO: Better way to access game controller
+                try {
                     Game.getInstance().gameController.joinLobby(lobbyID);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    status.setText("A network error has occurred. Try restarting the game");
                 }
             }
         });
@@ -63,10 +63,13 @@ public class JoinGameView extends View {
     @Override
     public void notify(Object change, GameData.Event changeEvent) {
         if (changeEvent == GameData.Event.LOBBY_ID_SET) {
-            if ((int) change == -1) {
+            Integer lobbyID = (Integer) change;
+            if (lobbyID == -1) {
                 status.setText("Could not find lobby: " + code.getText());
-            } else if ((int) change == -2) {
+            } else if (lobbyID == -2) {
                 status.setText("Lobby full: " + code.getText());
+            } else {
+                code.setText(lobbyID.toString());
             }
         }
     }

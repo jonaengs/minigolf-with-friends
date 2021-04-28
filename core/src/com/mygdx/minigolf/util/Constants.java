@@ -1,5 +1,8 @@
 package com.mygdx.minigolf.util;
 
+import com.badlogic.gdx.Application;
+import com.badlogic.gdx.Gdx;
+
 public final class Constants {
 
     // Graphics
@@ -7,22 +10,17 @@ public final class Constants {
     public static final int SCREEN_HEIGHT = 720;
     public static final int FPS = 60;
     public static final float REFRESH_RATE = 1f / FPS;
-
     // Client
-    public static final String SERVER_IP = or(System.getenv("SERVER_IP"), "golf.intveld.no");
-
+    private static final String DEFAULT_SERVER = "golf.intveld.no"; // Set to null to use localhost
     // Server
     public static final Integer DEFAULT_NUM_TICKS = FPS;
     public static final int NUM_TICKS = or(tryParse(System.getenv("NUM_TICKS")), DEFAULT_NUM_TICKS);
     public static final float SERVER_TICK_RATE = 1f / NUM_TICKS;
     public static final long SERVER_TICK_RATE_MS = 1000 / NUM_TICKS;
-
-    // Physics
-    public static float PHYSICS_TICK_RATE = SERVER_TICK_RATE;
-
     // Gameplay
     public static final int MAX_NUM_PLAYERS = 5;
-
+    // Physics
+    public static float PHYSICS_TICK_RATE = SERVER_TICK_RATE;
     // Box2D fixture filters
     public static final short BIT_PLAYER = 1;
     public static final short BIT_WALL = 2;
@@ -31,10 +29,8 @@ public final class Constants {
     public static final short BIT_POWERUP = 16;
     public static final short BIT_SPAWN = 32;
     public static final short BIT_OBSTACLE = 64;
-
     // Other
     public static final float MOVING_MARGIN = 0.1f;
-
     public static final String TUTORIAL_TEXT = "Singleplayer\n" +
             "To play singleplayer just click 'New Game', followed by 'Start' on the next screen.\n\n" +
             "Multiplayer\n" +
@@ -46,6 +42,7 @@ public final class Constants {
             "Everything green is considered the playing area, but be aware of obstacles.\n" +
             "If you wish you can enable/disable the music by navigating to settings.";
 
+
     /**
      * Returns first non-null value
      */
@@ -53,6 +50,22 @@ public final class Constants {
         for (T value : values) {
             if (value != null) return value;
         }
+        return null;
+    }
+
+    // TODO: Move to more fitting class
+    public static String getServerAddress() {
+        String env = System.getenv("SERVER_IP");
+        if (env != null)
+            return env;
+        else if (DEFAULT_SERVER != null)
+            return DEFAULT_SERVER;
+        else if (Gdx.app.getType() == Application.ApplicationType.Desktop)
+            return "localhost";
+        else if (Gdx.app.getType() == Application.ApplicationType.Android)
+            return "10.0.2.2";
+        else if (Gdx.app.getType() == Application.ApplicationType.HeadlessDesktop)
+            return "";
         return null;
     }
 

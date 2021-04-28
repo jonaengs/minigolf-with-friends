@@ -32,6 +32,10 @@ public class Player implements Component {
         levelStrokes = 0;
     }
 
+    public void setStrokes(int strokes) {
+        this.levelStrokes = strokes;
+    }
+
     public int getStrokes() {
         return totalStrokes + levelStrokes;
     }
@@ -52,7 +56,7 @@ public class Player implements Component {
         return this.effects;
     }
 
-    public void removeEffects() {
+    public void removeExhaustedEffects() {
         this.effects = effects.stream().filter(effect -> effect.getConstraint().powerExhausted(this.levelStrokes)).collect(Collectors.toList());
     }
 
