@@ -7,6 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.mygdx.minigolf.Game;
 import com.mygdx.minigolf.model.GameData;
+import com.mygdx.minigolf.util.Constants;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,9 +15,8 @@ import java.util.List;
 
 public class LobbyView extends View {
 
-    public static final int MAX_NUM_PLAYERS = 4;
+    private final List<Label> playerLabels = new ArrayList<>();
     Label lobbyIDLabel;
-    private List<Label> playerLabels = new ArrayList<>();
     TextButton start;
 
     public LobbyView(GameData.Observable... observables) {
@@ -39,23 +39,7 @@ public class LobbyView extends View {
         start.scaleBy(1f);
         start.setOrigin(Align.center);
 
-        // Add actors to table
-        table.add(title).expandX();
-        table.row().pad(20f, 0, 40f, 0);
-        table.add(lobbyIDLabel).expandX();
-        table.row().pad(10f, 0, 40f, 0);
-        table.add(players).expandX();
-
-        for (int i = 0; i < MAX_NUM_PLAYERS; i++) {
-            Label player = new Label("Player [empty]", skin);
-            table.row().pad(10f, 0, 10f, 0);
-            table.add(player).expandX();
-            this.playerLabels.add(player);
-        }
-
-        table.row().pad(50f, 0, 0, 0);
-        table.add(start).expandX();
-
+        // Setup start button
         start.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -66,6 +50,30 @@ public class LobbyView extends View {
                 }
             }
         });
+
+        // Add actors to table
+        table.add(title).expandX();
+        table.row().pad(20f, 0, 40f, 0);
+        table.add(lobbyIDLabel).expandX();
+        table.row().pad(10f, 0, 40f, 0);
+        table.add(players).expandX();
+
+        for (int i = 0; i < Constants.MAX_NUM_PLAYERS; i++) {
+            Label player = new Label("-", skin);
+            table.row().pad(10f, 0, 10f, 0);
+            table.add(player).expandX();
+            this.playerLabels.add(player);
+        }
+
+        table.row().pad(50f, 0, 0, 0);
+        table.add(start).expandX();
+    }
+
+    @Override
+    public void show() {
+        super.show();
+        start.setVisible(true);
+        start.setDisabled(false);
     }
 
     @Override
@@ -77,14 +85,16 @@ public class LobbyView extends View {
                 break;
             case PLAYER_NAMES_SET:
                 List<String> playerNames = (List<String>) change;
-                for (int i = 0; i < playerNames.size(); i++) {
-                    playerLabels.get(i).setText(playerNames.get(i));
+                for (int i = 0; i < Constants.MAX_NUM_PLAYERS; i++) {
+                    playerLabels.get(i).setText(i < playerNames.size() ? playerNames.get(i) : "-");
                 }
                 // Disable start button if not lobby leader (Naively assumes first name in playerNames list is leader's name)
                 if (!playerNames.get(0).contentEquals(GameData.get().localPlayerName.get())) {
+                    start.setVisible(false);
                     start.setDisabled(true);
                 }
                 break;
         }
     }
+
 }

@@ -8,17 +8,15 @@ import com.mygdx.minigolf.network.Client;
 import com.mygdx.minigolf.view.GameView;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Map;
 
 public class ClientGameController extends GameController implements GameData.Notifiable {
     Client client;
     GameData gameData;
 
-    public ClientGameController(GameView game) throws IOException {
+    public ClientGameController(GameView game) {
         super(game);
         gameData = GameData.get();
-        client = new Client();
 
         GameData.subscribe(this, gameData.levelName, gameData.state, gameData.players);
     }
@@ -27,6 +25,11 @@ public class ClientGameController extends GameController implements GameData.Not
         client.createLobby();
         GameData.get().state.set(GameData.State.JOINING_LOBBY);
         new Thread(client).start();
+    }
+
+    public void resetClient() throws IOException {
+        if (client != null) client.running.set(false);
+        client = new Client();
     }
 
     public void joinLobby(Integer lobbyID) throws IOException {
@@ -71,11 +74,8 @@ public class ClientGameController extends GameController implements GameData.Not
     public void notify(Object change, GameData.Event event) {
         switch (event) {
             case LEVEL_NAME_SET:
-                System.out.println(0);
                 loadLevel((String) change);
-                System.out.println(1);
                 resetPlayers();
-                System.out.println(2);
                 break;
             case STATE_SET:
                 switch ((GameData.State) change) {

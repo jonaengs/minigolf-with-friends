@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 // TODO: Enforce max player limit
 public class LobbyController extends BaseController<LobbyCommunicationHandler, ServerLobbyCommand, ClientLobbyCommand> {
-    private static final String[] names = {"Yatzy", "Chess", "Bridge", "Poker", "Jacket", "Shirt", "Pants", "Boots"};
+    private static final String[] names = {"Yatzy", "Chess", "Bridge", "Poker", "Jacket", "Shirt", "Pants", "Boots", "Oscar", "India", "Alpha", "Romeo", "Zebra", "Noon"};
     public final Integer lobbyID;
     private final AtomicInteger nameIndex = new AtomicInteger(new Random().nextInt(names.length));
     private final LobbyCommunicationHandler leader;

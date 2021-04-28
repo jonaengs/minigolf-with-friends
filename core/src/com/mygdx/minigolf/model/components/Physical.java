@@ -9,6 +9,7 @@ import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.joints.FrictionJoint;
+import com.mygdx.minigolf.util.Constants;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,7 +21,7 @@ public class Physical implements Component {
     private Body body;
     private float friction;
     private FrictionJoint frictionJoint = null;
-    private List<ContactListener> contactListeners = new ArrayList<>();
+    private final List<ContactListener> contactListeners = new ArrayList<>();
 
     public Physical(Body body) {
         this.body = body;
@@ -32,20 +33,16 @@ public class Physical implements Component {
         this.friction = friction;
     }
 
+    public boolean isMoving() {
+        return !getVelocity().isZero(Constants.MOVING_MARGIN);
+    }
+
     public Body getBody() {
         return body;
     }
 
-    public void setBody(Body body) {
-        this.body = body;
-    }
-
     public Fixture getFixture() {
         return this.body.getFixtureList().get(0);
-    }
-
-    public float getBounce() {
-        return this.getFixture().getRestitution();
     }
 
     /**
@@ -75,9 +72,6 @@ public class Physical implements Component {
         return this.body.getPosition();
     }
 
-    public void setPosition(float x, float y) {
-        this.body.setTransform(x, y, 0);
-    }
 
     public void setPosition(Vector2 position) {
         this.body.setTransform(position, this.body.getAngle());
@@ -129,21 +123,13 @@ public class Physical implements Component {
         this.frictionJoint = frictionJoint;
     }
 
-    public float getDensity() {
-        return this.getFixture().getDensity();
-    }
-
-    public void setDensity(float density) {
-        this.getFixture().setDensity(density);
-    }
-
     public void addContactListener(ContactListener listener) {
         contactListeners.add(listener);
         contactListeners.sort(Comparator.comparingInt(a -> a.priority));
     }
 
-    public boolean removeContactListener(ContactListener listener) {
-        return contactListeners.remove(listener);
+    public void removeContactListener(ContactListener listener) {
+        contactListeners.remove(listener);
     }
 
     public List<ContactListener> getContactListeners() {

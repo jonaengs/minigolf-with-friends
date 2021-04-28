@@ -11,10 +11,24 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/** PERFORMANCE TACTICS: Bound queue size, Concurrency
+ *
+ * The MessageBuffer class keeps two buffers, one for each of the two types of messages the client
+ * can receive: control messages and game data. Control messages are important and cannot be lost,
+ * so they are kept in an unbounded buffer and only removed when the client retrieves them.
+ * For game data messages, on the other hand, only the very newest message is of any relevance
+ * to the client (applying old data would be a waste of resources), and as such, the game data buffer
+ * only has space for one item, the most recent one. Any old data in the buffer is overwritten
+ * once more recent data arrives.
+ *
+ * The MessageBuffer class is meant to be run as a separate thread, allowing it to continually
+ * retrieve the newest data without focusing on any other logic. This ensures that its buffers
+ * are filled in as soon as data arrives at the client device.
+ */
 public class MessageBuffer implements Runnable {
     final AtomicBoolean running = new AtomicBoolean(true);
     private final BlockingQueue<Message> msgBuffer = new LinkedBlockingQueue<>(); // Use take() method to wait for items to appear
-    private final NetworkedGameState[] gameDataBuffer = new NetworkedGameState[1];
+    private final NetworkedGameState[] gameDataBuffer = new NetworkedGameState[1]; // Bounded buffer.
     private final ObjectInputStream objIn;
 
     protected MessageBuffer(ObjectInputStream objIn) {
